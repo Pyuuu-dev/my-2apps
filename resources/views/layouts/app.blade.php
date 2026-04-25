@@ -223,7 +223,11 @@
                 </button>
                 <h1 class="text-base font-semibold text-gray-800 dark:text-gray-100 truncate">@yield('title', 'Dashboard')</h1>
                 <div class="ml-auto flex items-center gap-1.5">
-                    <span class="text-xs text-gray-400 hidden sm:block mr-2">{{ now()->translatedFormat('l, d F Y') }}</span>
+                    <div x-data="{ time: '{{ now()->format('H:i:s') }}' }" x-init="setInterval(() => { const now = new Date(); time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }, 1000)" class="text-xs text-gray-400 hidden sm:block mr-2">
+                        <span>{{ now()->translatedFormat('l, d F Y') }}</span>
+                        <span class="mx-1.5 text-gray-300">•</span>
+                        <span x-text="time" class="font-mono"></span>
+                    </div>
 
                     {{-- Backup Dropdown --}}
                     @php $backupConfigured = !empty(config('services.telegram_backup.bot_token')) && !empty(config('services.telegram_backup.chat_id')); @endphp
