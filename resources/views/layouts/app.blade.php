@@ -39,7 +39,7 @@
 
         {{-- ============ SIDEBAR ============ --}}
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-250 ease-out md:translate-x-0 md:static md:shrink-0 md:w-64 sidebar-bg overflow-hidden flex flex-col">
+            class="fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-250 ease-out md:translate-x-0 md:static md:shrink-0 md:w-64 sidebar-bg flex flex-col">
 
             {{-- Logo --}}
             <div class="flex h-16 items-center justify-between px-5 border-b border-white/10 shrink-0">
@@ -58,7 +58,7 @@
             </div>
 
             {{-- Nav - scrollable --}}
-            <nav class="flex-1 overflow-y-auto overscroll-contain p-4 space-y-1 sidebar-scroll">
+            <nav class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-1 sidebar-scroll">
                 {{-- Beranda --}}
                 <a href="{{ route('home') }}" @click="closeSidebar()" class="sidebar-link {{ request()->routeIs('home') ? 'sidebar-link-active' : 'text-gray-400' }}">
                     <div class="sidebar-icon bg-gradient-to-br from-gray-600 to-gray-700">
@@ -200,9 +200,6 @@
                         </button>
                     </form>
                 </div>
-
-                {{-- Bottom spacer for mobile --}}
-                <div class="h-6 md:h-0"></div>
             </nav>
 
             {{-- Footer --}}
