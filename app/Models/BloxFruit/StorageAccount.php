@@ -4,11 +4,16 @@ namespace App\Models\BloxFruit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\HasSlug;
 
 class StorageAccount extends Model
 {
+    use HasSlug;
+
+    protected string $slugSource = 'nama_akun';
+
     protected $fillable = [
-        'nama_akun', 'username', 'catatan', 'aktif',
+        'nama_akun', 'username', 'catatan', 'aktif', 'slug',
     ];
 
     protected $casts = ['aktif' => 'boolean'];

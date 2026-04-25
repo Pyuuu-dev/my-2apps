@@ -5,11 +5,16 @@ namespace App\Models\BloxFruit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\HasSlug;
 
 class FruitSkin extends Model
 {
+    use HasSlug;
+
+    protected string $slugSource = 'nama_skin';
+
     protected $fillable = [
-        'blox_fruit_id', 'nama_skin', 'harga_beli', 'harga_jual', 'gambar', 'keterangan', 'aktif',
+        'blox_fruit_id', 'nama_skin', 'harga_beli', 'harga_jual', 'gambar', 'keterangan', 'aktif', 'slug',
     ];
 
     protected $casts = ['aktif' => 'boolean'];

@@ -4,12 +4,17 @@ namespace App\Models\BloxFruit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\HasSlug;
 
 class BloxFruit extends Model
 {
+    use HasSlug;
+
+    protected string $slugSource = 'nama';
+
     protected $fillable = [
         'nama', 'tipe', 'rarity', 'harga_beli', 'harga_jual',
-        'gambar', 'keterangan', 'aktif',
+        'gambar', 'keterangan', 'aktif', 'slug',
     ];
 
     protected $casts = ['aktif' => 'boolean'];

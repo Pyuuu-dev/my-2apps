@@ -4,11 +4,16 @@ namespace App\Models\BloxFruit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\HasSlug;
 
 class PermanentFruitPrice extends Model
 {
+    use HasSlug;
+
+    protected string $slugSource = 'nama';
+
     protected $fillable = [
-        'nama', 'harga_robux', 'harga_beli', 'harga_jual', 'aktif',
+        'nama', 'harga_robux', 'harga_beli', 'harga_jual', 'aktif', 'slug',
     ];
 
     protected $casts = ['aktif' => 'boolean'];
