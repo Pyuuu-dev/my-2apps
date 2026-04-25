@@ -1,0 +1,68 @@
+================================================================================
+CARA MENGGUNAKAN SCRIPT RINGKASAN INVENTORI
+================================================================================
+
+Script ini akan membuat 2 file ringkasan dari data inventori game Anda:
+1. ringkasan_per_akun.txt - Inventori setiap pemain
+2. daftar_lengkap_items.txt - Katalog lengkap semua item
+
+================================================================================
+CARA 1: MENGGUNAKAN FILE INPUT (RECOMMENDED)
+================================================================================
+
+1. Simpan semua data Anda ke file bernama "data_input.txt" di folder /var/www/app/
+
+2. Jalankan perintah:
+   cd /var/www/app
+   python3 process_full_inventory.py data_input.txt
+
+3. File hasil akan dibuat:
+   - ringkasan_per_akun.txt
+   - daftar_lengkap_items.txt
+
+================================================================================
+CARA 2: PASTE DATA LANGSUNG
+================================================================================
+
+1. Jalankan perintah:
+   cd /var/www/app
+   python3 process_full_inventory.py
+
+2. Paste semua data Anda (Ctrl+V)
+
+3. Tekan Ctrl+D (Linux/Mac) atau Ctrl+Z lalu Enter (Windows) untuk selesai
+
+4. File hasil akan dibuat otomatis
+
+================================================================================
+FORMAT DATA INPUT
+================================================================================
+
+Data harus dalam format TSV (Tab-Separated Values):
+BROWSER    USERNAME    ITEM_NAME    QUANTITY
+
+Contoh:
+CHROME 7	pyuuuu_p	Dragon West	1
+CHROME 7	pyuuuu_p	Control	3
+EDGE 	LDCaster	Kitsune	1
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Q: Script error "No such file or directory"
+A: Pastikan Anda sudah cd ke /var/www/app terlebih dahulu
+
+Q: File hasil tidak muncul
+A: Cek apakah ada error saat menjalankan script
+
+Q: Data tidak lengkap
+A: Pastikan semua data sudah di-paste dengan benar (termasuk duplikasi akan dihapus otomatis)
+
+================================================================================
+KONTAK
+================================================================================
+
+Jika ada masalah, silakan hubungi developer.
+
+================================================================================

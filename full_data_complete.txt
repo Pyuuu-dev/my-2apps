@@ -1,0 +1,80 @@
+CHROME 7	pyuuuu_p	Dragon West	1
+CHROME 7	pyuuuu_p	Dragon East	3
+CHROME 7	pyuuuu_p	Kitsune	
+CHROME 7	pyuuuu_p	Control	3
+CHROME 7	pyuuuu_p	Yeti	
+CHROME 7	pyuuuu_p	Tiger	
+CHROME 7	pyuuuu_p	Spirit	1
+CHROME 7	pyuuuu_p	Gas	1
+CHROME 7	pyuuuu_p	Venom	3
+CHROME 7	pyuuuu_p	Shadow	6
+CHROME 7	pyuuuu_p	Dough	3
+CHROME 7	pyuuuu_p	T-Rex	
+CHROME 7	pyuuuu_p	Mammoth	4
+CHROME 7	pyuuuu_p	Gravity	2
+CHROME 7	pyuuuu_p	Pain	2
+CHROME 7	pyuuuu_p	Lightning	
+CHROME 7	pyuuuu_p	Portal	2
+CHROME 7	pyuuuu_p	Buddha	3
+CHROME 7	pyuuuu_p	Dragon Ember West	1
+CHROME 7	pyuuuu_p	Galaxy Kitsune	
+CHROME 7	pyuuuu_p	Empyrean Kitsune	
+CHROME 7	pyuuuu_p	Fiend Yeti	3
+CHROME 7	pyuuuu_p	Werewolf	1
+CHROME 7	pyuuuu_p	Divine Portal	
+CHROME 7	pyuuuu_p	Purple Lightning	
+CHROME 7	pyuuuu_p	Green Lightning	
+CHROME 7	pyuuuu_p	Torment Pain	5
+CHROME 7	pyuuuu_p	Topaz Diamond	
+CHROME 7	pyuuuu_p	Emerald Diamond	
+CHROME 7	pyuuuu_p	Ruby Diamond	
+CHROME 7	pyuuuu_p	Glacier Eagle	1
+CHROME 7	pyuuuu_p	Celebration Bomb	2
+CHROME 7	pyuuuu_p	2x Mastery	2
+CHROME 7	pyuuuu_p	2x Money	3
+CHROME 7	pyuuuu_p	1+ Storage	
+CHROME 7	pyuuuu_p	2x Drop	4
+CHROME 7	pyuuuu_p	Fast Boat	2
+CHROME 7	pyuuuu_p	Darkblade	2
+CHROME 7	pyuuuu_p	Fruit Notifier	1
+CHROME 7	pyuuuu_p	Perm Dragon	4
+CHROME 7	pyuuuu_p	Perm Kitsune	1
+CHROME 7	pyuuuu_p	Perm Control	1
+CHROME 7	pyuuuu_p	Perm Yeti	
+CHROME 7	pyuuuu_p	Perm Tiger	1
+CHROME 7	pyuuuu_p	Perm Spirit	
+CHROME 7	pyuuuu_p	Perm Gas	1
+CHROME 7	pyuuuu_p	Perm Venom	
+CHROME 7	pyuuuu_p	Perm Shadow	
+CHROME 7	pyuuuu_p	Perm Dough	1
+CHROME 7	pyuuuu_p	Perm T-Rex	1
+CHROME 7	pyuuuu_p	Perm Mammoth	1
+CHROME 7	pyuuuu_p	Perm Gravity	1
+CHROME 7	pyuuuu_p	Perm Blizzard	
+CHROME 7	pyuuuu_p	Perm Pain	1
+CHROME 7	pyuuuu_p	Perm Lightning	1
+CHROME 7	pyuuuu_p	Perm Portal	2
+CHROME 7	pyuuuu_p	Perm Phonix	
+CHROME 7	pyuuuu_p	Perm Sound	
+CHROME 7	pyuuuu_p	Perm Spider	
+CHROME 7	pyuuuu_p	Perm Creation	
+CHROME 7	pyuuuu_p	Perm Love	
+CHROME 7	pyuuuu_p	Perm Buddha	1
+CHROME 7	pyuuuu_p	Perm Quake	
+CHROME 7	pyuuuu_p	Perm Magma	1
+CHROME 7	pyuuuu_p	Perm Ghost	
+CHROME 7	pyuuuu_p	Perm Rubber	1
+CHROME 7	pyuuuu_p	Perm Light	2
+CHROME 7	pyuuuu_p	Perm Diamond	
+CHROME 7	pyuuuu_p	Perm Eagle	
+CHROME 7	pyuuuu_p	Perm Dark	
+CHROME 7	pyuuuu_p	Perm Sand	
+CHROME 7	pyuuuu_p	Perm Ice	2
+CHROME 7	pyuuuu_p	Perm Flame	1
+CHROME 7	pyuuuu_p	Perm Spike	
+CHROME 7	pyuuuu_p	Perm Smoke	
+CHROME 7	pyuuuu_p	Perm Bomb	
+CHROME 7	pyuuuu_p	Perm Spring	
+CHROME 7	pyuuuu_p	Perm Blade	
+CHROME 7	pyuuuu_p	Perm Spin	1
+CHROME 7	pyuuuu_p	Perm Rocket	

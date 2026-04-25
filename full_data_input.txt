@@ -1,0 +1,158 @@
+CHROME 7	pyuuuu_p	Dragon West	1
+CHROME 7	pyuuuu_p	Dragon East	3
+CHROME 7	pyuuuu_p	Kitsune	
+CHROME 7	pyuuuu_p	Control	3
+CHROME 7	pyuuuu_p	Yeti	
+CHROME 7	pyuuuu_p	Tiger	
+CHROME 7	pyuuuu_p	Spirit	1
+CHROME 7	pyuuuu_p	Gas	1
+CHROME 7	pyuuuu_p	Venom	3
+CHROME 7	pyuuuu_p	Shadow	6
+CHROME 7	pyuuuu_p	Dough	3
+CHROME 7	pyuuuu_p	T-Rex	
+CHROME 7	pyuuuu_p	Mammoth	4
+CHROME 7	pyuuuu_p	Gravity	2
+CHROME 7	pyuuuu_p	Pain	2
+CHROME 7	pyuuuu_p	Lightning	
+CHROME 7	pyuuuu_p	Portal	2
+CHROME 7	pyuuuu_p	Buddha	3
+CHROME 7	pyuuuu_p	Dragon Ember West	1
+CHROME 7	pyuuuu_p	Galaxy Kitsune	
+CHROME 7	pyuuuu_p	Empyrean Kitsune	
+CHROME 7	pyuuuu_p	Fiend Yeti	3
+CHROME 7	pyuuuu_p	Werewolf	1
+CHROME 7	pyuuuu_p	Divine Portal	
+CHROME 7	pyuuuu_p	Purple Lightning	
+CHROME 7	pyuuuu_p	Green Lightning	
+CHROME 7	pyuuuu_p	Torment Pain	5
+CHROME 7	pyuuuu_p	Topaz Diamond	
+CHROME 7	pyuuuu_p	Emerald Diamond	
+CHROME 7	pyuuuu_p	Ruby Diamond	
+CHROME 7	pyuuuu_p	Glacier Eagle	1
+CHROME 7	pyuuuu_p	Celebration Bomb	2
+CHROME 7	pyuuuu_p	2x Mastery	2
+CHROME 7	pyuuuu_p	2x Money	3
+CHROME 7	pyuuuu_p	1+ Storage	
+CHROME 7	pyuuuu_p	2x Drop	4
+CHROME 7	pyuuuu_p	Fast Boat	2
+CHROME 7	pyuuuu_p	Darkblade	2
+CHROME 7	pyuuuu_p	Fruit Notifier	1
+CHROME 7	pyuuuu_p	Perm Dragon	4
+CHROME 7	pyuuuu_p	Perm Kitsune	1
+CHROME 7	pyuuuu_p	Perm Control	1
+CHROME 7	pyuuuu_p	Perm Yeti	
+CHROME 7	pyuuuu_p	Perm Tiger	1
+CHROME 7	pyuuuu_p	Perm Spirit	
+CHROME 7	pyuuuu_p	Perm Gas	1
+CHROME 7	pyuuuu_p	Perm Venom	
+CHROME 7	pyuuuu_p	Perm Shadow	
+CHROME 7	pyuuuu_p	Perm Dough	1
+CHROME 7	pyuuuu_p	Perm T-Rex	1
+CHROME 7	pyuuuu_p	Perm Mammoth	1
+CHROME 7	pyuuuu_p	Perm Gravity	1
+CHROME 7	pyuuuu_p	Perm Blizzard	
+CHROME 7	pyuuuu_p	Perm Pain	1
+CHROME 7	pyuuuu_p	Perm Lightning	1
+CHROME 7	pyuuuu_p	Perm Portal	2
+CHROME 7	pyuuuu_p	Perm Phonix	
+CHROME 7	pyuuuu_p	Perm Sound	
+CHROME 7	pyuuuu_p	Perm Spider	
+CHROME 7	pyuuuu_p	Perm Creation	
+CHROME 7	pyuuuu_p	Perm Love	
+CHROME 7	pyuuuu_p	Perm Buddha	1
+CHROME 7	pyuuuu_p	Perm Quake	
+CHROME 7	pyuuuu_p	Perm Magma	1
+CHROME 7	pyuuuu_p	Perm Ghost	
+CHROME 7	pyuuuu_p	Perm Rubber	1
+CHROME 7	pyuuuu_p	Perm Light	2
+CHROME 7	pyuuuu_p	Perm Diamond	
+CHROME 7	pyuuuu_p	Perm Eagle	
+CHROME 7	pyuuuu_p	Perm Dark	
+CHROME 7	pyuuuu_p	Perm Sand	
+CHROME 7	pyuuuu_p	Perm Ice	2
+CHROME 7	pyuuuu_p	Perm Flame	1
+CHROME 7	pyuuuu_p	Perm Spike	
+CHROME 7	pyuuuu_p	Perm Smoke	
+CHROME 7	pyuuuu_p	Perm Bomb	
+CHROME 7	pyuuuu_p	Perm Spring	
+CHROME 7	pyuuuu_p	Perm Blade	
+CHROME 7	pyuuuu_p	Perm Spin	1
+CHROME 7	pyuuuu_p	Perm Rocket	
+EDGE 	LDCaster	Dragon West	
+EDGE 	LDCaster	Dragon East	
+EDGE 	LDCaster	Kitsune	1
+EDGE 	LDCaster	Control	3
+EDGE 	LDCaster	Yeti	1
+EDGE 	LDCaster	Tiger	
+EDGE 	LDCaster	Spirit	4
+EDGE 	LDCaster	Gas	
+EDGE 	LDCaster	Venom	1
+EDGE 	LDCaster	Shadow	5
+EDGE 	LDCaster	Dough	3
+EDGE 	LDCaster	T-Rex	
+EDGE 	LDCaster	Mammoth	3
+EDGE 	LDCaster	Gravity	2
+EDGE 	LDCaster	Pain	1
+EDGE 	LDCaster	Lightning	
+EDGE 	LDCaster	Portal	5
+EDGE 	LDCaster	Buddha	1
+EDGE 	LDCaster	Dragon Ember West	
+EDGE 	LDCaster	Galaxy Kitsune	
+EDGE 	LDCaster	Fiend Yeti	2
+EDGE 	LDCaster	Werewolf	1
+EDGE 	LDCaster	Divine Portal	
+EDGE 	LDCaster	Green Lightning	
+EDGE 	LDCaster	Torment Pain	2
+EDGE 	LDCaster	Topaz Diamond	
+EDGE 	LDCaster	Emerald Diamond	
+EDGE 	LDCaster	Ruby Diamond	
+EDGE 	LDCaster	Glacier Eagle	1
+EDGE 	LDCaster	Celebration Bomb	5
+EDGE 	LDCaster	2x Mastery	3
+EDGE 	LDCaster	2x Money	1
+EDGE 	LDCaster	1+ Storage	5
+EDGE 	LDCaster	2x Drop	
+EDGE 	LDCaster	Fast Boat	1
+EDGE 	LDCaster	Darkblade	
+EDGE 	LDCaster	Fruit Notifier	
+EDGE 	LDCaster	Perm Dragon	
+EDGE 	LDCaster	Perm Kitsune	
+EDGE 	LDCaster	Perm Control	
+EDGE 	LDCaster	Perm Yeti	
+EDGE 	LDCaster	Perm Tiger	
+EDGE 	LDCaster	Perm Spirit	
+EDGE 	LDCaster	Perm Gas	
+EDGE 	LDCaster	Perm Venom	
+EDGE 	LDCaster	Perm Shadow	
+EDGE 	LDCaster	Perm Dough	
+EDGE 	LDCaster	Perm T-Rex	
+EDGE 	LDCaster	Perm Mammoth	
+EDGE 	LDCaster	Perm Gravity	
+EDGE 	LDCaster	Perm Blizzard	
+EDGE 	LDCaster	Perm Pain	
+EDGE 	LDCaster	Perm Lightning	
+EDGE 	LDCaster	Perm Portal	
+EDGE 	LDCaster	Perm Phonix	
+EDGE 	LDCaster	Perm Sound	
+EDGE 	LDCaster	Perm Spider	
+EDGE 	LDCaster	Perm Creation	
+EDGE 	LDCaster	Perm Love	
+EDGE 	LDCaster	Perm Buddha	
+EDGE 	LDCaster	Perm Quake	
+EDGE 	LDCaster	Perm Magma	
+EDGE 	LDCaster	Perm Ghost	
+EDGE 	LDCaster	Perm Rubber	
+EDGE 	LDCaster	Perm Light	
+EDGE 	LDCaster	Perm Diamond	
+EDGE 	LDCaster	Perm Eagle	
+EDGE 	LDCaster	Perm Dark	
+EDGE 	LDCaster	Perm Sand	
+EDGE 	LDCaster	Perm Ice	
+EDGE 	LDCaster	Perm Flame	
+EDGE 	LDCaster	Perm Spike	
+EDGE 	LDCaster	Perm Smoke	
+EDGE 	LDCaster	Perm Bomb	
+EDGE 	LDCaster	Perm Spring	
+EDGE 	LDCaster	Perm Blade	
+EDGE 	LDCaster	Perm Spin	
+EDGE 	LDCaster	Perm Rocket	2

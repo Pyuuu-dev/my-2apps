@@ -1,0 +1,60 @@
+================================================================================
+RINGKASAN INVENTORI PER AKUN
+Tanggal: 24 April 2026, 20:14:01
+Total Akun: 1
+================================================================================
+
+[1] CHROME 7 - pyuuuu_p
+────────────────────────────────────────────────────────────────────────────────
+    📦 FRUITS (REGULAR):
+       • Buddha x3
+       • Control x3
+       • Dough x3
+       • Dragon East x3
+       • Dragon West x1
+       • Gas x1
+       • Gravity x2
+       • Mammoth x4
+       • Pain x2
+       • Portal x2
+       • Shadow x6
+       • Spirit x1
+       • Venom x3
+
+    ✨ FRUITS (SKIN VARIANTS):
+       • Celebration Bomb x2
+       • Dragon Ember West x1
+       • Fiend Yeti x3
+       • Glacier Eagle x1
+       • Torment Pain x5
+       • Werewolf x1
+
+    🎮 GAMEPASS:
+       • 2x Drop x4
+       • 2x Mastery x2
+       • 2x Money x3
+       • Darkblade x2
+       • Fast Boat x2
+       • Fruit Notifier x1
+
+    🔒 PERMANENT FRUITS:
+       • Perm Buddha x1
+       • Perm Control x1
+       • Perm Dough x1
+       • Perm Dragon x4
+       • Perm Flame x1
+       • Perm Gas x1
+       • Perm Gravity x1
+       • Perm Ice x2
+       • Perm Kitsune x1
+       • Perm Light x2
+       • Perm Lightning x1
+       • Perm Magma x1
+       • Perm Mammoth x1
+       • Perm Pain x1
+       • Perm Portal x2
+       • Perm Rubber x1
+       • Perm Spin x1
+       • Perm T-Rex x1
+       • Perm Tiger x1
+
