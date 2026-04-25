@@ -39,10 +39,18 @@ class ExerciseController extends Controller
             ->whereDate('tanggal', $tanggal)->first();
         $configPuasa = $puasaHariIni ? DietHelperService::getConfigPuasa($puasaHariIni->tipe) : null;
 
+        // Tanggal yang sudah ada data (30 hari terakhir)
+        $tanggalAktif = Exercise::where('diet_plan_id', $planAktif->id)
+            ->where('tanggal', '>=', Carbon::today()->subDays(30))
+            ->selectRaw('DATE(tanggal) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
         return view('diet.exercises.index', compact(
             'exercises', 'planAktif', 'tanggal', 'totalKalori', 'totalDurasi',
             'jadwalMingguan', 'konsistensi', 'exercisesByKategori',
-            'puasaHariIni', 'configPuasa'
+            'puasaHariIni', 'configPuasa', 'tanggalAktif'
         ));
     }
 

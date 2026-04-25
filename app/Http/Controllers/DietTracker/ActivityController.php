@@ -17,14 +17,32 @@ class ActivityController extends Controller
             return redirect()->route('diet.plans.create')->with('error', 'Buat program diet terlebih dahulu!');
         }
 
-        $activities = DailyActivity::where('diet_plan_id', $planAktif->id)
-            ->orderByDesc('tanggal')
-            ->paginate(15);
+        $tanggal = $request->get('tanggal');
+
+        if ($tanggal) {
+            // Filter by specific date
+            $activities = DailyActivity::where('diet_plan_id', $planAktif->id)
+                ->whereDate('tanggal', $tanggal)
+                ->orderByDesc('tanggal')
+                ->paginate(15);
+        } else {
+            $activities = DailyActivity::where('diet_plan_id', $planAktif->id)
+                ->orderByDesc('tanggal')
+                ->paginate(15);
+        }
 
         $targetHarian = \App\Services\DietHelperService::targetAktivitasHarian($planAktif);
         $konsistensi = \App\Services\DietHelperService::hitungKonsistensi($planAktif);
 
-        return view('diet.activities.index', compact('activities', 'planAktif', 'targetHarian', 'konsistensi'));
+        // Tanggal yang sudah ada data (30 hari terakhir)
+        $tanggalAktif = DailyActivity::where('diet_plan_id', $planAktif->id)
+            ->where('tanggal', '>=', Carbon::today()->subDays(30))
+            ->selectRaw('DATE(tanggal) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
+        return view('diet.activities.index', compact('activities', 'planAktif', 'targetHarian', 'konsistensi', 'tanggalAktif', 'tanggal'));
     }
 
     public function create()

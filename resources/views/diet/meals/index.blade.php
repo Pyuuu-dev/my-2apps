@@ -2,18 +2,18 @@
 @section('title', 'Jadwal Makan')
 
 @section('content')
+{{-- Date Navigator --}}
+@include('diet.partials.date-navigator', ['tanggal' => $tanggal, 'tanggalAktif' => $tanggalAktif, 'route' => 'diet.meals.index', 'accent' => 'emerald'])
+
 {{-- Header --}}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <form method="GET" class="flex gap-2 items-center">
-        <input type="date" name="tanggal" value="{{ $tanggal }}" class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500" onchange="this.form.submit()">
-    </form>
+<div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-3">
         <span class="text-sm text-gray-500">{{ number_format($totalKalori) }} / {{ number_format($planAktif->kalori_harian_target) }} kkal</span>
-        <a href="{{ route('diet.meals.create') }}" class="btn-success inline-flex items-center gap-1.5 text-sm">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah
-        </a>
     </div>
+    <a href="{{ route('diet.meals.create') }}" class="btn-success inline-flex items-center gap-1.5 text-sm">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Tambah
+    </a>
 </div>
 
 {{-- Banner Puasa --}}

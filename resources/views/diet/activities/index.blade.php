@@ -2,7 +2,11 @@
 @section('title', 'Aktivitas Harian')
 
 @section('content')
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+{{-- Date Navigator --}}
+@include('diet.partials.date-navigator', ['tanggal' => $tanggal ?? now()->format('Y-m-d'), 'tanggalAktif' => $tanggalAktif, 'route' => 'diet.activities.index', 'accent' => 'emerald'])
+
+{{-- Header --}}
+<div class="flex items-center justify-between mb-6">
     <p class="text-sm text-gray-500">Catat aktivitas harian kamu</p>
     <a href="{{ route('diet.activities.create') }}" class="btn-success inline-flex items-center gap-1.5 text-sm">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
