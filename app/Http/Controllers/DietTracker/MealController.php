@@ -58,9 +58,8 @@ class MealController extends Controller
         );
         $targetAir = $smart['target_harian']['air_ml'];
 
-        // Tanggal yang sudah ada data (30 hari terakhir)
+        // Tanggal yang sudah ada data (semua)
         $tanggalAktif = Meal::where('diet_plan_id', $planAktif->id)
-            ->where('tanggal', '>=', Carbon::today()->subDays(30))
             ->selectRaw('DATE(tanggal) as tgl')
             ->groupBy('tgl')
             ->pluck('tgl')

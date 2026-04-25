@@ -34,9 +34,8 @@ class ActivityController extends Controller
         $targetHarian = \App\Services\DietHelperService::targetAktivitasHarian($planAktif);
         $konsistensi = \App\Services\DietHelperService::hitungKonsistensi($planAktif);
 
-        // Tanggal yang sudah ada data (30 hari terakhir)
+        // Tanggal yang sudah ada data (semua)
         $tanggalAktif = DailyActivity::where('diet_plan_id', $planAktif->id)
-            ->where('tanggal', '>=', Carbon::today()->subDays(30))
             ->selectRaw('DATE(tanggal) as tgl')
             ->groupBy('tgl')
             ->pluck('tgl')
