@@ -39,6 +39,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
+| Public Landing Page
+|--------------------------------------------------------------------------
+*/
+Route::get('/store', [\App\Http\Controllers\BloxFruit\LandingController::class, 'index'])->name('landing.bloxfruit');
+
+/*
+|--------------------------------------------------------------------------
 | Protected Routes (Require Auth)
 |--------------------------------------------------------------------------
 */
