@@ -284,7 +284,7 @@
                                         </div>
                                 </div>
 
-                                <p class="text-[10px] mt-1.5" :class="darkMode ? 'text-gray-600' : 'text-gray-400'">Auto backup setiap hari jam 02:00</p>
+                                <p class="text-[10px] mt-1.5" :class="darkMode ? 'text-gray-600' : 'text-gray-400'">Auto backup 4x/hari (02:00, 08:00, 14:00, 20:00)</p>
                             </div>
                         </div>
                     </div>
