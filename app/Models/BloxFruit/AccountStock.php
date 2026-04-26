@@ -9,10 +9,12 @@ class AccountStock extends Model
 {
     use HasSlug;
 
-    protected string $slugSource = 'judul';
+    protected string $slugSource = 'username_roblox';
 
     protected $fillable = [
-        'judul', 'level', 'daftar_buah', 'daftar_gamepass',
-        'harga', 'status', 'keterangan', 'gambar', 'slug',
+        'judul', 'username_roblox', 'password_roblox',
+        'sword_gun', 'fruit', 'belly', 'fragment', 'race',
+        'level', 'daftar_buah', 'daftar_gamepass',
+        'harga_beli', 'harga_jual', 'status', 'keterangan', 'gambar', 'slug',
     ];
 }
