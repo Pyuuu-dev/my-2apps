@@ -31,10 +31,6 @@ class LandingController extends Controller
             'lainnya' => ['label' => 'Lainnya', 'icon' => '📝'],
         ];
 
-        // Akun tersedia
-        $akunTersedia = AccountStock::where('status', 'tersedia')
-            ->orderByDesc('id')->get();
-
         // Permanent fruit prices
         $permanents = PermanentFruitPrice::where('aktif', true)
             ->orderBy('harga_jual')->get();
@@ -47,7 +43,7 @@ class LandingController extends Controller
         ];
 
         return view('bloxfruit.landing', compact(
-            'servicesByKategori', 'kategoriLabels', 'akunTersedia', 'permanents', 'stats'
+            'servicesByKategori', 'kategoriLabels', 'permanents', 'stats'
         ));
     }
 }
