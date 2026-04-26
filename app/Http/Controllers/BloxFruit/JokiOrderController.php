@@ -147,6 +147,51 @@ class JokiOrderController extends Controller
         return redirect()->route('bloxfruit.joki.index')->with('sukses', 'Order joki berhasil diperbarui!');
     }
 
+    public function toggleStatus(Request $request, JokiOrder $joki)
+    {
+        $request->validate([
+            'status' => 'required|in:antrian,proses,selesai,batal',
+        ]);
+
+        $statusLama = $joki->status;
+        $statusBaru = $request->status;
+        $joki->update(['status' => $statusBaru]);
+
+        // Auto-record profit saat status berubah ke selesai
+        if ($statusBaru === 'selesai' && $statusLama !== 'selesai') {
+            $parts = explode(':', $joki->jenis_joki, 2);
+            $jenisNama = $parts[1] ?? $joki->jenis_joki;
+            $keterangan = 'Joki ' . $joki->nama_pelanggan . ' - ' . $jenisNama;
+
+            if (!ProfitRecord::where('kategori', 'joki')->where('keterangan', $keterangan)->exists()) {
+                ProfitRecord::create([
+                    'tanggal' => now()->toDateString(),
+                    'kategori' => 'joki',
+                    'keterangan' => $keterangan,
+                    'modal' => 0,
+                    'pendapatan' => $joki->harga,
+                    'keuntungan' => $joki->harga,
+                ]);
+            }
+
+            if (!$joki->tanggal_selesai) {
+                $joki->update(['tanggal_selesai' => now()->toDateString()]);
+            }
+        }
+
+        // Hapus profit record saat status berubah dari selesai ke status lain
+        if ($statusLama === 'selesai' && $statusBaru !== 'selesai') {
+            $parts = explode(':', $joki->jenis_joki, 2);
+            $jenisNama = $parts[1] ?? $joki->jenis_joki;
+            ProfitRecord::where('kategori', 'joki')
+                ->where('keterangan', 'Joki ' . $joki->nama_pelanggan . ' - ' . $jenisNama)
+                ->delete();
+        }
+
+        return redirect()->route('bloxfruit.joki.index', request()->only('cari', 'status', 'kategori'))
+            ->with('sukses', 'Status ' . $joki->nama_pelanggan . ' diubah ke ' . ucfirst($statusBaru));
+    }
+
     public function destroy(JokiOrder $joki)
     {
         $joki->delete();

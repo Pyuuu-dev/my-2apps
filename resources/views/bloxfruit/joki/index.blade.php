@@ -108,6 +108,32 @@
                 <p class="text-sm text-gray-700">{{ $order->detail_pesanan }}</p>
             </div>
             @endif
+            {{-- Toggle Status --}}
+            <div class="mb-3">
+                <p class="text-[10px] text-gray-400 mb-1.5">Ubah Status</p>
+                <div class="flex flex-wrap gap-1.5">
+                    @php
+                        $statuses = [
+                            'antrian' => ['label' => 'Antrian', 'bg' => 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400', 'active' => 'ring-2 ring-yellow-500'],
+                            'proses' => ['label' => 'Proses', 'bg' => 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400', 'active' => 'ring-2 ring-blue-500'],
+                            'selesai' => ['label' => 'Selesai', 'bg' => 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400', 'active' => 'ring-2 ring-emerald-500'],
+                            'batal' => ['label' => 'Batal', 'bg' => 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400', 'active' => 'ring-2 ring-red-500'],
+                        ];
+                    @endphp
+                    @foreach($statuses as $sKey => $sVal)
+                        @if($order->status === $sKey)
+                            <span class="rounded-lg px-3 py-1.5 text-[11px] font-bold {{ $sVal['bg'] }} {{ $sVal['active'] }} cursor-default">{{ $sVal['label'] }}</span>
+                        @else
+                            <form method="POST" action="{{ route('bloxfruit.joki.status', $order) }}" onsubmit="return confirm('Ubah status ke {{ $sVal['label'] }}?')">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="status" value="{{ $sKey }}">
+                                <button type="submit" class="rounded-lg px-3 py-1.5 text-[11px] font-medium {{ $sVal['bg'] }} opacity-50 hover:opacity-100 transition-opacity">{{ $sVal['label'] }}</button>
+                            </form>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
             <div class="flex items-center gap-2">
                 <a href="{{ route('bloxfruit.joki.edit', $order) }}" class="rounded-lg bg-indigo-50 dark:bg-indigo-950/30 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100">Edit</a>
                 <form method="POST" action="{{ route('bloxfruit.joki.destroy', $order) }}" onsubmit="return confirm('Hapus order {{ $order->nama_pelanggan }}?')">

@@ -160,6 +160,7 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::get('joki/{joki}/edit', [JokiOrderController::class, 'edit'])->name('joki.edit');
     Route::put('joki/{joki}', [JokiOrderController::class, 'update'])->name('joki.update');
     Route::delete('joki/{joki}', [JokiOrderController::class, 'destroy'])->name('joki.destroy');
+    Route::patch('joki/{joki}/status', [JokiOrderController::class, 'toggleStatus'])->name('joki.status');
 
     Route::get('profit', [ProfitController::class, 'index'])->name('profit.index');
     Route::get('profit/create', [ProfitController::class, 'create'])->name('profit.create');
