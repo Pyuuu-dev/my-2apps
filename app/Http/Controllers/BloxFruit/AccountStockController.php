@@ -105,6 +105,13 @@ class AccountStockController extends Controller
             ]);
         }
 
+        // Hapus profit record saat status berubah dari terjual ke status lain
+        if ($oldStatus === 'terjual' && $validated['status'] !== 'terjual') {
+            ProfitRecord::where('kategori', 'akun')
+                ->where('keterangan', 'Jual akun ' . $account->username_roblox)
+                ->delete();
+        }
+
         return redirect()->route('bloxfruit.accounts.index')->with('sukses', 'Akun berhasil diperbarui!');
     }
 
