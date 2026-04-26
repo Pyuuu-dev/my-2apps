@@ -110,7 +110,7 @@
 
 {{-- ============ DETAIL: KATEGORI + METODE BAYAR ============ --}}
 @php
-    $katLabels = ['fruit' => ['Fruit', 'text-indigo-600', 'bg-indigo-50'], 'skin' => ['Skin', 'text-pink-600', 'bg-pink-50'], 'gamepass' => ['Gamepass', 'text-blue-600', 'bg-blue-50'], 'permanent' => ['Permanent', 'text-amber-600', 'bg-amber-50'], 'joki' => ['Joki', 'text-orange-600', 'bg-orange-50'], 'lainnya' => ['Lainnya', 'text-gray-600', 'bg-gray-50']];
+    $katLabels = ['fruit' => ['Fruit', 'text-indigo-600', 'bg-indigo-50'], 'skin' => ['Skin', 'text-pink-600', 'bg-pink-50'], 'gamepass' => ['Gamepass', 'text-blue-600', 'bg-blue-50'], 'permanent' => ['Permanent', 'text-amber-600', 'bg-amber-50'], 'joki' => ['Joki', 'text-orange-600', 'bg-orange-50'], 'akun' => ['Akun', 'text-teal-600', 'bg-teal-50'], 'lainnya' => ['Lainnya', 'text-gray-600', 'bg-gray-50']];
     $metodeLabels = ['dana' => ['Dana', '#0070ba'], 'gopay' => ['GoPay', '#00aed6'], 'shopeepay' => ['ShopeePay', '#ee4d2d'], 'seabank' => ['SeaBank', '#00b4d8'], 'bank_kalsel' => ['Bank Kalsel', '#1a5276'], 'bri' => ['BRI', '#003d79'], 'qris' => ['QRIS', '#e31937'], 'cash' => ['Cash', '#6b7280']];
 @endphp
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

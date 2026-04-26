@@ -99,7 +99,7 @@ class ProfitController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'kategori' => 'required|in:fruit,skin,gamepass,permanent,joki,lainnya',
+            'kategori' => 'required|in:fruit,skin,gamepass,permanent,joki,akun,lainnya',
             'keterangan' => 'nullable|string|max:255',
             'modal' => 'nullable|integer|min:0',
             'pendapatan' => 'nullable|integer|min:0',
@@ -121,7 +121,7 @@ class ProfitController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'kategori' => 'required|in:fruit,skin,gamepass,permanent,joki,lainnya',
+            'kategori' => 'required|in:fruit,skin,gamepass,permanent,joki,akun,lainnya',
             'keterangan' => 'nullable|string|max:255',
             'modal' => 'nullable|integer|min:0',
             'pendapatan' => 'nullable|integer|min:0',

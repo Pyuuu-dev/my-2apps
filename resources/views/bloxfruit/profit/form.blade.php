@@ -20,7 +20,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
                 <select name="kategori" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                    @foreach(['fruit' => 'Fruit', 'skin' => 'Skin', 'gamepass' => 'Gamepass', 'permanent' => 'Permanent', 'joki' => 'Joki', 'lainnya' => 'Lainnya'] as $k => $v)
+                    @foreach(['fruit' => 'Fruit', 'skin' => 'Skin', 'gamepass' => 'Gamepass', 'permanent' => 'Permanent', 'joki' => 'Joki', 'akun' => 'Akun Jual', 'lainnya' => 'Lainnya'] as $k => $v)
                     <option value="{{ $k }}" {{ old('kategori', $profit->kategori ?? '') == $k ? 'selected' : '' }}>{{ $v }}</option>
                     @endforeach
                 </select>

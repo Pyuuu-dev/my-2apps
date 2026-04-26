@@ -4,6 +4,7 @@ namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
 use App\Models\BloxFruit\AccountStock;
+use App\Models\BloxFruit\ProfitRecord;
 use Illuminate\Http\Request;
 
 class AccountStockController extends Controller
@@ -89,7 +90,21 @@ class AccountStockController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
+        $oldStatus = $account->status;
         $account->update($validated);
+
+        // Auto-record profit saat status berubah ke terjual
+        if ($oldStatus !== 'terjual' && $validated['status'] === 'terjual' && ($account->harga_jual > 0)) {
+            ProfitRecord::create([
+                'tanggal' => now()->toDateString(),
+                'kategori' => 'akun',
+                'keterangan' => 'Jual akun ' . $account->username_roblox,
+                'modal' => $account->harga_beli ?? 0,
+                'pendapatan' => $account->harga_jual ?? 0,
+                'keuntungan' => ($account->harga_jual ?? 0) - ($account->harga_beli ?? 0),
+            ]);
+        }
+
         return redirect()->route('bloxfruit.accounts.index')->with('sukses', 'Akun berhasil diperbarui!');
     }
 
