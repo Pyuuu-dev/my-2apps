@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\BloxFruit\JokiService;
 use App\Models\BloxFruit\JokiOrder;
 use App\Models\BloxFruit\AccountStock;
+use App\Models\BloxFruit\BloxFruit;
+use App\Models\BloxFruit\FruitSkin;
+use App\Models\BloxFruit\Gamepass;
 use App\Models\BloxFruit\PermanentFruitPrice;
 
 class LandingController extends Controller
@@ -31,6 +34,21 @@ class LandingController extends Controller
             'lainnya' => ['label' => 'Lainnya', 'icon' => '📝'],
         ];
 
+        // Fruits grouped by rarity
+        $fruitsByRarity = BloxFruit::where('aktif', true)
+            ->orderByRaw("CASE rarity WHEN 'Mythical' THEN 5 WHEN 'Legendary' THEN 4 WHEN 'Rare' THEN 3 WHEN 'Uncommon' THEN 2 WHEN 'Common' THEN 1 END DESC")
+            ->orderByDesc('harga_jual')
+            ->get()
+            ->groupBy('rarity');
+
+        // Skins
+        $skins = FruitSkin::where('aktif', true)
+            ->orderByDesc('harga_jual')->get();
+
+        // Gamepasses
+        $gamepasses = Gamepass::where('aktif', true)
+            ->orderByDesc('harga_jual')->get();
+
         // Permanent fruit prices
         $permanents = PermanentFruitPrice::where('aktif', true)
             ->orderBy('harga_jual')->get();
@@ -43,7 +61,7 @@ class LandingController extends Controller
         ];
 
         return view('bloxfruit.landing', compact(
-            'servicesByKategori', 'kategoriLabels', 'permanents', 'stats'
+            'servicesByKategori', 'kategoriLabels', 'fruitsByRarity', 'skins', 'gamepasses', 'permanents', 'stats'
         ));
     }
 }

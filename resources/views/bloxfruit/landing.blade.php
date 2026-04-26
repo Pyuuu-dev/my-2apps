@@ -25,8 +25,11 @@
                 </div>
                 <span class="font-extrabold text-sm text-white">LDC Store</span>
             </a>
-            <div class="flex items-center gap-5 text-xs">
+            <div class="flex items-center gap-4 text-xs">
                 <a href="#joki" class="text-slate-400 hover:text-white transition-colors hidden sm:block">Joki</a>
+                <a href="#fruit" class="text-slate-400 hover:text-white transition-colors hidden sm:block">Fruit</a>
+                <a href="#skin" class="text-slate-400 hover:text-white transition-colors hidden sm:block">Skin</a>
+                <a href="#gamepass" class="text-slate-400 hover:text-white transition-colors hidden sm:block">Gamepass</a>
                 <a href="#permanent" class="text-slate-400 hover:text-white transition-colors hidden sm:block">Permanent</a>
                 <a href="#kontak" class="rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-500 transition-colors">Hubungi</a>
             </div>
@@ -97,6 +100,131 @@
                     </div>
                 </div>
                 @endif
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- ============ HARGA FRUIT ============ --}}
+    <section id="fruit" class="py-16 px-4 border-t border-slate-800/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <p class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">Fruit</p>
+                <h2 class="text-3xl font-black text-white">Harga Fruit</h2>
+                <p class="text-sm text-slate-500 mt-2">Harga beli & jual fruit per rarity</p>
+            </div>
+
+            @php
+                $rarityColors = [
+                    'Mythical' => ['text-fuchsia-400', 'border-fuchsia-800/50', 'bg-fuchsia-500/5'],
+                    'Legendary' => ['text-amber-400', 'border-amber-800/50', 'bg-amber-500/5'],
+                    'Rare' => ['text-blue-400', 'border-blue-800/50', 'bg-blue-500/5'],
+                    'Uncommon' => ['text-emerald-400', 'border-emerald-800/50', 'bg-emerald-500/5'],
+                    'Common' => ['text-slate-400', 'border-slate-700', 'bg-slate-800/50'],
+                ];
+            @endphp
+
+            <div class="space-y-6">
+                @foreach($fruitsByRarity as $rarity => $fruits)
+                @php $rc = $rarityColors[$rarity] ?? ['text-slate-400', 'border-slate-700', 'bg-slate-800/50']; @endphp
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider {{ $rc[0] }}">{{ $rarity }}</span>
+                        <span class="text-[10px] text-slate-600">{{ $fruits->count() }} buah</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                        @foreach($fruits as $fruit)
+                        <div class="rounded-xl bg-slate-900 border {{ $rc[1] }} p-3 text-center card-hover">
+                            <p class="text-sm font-bold text-white mb-1.5">{{ $fruit->nama }}</p>
+                            <div class="flex items-center justify-center gap-3">
+                                @if($fruit->harga_beli > 0)
+                                <div>
+                                    <p class="text-[9px] text-slate-600">Beli</p>
+                                    <p class="text-xs font-bold text-blue-400">{{ number_format($fruit->harga_beli / 1000, 1) }}k</p>
+                                </div>
+                                @endif
+                                @if($fruit->harga_jual > 0)
+                                <div>
+                                    <p class="text-[9px] text-slate-600">Jual</p>
+                                    <p class="text-xs font-bold text-emerald-400">{{ number_format($fruit->harga_jual / 1000, 1) }}k</p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- ============ HARGA SKIN ============ --}}
+    <section id="skin" class="py-16 px-4 border-t border-slate-800/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <p class="text-xs font-bold uppercase tracking-widest text-pink-400 mb-2">Skin</p>
+                <h2 class="text-3xl font-black text-white">Harga Skin</h2>
+                <p class="text-sm text-slate-500 mt-2">{{ $skins->count() }} skin tersedia</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                @foreach($skins as $skin)
+                <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 flex items-center justify-between card-hover">
+                    <div>
+                        <p class="text-sm font-bold text-white">{{ $skin->nama_skin }}</p>
+                    </div>
+                    <div class="flex items-center gap-4 shrink-0">
+                        @if($skin->harga_beli > 0)
+                        <div class="text-right">
+                            <p class="text-[9px] text-slate-600">Beli</p>
+                            <p class="text-xs font-bold text-blue-400">{{ number_format($skin->harga_beli / 1000) }}k</p>
+                        </div>
+                        @endif
+                        @if($skin->harga_jual > 0)
+                        <div class="text-right">
+                            <p class="text-[9px] text-slate-600">Jual</p>
+                            <p class="text-xs font-bold text-emerald-400">{{ number_format($skin->harga_jual / 1000) }}k</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- ============ HARGA GAMEPASS ============ --}}
+    <section id="gamepass" class="py-16 px-4 border-t border-slate-800/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <p class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">Gamepass</p>
+                <h2 class="text-3xl font-black text-white">Harga Gamepass</h2>
+                <p class="text-sm text-slate-500 mt-2">{{ $gamepasses->count() }} gamepass tersedia</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
+                @foreach($gamepasses as $gp)
+                <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 card-hover">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm font-bold text-white">{{ $gp->nama }}</p>
+                        <span class="text-[10px] text-slate-600 bg-slate-800 rounded-full px-2 py-0.5">{{ number_format($gp->harga_robux) }} R$</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        @if($gp->harga_beli > 0)
+                        <div>
+                            <p class="text-[9px] text-slate-600">Beli</p>
+                            <p class="text-sm font-bold text-blue-400">Rp {{ number_format($gp->harga_beli / 1000) }}k</p>
+                        </div>
+                        @endif
+                        @if($gp->harga_jual > 0)
+                        <div>
+                            <p class="text-[9px] text-slate-600">Jual</p>
+                            <p class="text-sm font-bold text-emerald-400">Rp {{ number_format($gp->harga_jual / 1000) }}k</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
                 @endforeach
             </div>
         </div>
