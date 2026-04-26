@@ -111,7 +111,7 @@
             <div class="text-center mb-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">Fruit</p>
                 <h2 class="text-3xl font-black text-white">Harga Fruit</h2>
-                <p class="text-sm text-slate-500 mt-2">Harga beli & jual fruit per rarity</p>
+                <p class="text-sm text-slate-500 mt-2">Harga jual fruit per rarity</p>
             </div>
 
             @php
@@ -135,21 +135,12 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                         @foreach($fruits as $fruit)
                         <div class="rounded-xl bg-slate-900 border {{ $rc[1] }} p-3 text-center card-hover">
-                            <p class="text-sm font-bold text-white mb-1.5">{{ $fruit->nama }}</p>
-                            <div class="flex items-center justify-center gap-3">
-                                @if($fruit->harga_beli > 0)
-                                <div>
-                                    <p class="text-[9px] text-slate-600">Beli</p>
-                                    <p class="text-xs font-bold text-blue-400">{{ number_format($fruit->harga_beli / 1000, 1) }}k</p>
-                                </div>
-                                @endif
-                                @if($fruit->harga_jual > 0)
-                                <div>
-                                    <p class="text-[9px] text-slate-600">Jual</p>
-                                    <p class="text-xs font-bold text-emerald-400">{{ number_format($fruit->harga_jual / 1000, 1) }}k</p>
-                                </div>
-                                @endif
-                            </div>
+                            <p class="text-sm font-bold text-white mb-1">{{ $fruit->nama }}</p>
+                            @if($fruit->harga_jual > 0)
+                            <p class="text-xs font-bold text-emerald-400">Rp {{ number_format($fruit->harga_jual / 1000, 1) }}k</p>
+                            @else
+                            <p class="text-xs text-slate-600">Hubungi</p>
+                            @endif
                         </div>
                         @endforeach
                     </div>
@@ -171,23 +162,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 @foreach($skins as $skin)
                 <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 flex items-center justify-between card-hover">
-                    <div>
-                        <p class="text-sm font-bold text-white">{{ $skin->nama_skin }}</p>
-                    </div>
-                    <div class="flex items-center gap-4 shrink-0">
-                        @if($skin->harga_beli > 0)
-                        <div class="text-right">
-                            <p class="text-[9px] text-slate-600">Beli</p>
-                            <p class="text-xs font-bold text-blue-400">{{ number_format($skin->harga_beli / 1000) }}k</p>
-                        </div>
-                        @endif
-                        @if($skin->harga_jual > 0)
-                        <div class="text-right">
-                            <p class="text-[9px] text-slate-600">Jual</p>
-                            <p class="text-xs font-bold text-emerald-400">{{ number_format($skin->harga_jual / 1000) }}k</p>
-                        </div>
-                        @endif
-                    </div>
+                    <p class="text-sm font-bold text-white">{{ $skin->nama_skin }}</p>
+                    @if($skin->harga_jual > 0)
+                    <p class="text-sm font-bold text-emerald-400 shrink-0">Rp {{ number_format($skin->harga_jual / 1000) }}k</p>
+                    @else
+                    <p class="text-xs text-slate-600 shrink-0">Hubungi</p>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -205,25 +185,16 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
                 @foreach($gamepasses as $gp)
-                <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 card-hover">
-                    <div class="flex items-center justify-between mb-2">
+                <div class="rounded-xl bg-slate-900 border border-slate-800 p-4 card-hover flex items-center justify-between">
+                    <div>
                         <p class="text-sm font-bold text-white">{{ $gp->nama }}</p>
-                        <span class="text-[10px] text-slate-600 bg-slate-800 rounded-full px-2 py-0.5">{{ number_format($gp->harga_robux) }} R$</span>
+                        <p class="text-[10px] text-slate-600">{{ number_format($gp->harga_robux) }} Robux</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        @if($gp->harga_beli > 0)
-                        <div>
-                            <p class="text-[9px] text-slate-600">Beli</p>
-                            <p class="text-sm font-bold text-blue-400">Rp {{ number_format($gp->harga_beli / 1000) }}k</p>
-                        </div>
-                        @endif
-                        @if($gp->harga_jual > 0)
-                        <div>
-                            <p class="text-[9px] text-slate-600">Jual</p>
-                            <p class="text-sm font-bold text-emerald-400">Rp {{ number_format($gp->harga_jual / 1000) }}k</p>
-                        </div>
-                        @endif
-                    </div>
+                    @if($gp->harga_jual > 0)
+                    <p class="text-sm font-bold text-emerald-400 shrink-0">Rp {{ number_format($gp->harga_jual / 1000) }}k</p>
+                    @else
+                    <p class="text-xs text-slate-600 shrink-0">Hubungi</p>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -243,21 +214,12 @@
                 @foreach($permanents as $perm)
                 <div class="rounded-xl bg-slate-900 border border-slate-800 p-3 card-hover text-center">
                     <p class="text-sm font-bold text-white mb-1">{{ $perm->nama }}</p>
-                    <p class="text-[10px] text-slate-500 mb-2">{{ number_format($perm->harga_robux) }} Robux</p>
-                    <div class="flex items-center justify-center gap-3">
-                        @if($perm->harga_beli > 0)
-                        <div>
-                            <p class="text-[9px] text-slate-600">Beli</p>
-                            <p class="text-xs font-bold text-blue-400">{{ number_format($perm->harga_beli / 1000) }}k</p>
-                        </div>
-                        @endif
-                        @if($perm->harga_jual > 0)
-                        <div>
-                            <p class="text-[9px] text-slate-600">Jual</p>
-                            <p class="text-xs font-bold text-emerald-400">{{ number_format($perm->harga_jual / 1000) }}k</p>
-                        </div>
-                        @endif
-                    </div>
+                    <p class="text-[10px] text-slate-500 mb-1">{{ number_format($perm->harga_robux) }} Robux</p>
+                    @if($perm->harga_jual > 0)
+                    <p class="text-xs font-bold text-emerald-400">Rp {{ number_format($perm->harga_jual / 1000) }}k</p>
+                    @else
+                    <p class="text-xs text-slate-600">Hubungi</p>
+                    @endif
                 </div>
                 @endforeach
             </div>
