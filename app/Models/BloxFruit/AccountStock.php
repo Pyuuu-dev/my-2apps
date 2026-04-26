@@ -17,4 +17,8 @@ class AccountStock extends Model
         'level', 'daftar_buah', 'daftar_gamepass',
         'harga_beli', 'harga_jual', 'status', 'keterangan', 'gambar', 'slug',
     ];
+
+    protected $casts = [
+        'password_roblox' => 'encrypted',
+    ];
 }

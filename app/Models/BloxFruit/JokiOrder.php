@@ -20,5 +20,6 @@ class JokiOrder extends Model
     protected $casts = [
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
+        'password_roblox' => 'encrypted',
     ];
 }
