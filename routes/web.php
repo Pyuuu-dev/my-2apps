@@ -50,20 +50,51 @@ Route::post('/backup/config', [\App\Http\Controllers\BackupController::class, 's
 Route::post('/backup/test', [\App\Http\Controllers\BackupController::class, 'testBackupBot'])->name('backup.test');
 
 Route::get('/', function () {
-    // Blox Fruit stats
+    $today = now()->toDateString();
+    $bulanIni = [now()->startOfMonth(), now()->endOfMonth()];
+
+    // === BLOX FRUIT ===
     $bfStats = [
         'total_buah' => \App\Models\BloxFruit\BloxFruit::count(),
         'total_skin' => \App\Models\BloxFruit\FruitSkin::count(),
-        'total_akun' => \App\Models\BloxFruit\StorageAccount::count(),
+        'total_akun_storage' => \App\Models\BloxFruit\StorageAccount::count(),
         'total_joki' => \App\Models\BloxFruit\JokiOrder::count(),
-        'joki_aktif' => \App\Models\BloxFruit\JokiOrder::whereIn('status', ['pending', 'proses'])->count(),
+        'joki_aktif' => \App\Models\BloxFruit\JokiOrder::whereIn('status', ['antrian', 'proses'])->count(),
+        'joki_proses' => \App\Models\BloxFruit\JokiOrder::where('status', 'proses')->count(),
+        'joki_antrian' => \App\Models\BloxFruit\JokiOrder::where('status', 'antrian')->count(),
     ];
 
-    // Diet stats
+    // Keuangan bulan ini
+    $profitBulanIni = \App\Models\BloxFruit\ProfitRecord::whereBetween('tanggal', $bulanIni);
+    $keuangan = [
+        'pendapatan' => (clone $profitBulanIni)->sum('pendapatan'),
+        'keuntungan' => (clone $profitBulanIni)->sum('keuntungan'),
+        'transaksi' => (clone $profitBulanIni)->count(),
+    ];
+
+    // Wallet
+    $wallet = \App\Models\BloxFruit\WalletBalance::orderByDesc('tanggal')->orderByDesc('id')->first();
+    $keuangan['saldo_wallet'] = $wallet->total ?? 0;
+
+    // Akun jual
+    $akunJual = [
+        'total' => \App\Models\BloxFruit\AccountStock::count(),
+        'tersedia' => \App\Models\BloxFruit\AccountStock::where('status', 'tersedia')->count(),
+        'terjual' => \App\Models\BloxFruit\AccountStock::where('status', 'terjual')->count(),
+    ];
+
+    // Joki aktif (proses + antrian) - 5 terbaru
+    $jokiAktif = \App\Models\BloxFruit\JokiOrder::whereIn('status', ['proses', 'antrian'])
+        ->orderByRaw("CASE status WHEN 'proses' THEN 1 WHEN 'antrian' THEN 2 END")
+        ->orderByDesc('id')->limit(5)->get();
+
+    // Transaksi terakhir - 5 terbaru
+    $transaksiTerakhir = \App\Models\BloxFruit\ProfitRecord::orderByDesc('tanggal')->orderByDesc('id')->limit(5)->get();
+
+    // === DIET TRACKER ===
     $plan = \App\Models\DietTracker\DietPlan::getActivePlan();
     $dtStats = null;
     if ($plan) {
-        $today = now()->toDateString();
         $kaloriMasuk = \App\Models\DietTracker\Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('kalori');
         $totalMinum = \App\Models\DietTracker\WaterLog::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('jumlah_ml');
         $smart = \App\Services\DietHelperService::generateSmartPlan($plan->gender, $plan->umur, $plan->tinggi_cm, $plan->berat_sekarang ?? $plan->berat_awal, $plan->level_aktivitas);
@@ -80,7 +111,7 @@ Route::get('/', function () {
         ];
     }
 
-    return view('dashboard.index', compact('bfStats', 'dtStats'));
+    return view('dashboard.index', compact('bfStats', 'keuangan', 'akunJual', 'jokiAktif', 'transaksiTerakhir', 'dtStats'));
 })->name('home');
 
 /*
