@@ -174,7 +174,7 @@ class ProfitController extends Controller
             ->first();
 
         // Akun jual tersedia
-        $akun = AccountStock::where('status', 'tersedia')->selectRaw('COUNT(*) as qty, SUM(harga) as nilai')->first();
+        $akun = AccountStock::where('status', 'tersedia')->selectRaw('COUNT(*) as qty, SUM(harga_beli) as nilai')->first();
 
         // Joki aktif
         $joki = JokiOrder::whereIn('status', ['antrian', 'proses'])->selectRaw('COUNT(*) as qty, SUM(harga) as nilai')->first();
