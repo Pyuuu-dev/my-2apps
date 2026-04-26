@@ -14,5 +14,8 @@ Schedule::command('reminders:send')->everyMinute();
 // Kirim ringkasan harian jam 21:00
 Schedule::command('reminders:daily-summary')->dailyAt('21:00');
 
-// Auto backup database jam 02:00
+// Auto backup database 4x sehari (jam 02:00, 08:00, 14:00, 20:00)
 Schedule::command('backup:database')->dailyAt('02:00');
+Schedule::command('backup:database')->dailyAt('08:00');
+Schedule::command('backup:database')->dailyAt('14:00');
+Schedule::command('backup:database')->dailyAt('20:00');

@@ -32,10 +32,10 @@ class BackupDatabase extends Command
 
         $size = round(filesize($backupPath) / 1024, 1);
 
-        $caption = "💾 <b>Auto Backup Harian</b>\n\n"
+        $caption = "💾 <b>Auto Backup</b>\n\n"
             . "📅 " . now()->translatedFormat('l, d F Y H:i') . "\n"
             . "📦 Ukuran: {$size} KB\n"
-            . "🤖 Otomatis setiap hari jam 02:00";
+            . "🤖 Otomatis 4x/hari (02:00, 08:00, 14:00, 20:00)";
 
         $telegram = new TelegramService();
         $sent = $telegram->sendDocumentWithToken($token, $chatId, $backupPath, $caption);
