@@ -81,19 +81,19 @@
         <a href="{{ route('bloxfruit.joki.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">Lihat Semua &rarr;</a>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div class="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white text-center">
+        <div class="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
             <p class="text-[10px] text-green-100">Selesai Bulan Ini</p>
-            <p class="text-xl font-extrabold">Rp {{ number_format($jokiBulanIni['total_selesai']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_selesai']) }}</p>
             <p class="text-[10px] text-green-200">{{ $jokiBulanIni['selesai']->count() }} order</p>
         </div>
-        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 text-white text-center">
+        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
             <p class="text-[10px] text-blue-100">Sedang Proses</p>
-            <p class="text-xl font-extrabold">Rp {{ number_format($jokiBulanIni['total_proses']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_proses']) }}</p>
             <p class="text-[10px] text-blue-200">{{ $jokiBulanIni['proses']->count() }} order</p>
         </div>
-        <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 p-4 text-white text-center">
+        <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
             <p class="text-[10px] text-yellow-100">Antrian</p>
-            <p class="text-xl font-extrabold">Rp {{ number_format($jokiBulanIni['total_antrian']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_antrian']) }}</p>
             <p class="text-[10px] text-yellow-200">{{ $jokiBulanIni['antrian']->count() }} order</p>
         </div>
     </div>
