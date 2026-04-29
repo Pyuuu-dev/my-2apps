@@ -257,6 +257,38 @@
     </div>
 </div>
 
+{{-- ============ PENDAPATAN PER BULAN ============ --}}
+<div class="glass-card rounded-2xl p-5 mb-6">
+    <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Pendapatan Per Bulan</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full">
+            <thead>
+                <tr class="border-b border-gray-200 dark:border-slate-700">
+                    <th class="px-3 py-2 text-left text-[11px] font-semibold uppercase text-gray-500">Bulan</th>
+                    <th class="px-3 py-2 text-right text-[11px] font-semibold uppercase text-gray-500">Modal</th>
+                    <th class="px-3 py-2 text-right text-[11px] font-semibold uppercase text-gray-500">Pendapatan</th>
+                    <th class="px-3 py-2 text-right text-[11px] font-semibold uppercase text-gray-500">Keuntungan</th>
+                    <th class="px-3 py-2 text-right text-[11px] font-semibold uppercase text-gray-500">Transaksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
+                @foreach($pendapatanPerBulan as $pb)
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 {{ $pb->bulan_key === $bulan ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : '' }}">
+                    <td class="px-3 py-2.5 text-sm font-medium text-gray-900 dark:text-white">
+                        {{ \Carbon\Carbon::parse($pb->bulan_key . '-01')->translatedFormat('F Y') }}
+                        @if($pb->bulan_key === $bulan)<span class="text-[9px] text-indigo-500 ml-1">aktif</span>@endif
+                    </td>
+                    <td class="px-3 py-2.5 text-sm text-right transition-all" :class="spoiler && 'blur-md select-none'"><span class="text-red-600">{{ number_format($pb->total_modal) }}</span></td>
+                    <td class="px-3 py-2.5 text-sm text-right transition-all" :class="spoiler && 'blur-md select-none'"><span class="text-blue-600 font-semibold">{{ number_format($pb->total_pendapatan) }}</span></td>
+                    <td class="px-3 py-2.5 text-sm text-right font-bold transition-all" :class="spoiler && 'blur-md select-none'"><span class="{{ $pb->total_keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($pb->total_keuntungan) }}</span></td>
+                    <td class="px-3 py-2.5 text-sm text-right text-gray-500">{{ $pb->jumlah }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {{-- ============ RIWAYAT TRANSAKSI ============ --}}
 <div class="glass-card rounded-2xl overflow-hidden">
     <div class="px-5 py-3 border-b border-gray-100/50">
@@ -266,28 +298,31 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Tanggal</th>
-                    <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Kategori</th>
-                    <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Keterangan</th>
-                    <th class="px-4 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Modal</th>
-                    <th class="px-4 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Pendapatan</th>
-                    <th class="px-4 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Untung</th>
-                    <th class="px-4 py-2.5 text-center text-[11px] font-semibold uppercase text-gray-500">Bayar</th>
-                    <th class="px-4 py-2.5 text-center text-[11px] font-semibold uppercase text-gray-500">Aksi</th>
+                    <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Tanggal</th>
+                    <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Kategori</th>
+                    <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Keterangan</th>
+                    <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Modal</th>
+                    <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Pendapatan</th>
+                    <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Untung</th>
+                    <th class="px-3 py-2.5 text-center text-[11px] font-semibold uppercase text-gray-500">Bayar</th>
+                    <th class="px-3 py-2.5 text-center text-[11px] font-semibold uppercase text-gray-500">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($records as $rec)
                 @php $katInfo = $katLabels[$rec->kategori] ?? ['?', 'text-gray-600', 'bg-gray-50']; @endphp
                 <tr class="hover:bg-gray-50/50">
-                    <td class="px-4 py-2.5 text-sm text-gray-600">{{ $rec->tanggal->format('d/m') }}</td>
-                    <td class="px-4 py-2.5"><span class="rounded-md px-2 py-0.5 text-[10px] font-bold {{ $katInfo[1] }} {{ $katInfo[2] }}">{{ $katInfo[0] }}</span></td>
-                    <td class="px-4 py-2.5 text-sm text-gray-700 max-w-xs truncate">{{ $rec->keterangan ?? '-' }}</td>
-                    <td class="px-4 py-2.5 text-sm text-right text-red-600">{{ number_format($rec->modal) }}</td>
-                    <td class="px-4 py-2.5 text-sm text-right text-blue-600">{{ number_format($rec->pendapatan) }}</td>
-                    <td class="px-4 py-2.5 text-sm text-right font-bold {{ $rec->keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($rec->keuntungan) }}</td>
-                    <td class="px-4 py-2.5 text-center text-[11px] text-gray-500">{{ $rec->metode_bayar ? ucfirst(str_replace('_', ' ', $rec->metode_bayar)) : '-' }}</td>
-                    <td class="px-4 py-2.5 text-center">
+                    <td class="px-3 py-2.5">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $rec->tanggal->format('d/m/Y') }}</p>
+                        <p class="text-[10px] text-gray-400">{{ $rec->created_at->format('H:i') }}</p>
+                    </td>
+                    <td class="px-3 py-2.5"><span class="rounded-md px-2 py-0.5 text-[10px] font-bold {{ $katInfo[1] }} {{ $katInfo[2] }}">{{ $katInfo[0] }}</span></td>
+                    <td class="px-3 py-2.5 text-sm text-gray-700 max-w-xs truncate">{{ $rec->keterangan ?? '-' }}</td>
+                    <td class="px-3 py-2.5 text-sm text-right text-red-600">{{ number_format($rec->modal) }}</td>
+                    <td class="px-3 py-2.5 text-sm text-right text-blue-600">{{ number_format($rec->pendapatan) }}</td>
+                    <td class="px-3 py-2.5 text-sm text-right font-bold {{ $rec->keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($rec->keuntungan) }}</td>
+                    <td class="px-3 py-2.5 text-center text-[11px] text-gray-500">{{ $rec->metode_bayar ? ucfirst(str_replace('_', ' ', $rec->metode_bayar)) : '-' }}</td>
+                    <td class="px-3 py-2.5 text-center">
                         <div class="flex items-center justify-center gap-1.5">
                             <a href="{{ route('bloxfruit.profit.edit', $rec) }}" class="text-[11px] text-gray-400 hover:text-indigo-600">Edit</a>
                             <form method="POST" action="{{ route('bloxfruit.profit.destroy', $rec) }}" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="text-[11px] text-gray-400 hover:text-red-500">Hapus</button></form>

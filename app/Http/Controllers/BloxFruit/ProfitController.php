@@ -85,8 +85,15 @@ class ProfitController extends Controller
             'total_antrian' => JokiOrder::where('status', 'antrian')->sum('harga'),
         ];
 
+        // Pendapatan per bulan (6 bulan terakhir)
+        $pendapatanPerBulan = ProfitRecord::selectRaw("strftime('%Y-%m', tanggal) as bulan_key, SUM(pendapatan) as total_pendapatan, SUM(keuntungan) as total_keuntungan, SUM(modal) as total_modal, COUNT(*) as jumlah")
+            ->groupBy('bulan_key')
+            ->orderByDesc('bulan_key')
+            ->limit(6)
+            ->get();
+
         return view('bloxfruit.profit.index', compact(
-            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni'
+            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni', 'pendapatanPerBulan'
         ));
     }
 
