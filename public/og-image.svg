@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#020617"/>
+      <stop offset="50%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#020617"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="200" cy="100" r="200" fill="#6366f1" opacity="0.05"/>
+  <circle cx="1000" cy="500" r="250" fill="#8b5cf6" opacity="0.05"/>
+  <rect x="60" y="260" width="6" height="110" rx="3" fill="url(#accent)"/>
+  <text x="90" y="305" font-family="system-ui,-apple-system,sans-serif" font-size="72" font-weight="900" fill="white">LDC <tspan fill="#818cf8">Store</tspan></text>
+  <text x="90" y="360" font-family="system-ui,-apple-system,sans-serif" font-size="28" fill="#94a3b8">Blox Fruit Joki &amp; Akun Murah</text>
+  <text x="90" y="420" font-family="system-ui,-apple-system,sans-serif" font-size="20" fill="#64748b">Jasa joki terpercaya, permanent fruit &amp; gamepass</text>
+  <text x="90" y="450" font-family="system-ui,-apple-system,sans-serif" font-size="20" fill="#64748b">dengan harga terjangkau. Proses cepat &amp; aman.</text>
+  <rect x="90" y="490" width="160" height="44" rx="10" fill="#6366f1"/>
+  <text x="118" y="518" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="white">Hubungi Kami</text>
+  <rect x="270" y="490" width="180" height="44" rx="10" fill="none" stroke="#334155" stroke-width="2"/>
+  <text x="300" y="518" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#94a3b8">Lihat Harga →</text>
+  <rect x="700" y="180" width="420" height="280" rx="20" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+  <text x="740" y="225" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#6366f1">⚡ STATS</text>
+  <rect x="740" y="245" width="340" height="1" fill="#1e293b"/>
+  <text x="740" y="285" font-family="system-ui,-apple-system,sans-serif" font-size="36" font-weight="900" fill="white">117+</text>
+  <text x="890" y="285" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="#64748b">Joki Selesai</text>
+  <text x="740" y="340" font-family="system-ui,-apple-system,sans-serif" font-size="36" font-weight="900" fill="white">17+</text>
+  <text x="850" y="340" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="#64748b">Akun Terjual</text>
+  <text x="740" y="395" font-family="system-ui,-apple-system,sans-serif" font-size="36" font-weight="900" fill="white">37</text>
+  <text x="830" y="395" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="#64748b">Jenis Layanan</text>
+  <text x="740" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#475569">ldctesting.my.id/store</text>
+</svg>

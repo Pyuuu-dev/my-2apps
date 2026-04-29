@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#020617">
+    <meta name="description" content="LDC Store - Jasa joki Blox Fruit terpercaya, permanent fruit & gamepass murah. {{ $stats['joki_selesai'] }}+ joki selesai. Proses cepat & aman.">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url('/store') }}">
+    <meta property="og:title" content="LDC Store - Blox Fruit Joki & Akun Murah">
+    <meta property="og:description" content="Jasa joki terpercaya, permanent fruit & gamepass dengan harga terjangkau. {{ $stats['joki_selesai'] }}+ joki selesai, {{ $stats['akun_terjual'] }}+ akun terjual. Proses cepat & aman!">
+    <meta property="og:image" content="{{ url('/og-image.svg') }}">
+    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="LDC Store">
+    <meta property="og:locale" content="id_ID">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LDC Store - Blox Fruit Joki & Akun Murah">
+    <meta name="twitter:description" content="Jasa joki terpercaya, permanent fruit & gamepass murah. {{ $stats['joki_selesai'] }}+ joki selesai. Proses cepat & aman!">
+    <meta name="twitter:image" content="{{ url('/og-image.svg') }}">
+
     <title>LDC Store - Blox Fruit Joki & Akun Murah</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
