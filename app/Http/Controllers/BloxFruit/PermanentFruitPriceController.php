@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BloxFruit\BloxFruit;
+use App\Models\BloxFruit\FruitSkin;
+use App\Models\BloxFruit\Gamepass;
 use App\Models\BloxFruit\PermanentFruitPrice;
 use Illuminate\Http\Request;
 
@@ -18,7 +21,14 @@ class PermanentFruitPriceController extends Controller
 
         $permanents = $query->withSum('stocks as total_stok', 'jumlah')
             ->orderByDesc('harga_jual')->paginate(50)->withQueryString();
-        return view('bloxfruit.permanents.index', compact('permanents'));
+        $totalStok = PermanentFruitPrice::withSum('stocks as total_stok', 'jumlah')->get()->sum('total_stok');
+
+        $fruitsForCopy = BloxFruit::withSum('fruitStocks as stok', 'jumlah')->where('aktif', true)->orderByDesc('harga_jual')->get()->map(fn($f) => ['nama' => $f->nama, 'harga_jual' => $f->harga_jual, 'stok' => (int)($f->stok ?? 0)]);
+        $skinsForCopy = FruitSkin::withSum('stocks as stok', 'jumlah')->where('aktif', true)->orderByDesc('harga_jual')->get()->map(fn($s) => ['nama' => $s->nama_skin, 'harga_jual' => $s->harga_jual, 'stok' => (int)($s->stok ?? 0)]);
+        $gamepassesForCopy = Gamepass::where('aktif', true)->orderByDesc('harga_jual')->get()->map(fn($g) => ['nama' => $g->nama, 'harga_jual' => $g->harga_jual]);
+        $permanentsForCopy = PermanentFruitPrice::where('aktif', true)->orderByDesc('harga_jual')->get()->map(fn($p) => ['nama' => $p->nama, 'harga_jual' => $p->harga_jual]);
+
+        return view('bloxfruit.permanents.index', compact('permanents', 'totalStok', 'fruitsForCopy', 'skinsForCopy', 'gamepassesForCopy', 'permanentsForCopy'));
     }
 
     public function create()
