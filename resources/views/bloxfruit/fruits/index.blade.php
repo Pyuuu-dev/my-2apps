@@ -62,7 +62,10 @@
                 </div>
             </div>
             <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700">
-                <p class="text-xs font-semibold text-emerald-600">Rp {{ number_format($fruit->harga_jual, 0, ',', '.') }}</p>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-gray-400">B: <span class="font-semibold text-blue-600">{{ number_format($fruit->harga_beli, 0, ',', '.') }}</span></span>
+                    <span class="text-[10px] text-gray-400">J: <span class="font-semibold text-emerald-600">{{ number_format($fruit->harga_jual, 0, ',', '.') }}</span></span>
+                </div>
                 <div class="flex items-center gap-1.5">
                     <a href="{{ route('bloxfruit.fruits.edit', $fruit) }}" class="text-[10px] text-indigo-600 hover:text-indigo-800">Edit</a>
                     <form method="POST" action="{{ route('bloxfruit.fruits.destroy', $fruit) }}" onsubmit="return confirm('Hapus {{ $fruit->nama }}?')">
