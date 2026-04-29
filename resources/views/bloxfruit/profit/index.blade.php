@@ -24,40 +24,53 @@
     $totalAset = $totalWallet + $totalStok;
 @endphp
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-    <div class="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 text-white text-center shadow-lg">
+    <div class="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 text-white text-center shadow-lg group cursor-default" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-xs text-emerald-100">Total Aset (Stok + Saldo)</p>
-        <p class="text-2xl font-extrabold">Rp {{ number_format($totalAset) }}</p>
-        <p class="text-[10px] text-emerald-200 mt-1">Stok {{ number_format($totalStok) }} + Saldo {{ number_format($totalWallet) }}</p>
+        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalAset) }}</p>
+        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-emerald-200' : 'blur-sm text-emerald-200 select-none'">Stok {{ number_format($totalStok) }} + Saldo {{ number_format($totalWallet) }}</p>
+        <p class="text-[9px] text-emerald-300/50 mt-1" x-show="!show">tap untuk lihat</p>
     </div>
-    <div class="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center shadow-lg">
+    <div class="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center shadow-lg" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-xs text-blue-200">Total Saldo E-Wallet</p>
-        <p class="text-2xl font-extrabold">Rp {{ number_format($totalWallet) }}</p>
-        <p class="text-[10px] text-blue-300 mt-1">Tanpa nilai stok</p>
+        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalWallet) }}</p>
+        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-blue-300' : 'blur-sm text-blue-300 select-none'">
+            @if($wallet)
+            @foreach(['dana'=>'Dana','gopay'=>'GoPay','shopeepay'=>'SPay','seabank'=>'Sea','bank_kalsel'=>'Kalsel','bri'=>'BRI','qris'=>'QRIS','cash'=>'Cash'] as $wk => $wl)
+            @if(($wallet->$wk ?? 0) > 0){{ $wl }} {{ number_format($wallet->$wk) }} &middot; @endif
+            @endforeach
+            @endif
+        </p>
+        <p class="text-[9px] text-blue-300/50 mt-1" x-show="!show">tap untuk lihat</p>
     </div>
-    <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white text-center shadow-lg">
+    <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white text-center shadow-lg" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-xs text-amber-100">Total Nilai Stok</p>
-        <p class="text-2xl font-extrabold">Rp {{ number_format($totalStok) }}</p>
-        <p class="text-[10px] text-amber-200 mt-1">Berdasarkan harga jual</p>
+        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalStok) }}</p>
+        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-amber-200' : 'blur-sm text-amber-200 select-none'">
+            @foreach($nilaiStok['items'] as $si)
+            @if($si['nilai'] > 0){{ $si['label'] }} {{ number_format($si['nilai']) }} &middot; @endif
+            @endforeach
+        </p>
+        <p class="text-[9px] text-amber-300/50 mt-1" x-show="!show">tap untuk lihat</p>
     </div>
 </div>
 
 {{-- ============ STATS BULAN INI ============ --}}
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-    <div class="stat-card" style="--accent: linear-gradient(90deg, #ef4444, #dc2626)">
+    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #ef4444, #dc2626)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-[11px] text-gray-500">Total Modal</p>
-        <p class="text-xl font-extrabold text-red-600">{{ number_format($totalBulan['modal']) }}</p>
+        <p class="text-xl font-extrabold text-red-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['modal']) }}</p>
     </div>
-    <div class="stat-card" style="--accent: linear-gradient(90deg, #3b82f6, #6366f1)">
+    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #3b82f6, #6366f1)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-[11px] text-gray-500">Total Pendapatan</p>
-        <p class="text-xl font-extrabold text-blue-600">{{ number_format($totalBulan['pendapatan']) }}</p>
+        <p class="text-xl font-extrabold text-blue-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['pendapatan']) }}</p>
     </div>
-    <div class="stat-card" style="--accent: linear-gradient(90deg, #10b981, #059669)">
+    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #10b981, #059669)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-[11px] text-gray-500">Total Keuntungan</p>
-        <p class="text-xl font-extrabold {{ $totalBulan['keuntungan'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($totalBulan['keuntungan']) }}</p>
+        <p class="text-xl font-extrabold {{ $totalBulan['keuntungan'] >= 0 ? 'text-emerald-600' : 'text-red-600' }} transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['keuntungan']) }}</p>
     </div>
-    <div class="stat-card" style="--accent: linear-gradient(90deg, #8b5cf6, #6366f1)">
+    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #8b5cf6, #6366f1)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
         <p class="text-[11px] text-gray-500">Transaksi</p>
-        <p class="text-xl font-extrabold text-purple-600">{{ $totalBulan['transaksi'] }}</p>
+        <p class="text-xl font-extrabold text-purple-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ $totalBulan['transaksi'] }}</p>
     </div>
 </div>
 
