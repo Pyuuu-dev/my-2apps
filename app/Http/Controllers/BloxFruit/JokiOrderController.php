@@ -121,27 +121,31 @@ class JokiOrderController extends Controller
         if ($validated['status'] === 'selesai' && $statusLama !== 'selesai') {
             $parts = explode(':', $joki->jenis_joki, 2);
             $jenisNama = $parts[1] ?? $joki->jenis_joki;
+            $keterangan = 'Joki ' . $joki->nama_pelanggan . ' - ' . $jenisNama;
 
-            // Cek belum pernah dicatat
-            $sudahAda = ProfitRecord::where('kategori', 'joki')
-                ->where('keterangan', 'like', '%Joki ' . $joki->nama_pelanggan . '%' . $jenisNama . '%')
-                ->exists();
-
-            if (!$sudahAda) {
+            if (!ProfitRecord::where('kategori', 'joki')->where('keterangan', $keterangan)->exists()) {
                 ProfitRecord::create([
                     'tanggal' => $joki->tanggal_selesai ?? now()->toDateString(),
                     'kategori' => 'joki',
-                    'keterangan' => 'Joki ' . $joki->nama_pelanggan . ' - ' . $jenisNama,
+                    'keterangan' => $keterangan,
                     'modal' => 0,
                     'pendapatan' => $joki->harga,
                     'keuntungan' => $joki->harga,
                 ]);
             }
 
-            // Set tanggal selesai jika belum
             if (!$joki->tanggal_selesai) {
                 $joki->update(['tanggal_selesai' => now()->toDateString()]);
             }
+        }
+
+        // Hapus profit record saat status berubah dari selesai ke status lain
+        if ($statusLama === 'selesai' && $validated['status'] !== 'selesai') {
+            $parts = explode(':', $joki->jenis_joki, 2);
+            $jenisNama = $parts[1] ?? $joki->jenis_joki;
+            ProfitRecord::where('kategori', 'joki')
+                ->where('keterangan', 'Joki ' . $joki->nama_pelanggan . ' - ' . $jenisNama)
+                ->delete();
         }
 
         return redirect()->route('bloxfruit.joki.index')->with('sukses', 'Order joki berhasil diperbarui!');
