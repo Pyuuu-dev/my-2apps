@@ -2,15 +2,23 @@
 @section('title', 'Keuangan')
 
 @section('content')
+<div x-data="{ spoiler: true }">
 {{-- Header --}}
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <form method="GET" class="flex gap-2 items-center">
-        <select name="bulan" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @foreach($bulanList as $b)
-            <option value="{{ $b }}" {{ $bulan === $b ? 'selected' : '' }}>{{ \Carbon\Carbon::parse($b . '-01')->translatedFormat('F Y') }}</option>
-            @endforeach
-        </select>
-    </form>
+    <div class="flex items-center gap-3">
+        <form method="GET" class="flex gap-2 items-center">
+            <select name="bulan" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @foreach($bulanList as $b)
+                <option value="{{ $b }}" {{ $bulan === $b ? 'selected' : '' }}>{{ \Carbon\Carbon::parse($b . '-01')->translatedFormat('F Y') }}</option>
+                @endforeach
+            </select>
+        </form>
+        <button @click="spoiler = !spoiler" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors" :class="spoiler ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400'">
+            <svg x-show="spoiler" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+            <svg x-show="!spoiler" x-cloak class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            <span x-text="spoiler ? 'Tampilkan' : 'Sembunyikan'"></span>
+        </button>
+    </div>
     <a href="{{ route('bloxfruit.profit.create') }}" class="btn-primary inline-flex items-center gap-1.5 text-sm">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         Catat Transaksi
@@ -24,53 +32,50 @@
     $totalAset = $totalWallet + $totalStok;
 @endphp
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-    <div class="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 text-white text-center shadow-lg group cursor-default" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 text-white text-center shadow-lg">
         <p class="text-xs text-emerald-100">Total Aset (Stok + Saldo)</p>
-        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalAset) }}</p>
-        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-emerald-200' : 'blur-sm text-emerald-200 select-none'">Stok {{ number_format($totalStok) }} + Saldo {{ number_format($totalWallet) }}</p>
-        <p class="text-[9px] text-emerald-300/50 mt-1" x-show="!show">tap untuk lihat</p>
+        <p class="text-2xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($totalAset) }}</p>
+        <p class="text-[10px] mt-1 text-emerald-200 transition-all" :class="spoiler && 'blur-sm select-none'">Stok {{ number_format($totalStok) }} + Saldo {{ number_format($totalWallet) }}</p>
     </div>
-    <div class="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center shadow-lg" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center shadow-lg">
         <p class="text-xs text-blue-200">Total Saldo E-Wallet</p>
-        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalWallet) }}</p>
-        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-blue-300' : 'blur-sm text-blue-300 select-none'">
+        <p class="text-2xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($totalWallet) }}</p>
+        <p class="text-[10px] mt-1 text-blue-300 transition-all" :class="spoiler && 'blur-sm select-none'">
             @if($wallet)
             @foreach(['dana'=>'Dana','gopay'=>'GoPay','shopeepay'=>'SPay','seabank'=>'Sea','bank_kalsel'=>'Kalsel','bri'=>'BRI','qris'=>'QRIS','cash'=>'Cash'] as $wk => $wl)
             @if(($wallet->$wk ?? 0) > 0){{ $wl }} {{ number_format($wallet->$wk) }} &middot; @endif
             @endforeach
             @endif
         </p>
-        <p class="text-[9px] text-blue-300/50 mt-1" x-show="!show">tap untuk lihat</p>
     </div>
-    <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white text-center shadow-lg" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white text-center shadow-lg">
         <p class="text-xs text-amber-100">Total Nilai Stok</p>
-        <p class="text-2xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($totalStok) }}</p>
-        <p class="text-[10px] mt-1 transition-all" :class="show ? 'text-amber-200' : 'blur-sm text-amber-200 select-none'">
+        <p class="text-2xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($totalStok) }}</p>
+        <p class="text-[10px] mt-1 text-amber-200 transition-all" :class="spoiler && 'blur-sm select-none'">
             @foreach($nilaiStok['items'] as $si)
             @if($si['nilai'] > 0){{ $si['label'] }} {{ number_format($si['nilai']) }} &middot; @endif
             @endforeach
         </p>
-        <p class="text-[9px] text-amber-300/50 mt-1" x-show="!show">tap untuk lihat</p>
     </div>
 </div>
 
 {{-- ============ STATS BULAN INI ============ --}}
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #ef4444, #dc2626)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="stat-card" style="--accent: linear-gradient(90deg, #ef4444, #dc2626)">
         <p class="text-[11px] text-gray-500">Total Modal</p>
-        <p class="text-xl font-extrabold text-red-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['modal']) }}</p>
+        <p class="text-xl font-extrabold text-red-600 transition-all" :class="spoiler && 'blur-md select-none'">{{ number_format($totalBulan['modal']) }}</p>
     </div>
-    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #3b82f6, #6366f1)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="stat-card" style="--accent: linear-gradient(90deg, #3b82f6, #6366f1)">
         <p class="text-[11px] text-gray-500">Total Pendapatan</p>
-        <p class="text-xl font-extrabold text-blue-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['pendapatan']) }}</p>
+        <p class="text-xl font-extrabold text-blue-600 transition-all" :class="spoiler && 'blur-md select-none'">{{ number_format($totalBulan['pendapatan']) }}</p>
     </div>
-    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #10b981, #059669)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="stat-card" style="--accent: linear-gradient(90deg, #10b981, #059669)">
         <p class="text-[11px] text-gray-500">Total Keuntungan</p>
-        <p class="text-xl font-extrabold {{ $totalBulan['keuntungan'] >= 0 ? 'text-emerald-600' : 'text-red-600' }} transition-all" :class="show ? '' : 'blur-md select-none'">{{ number_format($totalBulan['keuntungan']) }}</p>
+        <p class="text-xl font-extrabold {{ $totalBulan['keuntungan'] >= 0 ? 'text-emerald-600' : 'text-red-600' }} transition-all" :class="spoiler && 'blur-md select-none'">{{ number_format($totalBulan['keuntungan']) }}</p>
     </div>
-    <div class="stat-card cursor-default" style="--accent: linear-gradient(90deg, #8b5cf6, #6366f1)" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+    <div class="stat-card" style="--accent: linear-gradient(90deg, #8b5cf6, #6366f1)">
         <p class="text-[11px] text-gray-500">Transaksi</p>
-        <p class="text-xl font-extrabold text-purple-600 transition-all" :class="show ? '' : 'blur-md select-none'">{{ $totalBulan['transaksi'] }}</p>
+        <p class="text-xl font-extrabold text-purple-600 transition-all" :class="spoiler && 'blur-md select-none'">{{ $totalBulan['transaksi'] }}</p>
     </div>
 </div>
 
@@ -81,19 +86,19 @@
         <a href="{{ route('bloxfruit.joki.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">Lihat Semua &rarr;</a>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div class="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+        <div class="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white text-center">
             <p class="text-[10px] text-green-100">Selesai Bulan Ini</p>
-            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_selesai']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_selesai']) }}</p>
             <p class="text-[10px] text-green-200">{{ $jokiBulanIni['selesai']->count() }} order</p>
         </div>
-        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 text-white text-center">
             <p class="text-[10px] text-blue-100">Sedang Proses</p>
-            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_proses']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_proses']) }}</p>
             <p class="text-[10px] text-blue-200">{{ $jokiBulanIni['proses']->count() }} order</p>
         </div>
-        <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 p-4 text-white text-center" x-data="{ show: false }" @mouseenter="show = true" @mouseleave="show = false" @click="show = !show">
+        <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 p-4 text-white text-center">
             <p class="text-[10px] text-yellow-100">Antrian</p>
-            <p class="text-xl font-extrabold transition-all" :class="show ? '' : 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_antrian']) }}</p>
+            <p class="text-xl font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">Rp {{ number_format($jokiBulanIni['total_antrian']) }}</p>
             <p class="text-[10px] text-yellow-200">{{ $jokiBulanIni['antrian']->count() }} order</p>
         </div>
     </div>
@@ -315,4 +320,5 @@ function walletForm() {
     }
 }
 </script>
+</div>{{-- end x-data spoiler --}}
 @endsection
