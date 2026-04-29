@@ -206,6 +206,10 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::get('profit/{profit}/edit', [ProfitController::class, 'edit'])->name('profit.edit');
     Route::put('profit/{profit}', [ProfitController::class, 'update'])->name('profit.update');
     Route::delete('profit/{profit}', [ProfitController::class, 'destroy'])->name('profit.destroy');
+    Route::get('profit/trash', [ProfitController::class, 'trashed'])->name('profit.trash');
+    Route::patch('profit/{slug}/restore', [ProfitController::class, 'restore'])->name('profit.restore');
+    Route::post('profit/restore-all', [ProfitController::class, 'restoreAll'])->name('profit.restoreAll');
+    Route::delete('profit/{slug}/force', [ProfitController::class, 'forceDelete'])->name('profit.forceDelete');
     Route::post('profit/wallet', [ProfitController::class, 'updateWallet'])->name('profit.wallet');
     Route::post('quick-sell', [QuickSellController::class, 'sell'])->name('quicksell');
 });

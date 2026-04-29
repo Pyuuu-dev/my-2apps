@@ -291,8 +291,14 @@
 
 {{-- ============ RIWAYAT TRANSAKSI ============ --}}
 <div class="glass-card rounded-2xl overflow-hidden">
-    <div class="px-5 py-3 border-b border-gray-100/50">
-        <h3 class="font-semibold text-gray-900">Riwayat Transaksi</h3>
+    <div class="px-5 py-3 border-b border-gray-100/50 flex items-center justify-between">
+        <h3 class="font-semibold text-gray-900 dark:text-white">Riwayat Transaksi</h3>
+        @if($trashedCount > 0)
+        <a href="{{ route('bloxfruit.profit.trash') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Sampah ({{ $trashedCount }})
+        </a>
+        @endif
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">

@@ -92,8 +92,10 @@ class ProfitController extends Controller
             ->limit(6)
             ->get();
 
+        $trashedCount = ProfitRecord::onlyTrashed()->count();
+
         return view('bloxfruit.profit.index', compact(
-            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni', 'pendapatanPerBulan'
+            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni', 'pendapatanPerBulan', 'trashedCount'
         ));
     }
 
@@ -144,12 +146,49 @@ class ProfitController extends Controller
     public function destroy(ProfitRecord $profit)
     {
         $profit->delete();
-        return redirect()->route('bloxfruit.profit.index')->with('sukses', 'Transaksi berhasil dihapus!');
+        return redirect()->route('bloxfruit.profit.index')->with('sukses', 'Transaksi dipindahkan ke sampah!');
     }
 
     /**
-     * Update saldo wallet
+     * Tampilkan transaksi yang sudah dihapus (trash)
      */
+    public function trashed()
+    {
+        $trashedRecords = ProfitRecord::onlyTrashed()->orderByDesc('deleted_at')->get();
+        $totalTrashed = $trashedRecords->count();
+        return view('bloxfruit.profit.trash', compact('trashedRecords', 'totalTrashed'));
+    }
+
+    /**
+     * Restore transaksi yang sudah dihapus
+     */
+    public function restore(string $slug)
+    {
+        $profit = ProfitRecord::onlyTrashed()->where('slug', $slug)->firstOrFail();
+        $profit->restore();
+        return redirect()->route('bloxfruit.profit.trash')->with('sukses', 'Transaksi berhasil dikembalikan!');
+    }
+
+    /**
+     * Restore semua transaksi yang sudah dihapus
+     */
+    public function restoreAll()
+    {
+        $count = ProfitRecord::onlyTrashed()->count();
+        ProfitRecord::onlyTrashed()->restore();
+        return redirect()->route('bloxfruit.profit.trash')->with('sukses', $count . ' transaksi berhasil dikembalikan!');
+    }
+
+    /**
+     * Hapus permanen transaksi
+     */
+    public function forceDelete(string $slug)
+    {
+        $profit = ProfitRecord::onlyTrashed()->where('slug', $slug)->firstOrFail();
+        $profit->forceDelete();
+        return redirect()->route('bloxfruit.profit.trash')->with('sukses', 'Transaksi dihapus permanen!');
+    }
+
     /**
      * Hitung total nilai semua stok berdasarkan harga jual
      */
