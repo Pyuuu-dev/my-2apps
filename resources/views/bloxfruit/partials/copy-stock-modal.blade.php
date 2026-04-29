@@ -30,12 +30,9 @@
                 <label class="flex items-center gap-1.5 text-xs">
                     <input type="checkbox" x-model="sections.gamepass" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"> Gamepass
                 </label>
-                <label class="flex items-center gap-1.5 text-xs">
-                    <input type="checkbox" x-model="sections.permanent" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"> Permanent
-                </label>
-                <label class="flex items-center gap-1.5 text-xs">
-                    <input type="checkbox" x-model="showZeroStock" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"> Tampilkan stok 0
-                </label>
+                    <label class="flex items-center gap-1.5 text-xs">
+                        <input type="checkbox" x-model="sections.permanent" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"> Permanent
+                    </label>
             </div>
             {{-- Editable header --}}
             <div x-show="sections.header" x-collapse>

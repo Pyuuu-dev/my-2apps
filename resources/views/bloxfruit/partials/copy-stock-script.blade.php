@@ -25,53 +25,46 @@ function stockPage(fruits, skins, gamepasses, permanents) {
         },
 
         get generatedText() {
-            let text = '';
+            let parts = [];
 
             if (this.sections.header) {
-                text += this.headerText.trim() + '\n\n';
+                parts.push(this.headerText.trim());
             }
 
             if (this.sections.fruit) {
                 const items = this.showZeroStock ? this.fruits : this.fruits.filter(f => f.stok > 0);
                 if (items.length > 0) {
-                    text += `"🍎 FRUIT\n`;
-                    items.forEach(f => {
-                        text += `🔥 ${f.nama} → ${this.fmt(f.harga_jual)}${f.stok > 0 ? ' (' + f.stok + ')' : ''}\n`;
-                    });
-                    text += `\n`;
+                    let s = '🍎 FRUIT';
+                    items.forEach(f => { s += `\n🔥 ${f.nama} → ${this.fmt(f.harga_jual)}`; });
+                    parts.push(s);
                 }
             }
 
             if (this.sections.skin) {
                 const items = this.showZeroStock ? this.skins : this.skins.filter(s => s.stok > 0);
                 if (items.length > 0) {
-                    text += `🎨 SKIN\n`;
-                    items.forEach(s => {
-                        text += `🔥 ${s.nama} → ${this.fmt(s.harga_jual)}${s.stok > 0 ? ' (' + s.stok + ')' : ''}\n`;
-                    });
-                    text += `\n`;
+                    let s = '🎨 SKIN';
+                    items.forEach(sk => { s += `\n🔥 ${sk.nama} → ${this.fmt(sk.harga_jual)}`; });
+                    parts.push(s);
                 }
             }
 
-            if (this.sections.gamepass) {
-                text += `🎮 GAMEPASS\n`;
-                this.gamepasses.forEach(g => {
-                    text += `🔥 ${g.nama} → ${this.fmt(g.harga_jual)}\n`;
-                });
-                text += `\n`;
+            if (this.sections.gamepass && this.gamepasses.length > 0) {
+                let s = '🎮 GAMEPASS';
+                this.gamepasses.forEach(g => { s += `\n🔥 ${g.nama} → ${this.fmt(g.harga_jual)}`; });
+                parts.push(s);
             }
 
             if (this.sections.permanent) {
                 const items = this.permanents.filter(p => p.harga_jual > 0);
                 if (items.length > 0) {
-                    text += `💎 PERMANEN\n`;
-                    items.forEach(p => {
-                        text += `🔥 Perm ${p.nama} → ${this.fmt(p.harga_jual)}\n`;
-                    });
+                    let s = '💎 PERMANEN';
+                    items.forEach(p => { s += `\n🔥 Perm ${p.nama} → ${this.fmt(p.harga_jual)}`; });
+                    parts.push(s);
                 }
             }
 
-            return text.trimEnd() + `"`;
+            return parts.join('\n\n');
         },
 
         fmt(n) { return new Intl.NumberFormat('id-ID').format(n); },
