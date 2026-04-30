@@ -291,21 +291,36 @@
 
 {{-- ============ RIWAYAT TRANSAKSI ============ --}}
 <div class="glass-card rounded-2xl overflow-hidden">
-    <div class="px-5 py-3 border-b border-gray-100/50 flex items-center justify-between">
-        <h3 class="font-semibold text-gray-900 dark:text-white">Riwayat Transaksi</h3>
-        @if($trashedCount > 0)
-        <a href="{{ route('bloxfruit.profit.trash') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            Sampah ({{ $trashedCount }})
-        </a>
-        @endif
+    <div class="px-5 py-3 border-b border-gray-100/50 dark:border-slate-700">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-900 dark:text-white">Riwayat Transaksi</h3>
+            @if($trashedCount > 0)
+            <a href="{{ route('bloxfruit.profit.trash') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Sampah ({{ $trashedCount }})
+            </a>
+            @endif
+        </div>
+        {{-- Kategori filter tabs --}}
+        <div class="flex flex-wrap gap-1.5">
+            <a href="{{ route('bloxfruit.profit.index', ['bulan' => $bulan]) }}" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors {{ !$filterKategori ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400' }}">Semua</a>
+            @foreach($katLabels as $key => [$label, $color, $bg])
+            @if(isset($perKategori[$key]))
+            <a href="{{ route('bloxfruit.profit.index', ['bulan' => $bulan, 'kat' => $key]) }}" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors {{ $filterKategori === $key ? $color . ' ' . $bg . ' ring-1 ring-current' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400' }}">
+                {{ $label }} ({{ $perKategori[$key]->jumlah }})
+            </a>
+            @endif
+            @endforeach
+        </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead class="bg-gray-50 dark:bg-slate-800">
                 <tr>
                     <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Tanggal</th>
+                    @if(!$filterKategori)
                     <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Kategori</th>
+                    @endif
                     <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Keterangan</th>
                     <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Modal</th>
                     <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Pendapatan</th>
@@ -314,16 +329,18 @@
                     <th class="px-3 py-2.5 text-center text-[11px] font-semibold uppercase text-gray-500">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                 @forelse($records as $rec)
                 @php $katInfo = $katLabels[$rec->kategori] ?? ['?', 'text-gray-600', 'bg-gray-50']; @endphp
-                <tr class="hover:bg-gray-50/50">
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-800/50">
                     <td class="px-3 py-2.5">
                         <p class="text-sm text-gray-700 dark:text-gray-300">{{ $rec->tanggal->format('d/m/Y') }}</p>
                         <p class="text-[10px] text-gray-400">{{ $rec->created_at->format('H:i') }}</p>
                     </td>
+                    @if(!$filterKategori)
                     <td class="px-3 py-2.5"><span class="rounded-md px-2 py-0.5 text-[10px] font-bold {{ $katInfo[1] }} {{ $katInfo[2] }}">{{ $katInfo[0] }}</span></td>
-                    <td class="px-3 py-2.5 text-sm text-gray-700 max-w-xs truncate">{{ $rec->keterangan ?? '-' }}</td>
+                    @endif
+                    <td class="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">{{ $rec->keterangan ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-sm text-right text-red-600">{{ number_format($rec->modal) }}</td>
                     <td class="px-3 py-2.5 text-sm text-right text-blue-600">{{ number_format($rec->pendapatan) }}</td>
                     <td class="px-3 py-2.5 text-sm text-right font-bold {{ $rec->keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($rec->keuntungan) }}</td>
@@ -336,11 +353,16 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">Belum ada transaksi bulan ini</td></tr>
+                <tr><td colspan="{{ $filterKategori ? 7 : 8 }}" class="px-4 py-8 text-center text-sm text-gray-400">{{ $filterKategori ? 'Belum ada transaksi kategori ini' : 'Belum ada transaksi bulan ini' }}</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    @if($records->hasPages())
+    <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-700">
+        {{ $records->links() }}
+    </div>
+    @endif
 </div>
 
 <script>
