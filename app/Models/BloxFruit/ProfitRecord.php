@@ -12,7 +12,7 @@ class ProfitRecord extends Model
 
     protected $fillable = [
         'tanggal', 'kategori', 'keterangan', 'modal',
-        'pendapatan', 'keuntungan', 'metode_bayar', 'slug',
+        'pendapatan', 'keuntungan', 'metode_bayar', 'joki_order_id', 'slug',
     ];
 
     protected $casts = ['tanggal' => 'date'];
