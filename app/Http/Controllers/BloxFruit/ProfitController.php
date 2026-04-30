@@ -27,16 +27,9 @@ class ProfitController extends Controller
         $startDate = Carbon::parse($bulan . '-01')->startOfMonth();
         $endDate = Carbon::parse($bulan . '-01')->endOfMonth();
 
-        // Profit records bulan ini (grouped by kategori)
-        $filterKategori = $request->get('kat');
-        $recordsQuery = ProfitRecord::whereBetween('tanggal', [$startDate, $endDate]);
-        if ($filterKategori) {
-            $recordsQuery->where('kategori', $filterKategori);
-        }
-        $records = $recordsQuery->orderByDesc('tanggal')->orderByDesc('id')->paginate(20)->withQueryString();
-
-        // All records for summary (no pagination)
-        $allRecords = ProfitRecord::whereBetween('tanggal', [$startDate, $endDate])->get();
+        // Profit records bulan ini
+        $records = ProfitRecord::whereBetween('tanggal', [$startDate, $endDate])
+            ->orderByDesc('tanggal')->orderByDesc('id')->get();
 
         // Summary per kategori
         $perKategori = ProfitRecord::whereBetween('tanggal', [$startDate, $endDate])
@@ -51,10 +44,10 @@ class ProfitController extends Controller
 
         // Total bulan ini
         $totalBulan = [
-            'modal' => $allRecords->sum('modal'),
-            'pendapatan' => $allRecords->sum('pendapatan'),
-            'keuntungan' => $allRecords->sum('keuntungan'),
-            'transaksi' => $allRecords->count(),
+            'modal' => $records->sum('modal'),
+            'pendapatan' => $records->sum('pendapatan'),
+            'keuntungan' => $records->sum('keuntungan'),
+            'transaksi' => $records->count(),
         ];
 
         // Wallet balance terbaru
@@ -102,7 +95,7 @@ class ProfitController extends Controller
         $trashedCount = ProfitRecord::onlyTrashed()->count();
 
         return view('bloxfruit.profit.index', compact(
-            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni', 'pendapatanPerBulan', 'trashedCount', 'filterKategori'
+            'records', 'perKategori', 'perMetode', 'totalBulan', 'wallet', 'bulan', 'bulanList', 'nilaiStok', 'jokiBulanIni', 'pendapatanPerBulan', 'trashedCount'
         ));
     }
 

@@ -290,10 +290,34 @@
 </div>
 
 {{-- ============ RIWAYAT TRANSAKSI ============ --}}
-<div class="glass-card rounded-2xl overflow-hidden">
+@php
+    $katTabs = [];
+    foreach ($katLabels as $key => [$label, $color, $bg]) {
+        if (isset($perKategori[$key])) {
+            $katTabs[$key] = ['label' => $label, 'count' => $perKategori[$key]->jumlah, 'color' => $color, 'bg' => $bg];
+        }
+    }
+@endphp
+<div x-data="txHistory(@js($records->map(fn($r) => [
+    'id' => $r->id,
+    'slug' => $r->slug,
+    'tanggal' => $r->tanggal->format('d/m/Y'),
+    'jam' => $r->created_at->format('H:i'),
+    'kategori' => $r->kategori,
+    'kat_label' => ($katLabels[$r->kategori] ?? ['?'])[0],
+    'kat_color' => ($katLabels[$r->kategori] ?? ['?','text-gray-600','bg-gray-50'])[1],
+    'kat_bg' => ($katLabels[$r->kategori] ?? ['?','text-gray-600','bg-gray-50'])[2],
+    'keterangan' => $r->keterangan ?? '-',
+    'modal' => $r->modal,
+    'pendapatan' => $r->pendapatan,
+    'keuntungan' => $r->keuntungan,
+    'metode' => $r->metode_bayar ? ucfirst(str_replace('_', ' ', $r->metode_bayar)) : '-',
+    'edit_url' => route('bloxfruit.profit.edit', $r),
+    'delete_url' => route('bloxfruit.profit.destroy', $r),
+])))" class="glass-card rounded-2xl overflow-hidden">
     <div class="px-5 py-3 border-b border-gray-100/50 dark:border-slate-700">
         <div class="flex items-center justify-between mb-3">
-            <h3 class="font-semibold text-gray-900 dark:text-white">Riwayat Transaksi</h3>
+            <h3 class="font-semibold text-gray-900 dark:text-white">Riwayat Transaksi <span class="text-xs font-normal text-gray-400" x-text="'(' + filtered.length + ')'"></span></h3>
             @if($trashedCount > 0)
             <a href="{{ route('bloxfruit.profit.trash') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -303,13 +327,9 @@
         </div>
         {{-- Kategori filter tabs --}}
         <div class="flex flex-wrap gap-1.5">
-            <a href="{{ route('bloxfruit.profit.index', ['bulan' => $bulan]) }}" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors {{ !$filterKategori ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400' }}">Semua</a>
-            @foreach($katLabels as $key => [$label, $color, $bg])
-            @if(isset($perKategori[$key]))
-            <a href="{{ route('bloxfruit.profit.index', ['bulan' => $bulan, 'kat' => $key]) }}" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors {{ $filterKategori === $key ? $color . ' ' . $bg . ' ring-1 ring-current' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400' }}">
-                {{ $label }} ({{ $perKategori[$key]->jumlah }})
-            </a>
-            @endif
+            <button @click="kat = ''; page = 1" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors" :class="kat === '' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400'">Semua ({{ $records->count() }})</button>
+            @foreach($katTabs as $key => $tab)
+            <button @click="kat = '{{ $key }}'; page = 1" class="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors" :class="kat === '{{ $key }}' ? '{{ $tab['color'] }} {{ $tab['bg'] }} ring-1 ring-current' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-400'">{{ $tab['label'] }} ({{ $tab['count'] }})</button>
             @endforeach
         </div>
     </div>
@@ -318,9 +338,7 @@
             <thead class="bg-gray-50 dark:bg-slate-800">
                 <tr>
                     <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Tanggal</th>
-                    @if(!$filterKategori)
-                    <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Kategori</th>
-                    @endif
+                    <th x-show="kat === ''" class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Kategori</th>
                     <th class="px-3 py-2.5 text-left text-[11px] font-semibold uppercase text-gray-500">Keterangan</th>
                     <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Modal</th>
                     <th class="px-3 py-2.5 text-right text-[11px] font-semibold uppercase text-gray-500">Pendapatan</th>
@@ -330,42 +348,62 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
-                @forelse($records as $rec)
-                @php $katInfo = $katLabels[$rec->kategori] ?? ['?', 'text-gray-600', 'bg-gray-50']; @endphp
-                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-800/50">
-                    <td class="px-3 py-2.5">
-                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $rec->tanggal->format('d/m/Y') }}</p>
-                        <p class="text-[10px] text-gray-400">{{ $rec->created_at->format('H:i') }}</p>
-                    </td>
-                    @if(!$filterKategori)
-                    <td class="px-3 py-2.5"><span class="rounded-md px-2 py-0.5 text-[10px] font-bold {{ $katInfo[1] }} {{ $katInfo[2] }}">{{ $katInfo[0] }}</span></td>
-                    @endif
-                    <td class="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">{{ $rec->keterangan ?? '-' }}</td>
-                    <td class="px-3 py-2.5 text-sm text-right text-red-600">{{ number_format($rec->modal) }}</td>
-                    <td class="px-3 py-2.5 text-sm text-right text-blue-600">{{ number_format($rec->pendapatan) }}</td>
-                    <td class="px-3 py-2.5 text-sm text-right font-bold {{ $rec->keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ number_format($rec->keuntungan) }}</td>
-                    <td class="px-3 py-2.5 text-center text-[11px] text-gray-500">{{ $rec->metode_bayar ? ucfirst(str_replace('_', ' ', $rec->metode_bayar)) : '-' }}</td>
-                    <td class="px-3 py-2.5 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <a href="{{ route('bloxfruit.profit.edit', $rec) }}" class="text-[11px] text-gray-400 hover:text-indigo-600">Edit</a>
-                            <form method="POST" action="{{ route('bloxfruit.profit.destroy', $rec) }}" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="text-[11px] text-gray-400 hover:text-red-500">Hapus</button></form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="{{ $filterKategori ? 7 : 8 }}" class="px-4 py-8 text-center text-sm text-gray-400">{{ $filterKategori ? 'Belum ada transaksi kategori ini' : 'Belum ada transaksi bulan ini' }}</td></tr>
-                @endforelse
+                <template x-for="rec in paged" :key="rec.id">
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-800/50">
+                        <td class="px-3 py-2.5">
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="rec.tanggal"></p>
+                            <p class="text-[10px] text-gray-400" x-text="rec.jam"></p>
+                        </td>
+                        <td x-show="kat === ''" class="px-3 py-2.5">
+                            <span class="rounded-md px-2 py-0.5 text-[10px] font-bold" :class="rec.kat_color + ' ' + rec.kat_bg" x-text="rec.kat_label"></span>
+                        </td>
+                        <td class="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate" x-text="rec.keterangan"></td>
+                        <td class="px-3 py-2.5 text-sm text-right text-red-600" x-text="fmt(rec.modal)"></td>
+                        <td class="px-3 py-2.5 text-sm text-right text-blue-600" x-text="fmt(rec.pendapatan)"></td>
+                        <td class="px-3 py-2.5 text-sm text-right font-bold" :class="rec.keuntungan >= 0 ? 'text-emerald-600' : 'text-red-600'" x-text="fmt(rec.keuntungan)"></td>
+                        <td class="px-3 py-2.5 text-center text-[11px] text-gray-500" x-text="rec.metode"></td>
+                        <td class="px-3 py-2.5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a :href="rec.edit_url" class="text-[11px] text-gray-400 hover:text-indigo-600">Edit</a>
+                                <form method="POST" :action="rec.delete_url" onsubmit="return confirm('Hapus?')">
+                                    @csrf @method('DELETE')
+                                    <button class="text-[11px] text-gray-400 hover:text-red-500">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
+        <template x-if="filtered.length === 0">
+            <p class="px-4 py-8 text-center text-sm text-gray-400">Belum ada transaksi</p>
+        </template>
     </div>
-    @if($records->hasPages())
-    <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-700">
-        {{ $records->links() }}
-    </div>
-    @endif
+    {{-- Pagination --}}
+    <template x-if="totalPages > 1">
+        <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+            <p class="text-[11px] text-gray-400" x-text="'Hal ' + page + ' dari ' + totalPages"></p>
+            <div class="flex gap-1">
+                <button @click="page = Math.max(1, page-1)" :disabled="page <= 1" class="rounded-lg px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 disabled:opacity-40">&laquo; Prev</button>
+                <button @click="page = Math.min(totalPages, page+1)" :disabled="page >= totalPages" class="rounded-lg px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 disabled:opacity-40">Next &raquo;</button>
+            </div>
+        </div>
+    </template>
 </div>
 
 <script>
+function txHistory(records) {
+    return {
+        all: records,
+        kat: '',
+        page: 1,
+        perPage: 20,
+        get filtered() { return this.kat ? this.all.filter(r => r.kategori === this.kat) : this.all; },
+        get totalPages() { return Math.ceil(this.filtered.length / this.perPage); },
+        get paged() { return this.filtered.slice((this.page - 1) * this.perPage, this.page * this.perPage); },
+        fmt(n) { return new Intl.NumberFormat('id-ID').format(n); }
+    }
+}
 function walletForm() {
     return {
         vals: {
