@@ -94,7 +94,7 @@ class AccountStockController extends Controller
         $account->update($validated);
 
         // Auto-record profit saat status berubah ke terjual
-        if ($oldStatus !== 'terjual' && $validated['status'] === 'terjual' && ($account->harga_jual > 0)) {
+        if ($oldStatus !== 'terjual' && $validated['status'] === 'terjual') {
             ProfitRecord::create([
                 'tanggal' => now()->toDateString(),
                 'kategori' => 'akun',
