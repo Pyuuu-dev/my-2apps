@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BloxFruit\BloxFruit;
 use App\Models\BloxFruit\FruitSkin;
 use App\Models\BloxFruit\Gamepass;
+use App\Models\BloxFruit\PermanentFruitPrice;
 use App\Models\BloxFruit\StorageAccount;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,7 @@ class SearchController extends Controller
         $allFruits = BloxFruit::orderByRarity()->orderBy('nama')->get();
         $allSkins = FruitSkin::with('fruit')->get()->sortBy(fn($s) => $s->fruit->nama ?? '');
         $allGamepasses = Gamepass::orderBy('nama')->get();
+        $allPermanents = PermanentFruitPrice::where('aktif', true)->orderByDesc('harga_jual')->get();
 
         $results = null;
         $searchedItems = [];
@@ -46,8 +48,8 @@ class SearchController extends Controller
                 }
             }
             if ($permIds) {
-                foreach (BloxFruit::whereIn('id', $permIds)->get() as $f) {
-                    $searchedItems[] = ['tipe' => 'Permanent', 'nama' => 'Perm ' . $f->nama, 'rarity' => $f->rarity];
+                foreach (PermanentFruitPrice::whereIn('id', $permIds)->get() as $p) {
+                    $searchedItems[] = ['tipe' => 'Permanent', 'nama' => 'Perm ' . $p->nama, 'rarity' => '-'];
                 }
             }
 
@@ -71,7 +73,7 @@ class SearchController extends Controller
                     else $q->whereRaw('0 = 1');
                 },
                 'permanentStocks as matched_perm' => function ($q) use ($permIds) {
-                    if ($permIds) $q->whereIn('blox_fruit_id', $permIds)->where('jumlah', '>', 0);
+                    if ($permIds) $q->whereIn('permanent_fruit_price_id', $permIds)->where('jumlah', '>', 0);
                     else $q->whereRaw('0 = 1');
                 },
             ]);
@@ -81,7 +83,7 @@ class SearchController extends Controller
                 'fruitStocks' => fn($q) => $fruitIds ? $q->whereIn('blox_fruit_id', $fruitIds)->where('jumlah', '>', 0)->with('fruit') : $q->whereRaw('0 = 1'),
                 'skinStocks' => fn($q) => $skinIds ? $q->whereIn('fruit_skin_id', $skinIds)->where('jumlah', '>', 0)->with('skin') : $q->whereRaw('0 = 1'),
                 'gamepassStocks' => fn($q) => $gpIds ? $q->whereIn('gamepass_id', $gpIds)->where('jumlah', '>', 0)->with('gamepass') : $q->whereRaw('0 = 1'),
-                'permanentStocks' => fn($q) => $permIds ? $q->whereIn('blox_fruit_id', $permIds)->where('jumlah', '>', 0)->with('fruit') : $q->whereRaw('0 = 1'),
+                'permanentStocks' => fn($q) => $permIds ? $q->whereIn('permanent_fruit_price_id', $permIds)->where('jumlah', '>', 0)->with('permanentPrice') : $q->whereRaw('0 = 1'),
             ]);
 
             $allAccounts = $query->get();
@@ -101,7 +103,7 @@ class SearchController extends Controller
         }
 
         return view('bloxfruit.search.index', compact(
-            'allFruits', 'allSkins', 'allGamepasses',
+            'allFruits', 'allSkins', 'allGamepasses', 'allPermanents',
             'results', 'searchedItems', 'hasSearch', 'mode',
             'fruitIds', 'skinIds', 'gpIds', 'permIds'
         ));

@@ -13,6 +13,7 @@
     fruitName(id) { return @js($allFruits->pluck('nama', 'id'))[id] || id; },
     skinName(id) { return @js($allSkins->pluck('nama_skin', 'id'))[id] || id; },
     gpName(id) { return @js($allGamepasses->pluck('nama', 'id'))[id] || id; },
+    permName(id) { return @js($allPermanents->pluck('nama', 'id'))[id] || id; },
     get totalItems() { return this.fruits.length + this.skins.length + this.gamepasses.length + this.permanents.length; }
 }">
 
@@ -57,7 +58,7 @@
         </template>
         <template x-for="(id, i) in permanents" :key="'p'+id">
             <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2.5 py-1 text-xs font-medium">
-                Perm <span x-text="fruitName(id)"></span>
+                Perm <span x-text="permName(id)"></span>
                 <button type="button" @click="removeItem('permanents', i)" class="hover:text-amber-900">&times;</button>
                 <input type="hidden" name="permanents[]" :value="id">
             </span>
@@ -119,20 +120,14 @@
 
     {{-- Permanent picker --}}
     <div x-show="tab==='permanent'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2">
-        @php $cr = ''; @endphp
-        @foreach($allFruits as $fruit)
-            @if($fruit->rarity !== $cr)
-                @php $cr = $fruit->rarity; @endphp
-                <div class="col-span-full mt-2 first:mt-0">
-                    <span class="text-[11px] font-bold uppercase tracking-wide {{ $cr === 'Mythical' ? 'text-red-600' : ($cr === 'Legendary' ? 'text-yellow-600' : ($cr === 'Rare' ? 'text-blue-600' : ($cr === 'Uncommon' ? 'text-green-600' : 'text-gray-500'))) }}">{{ $cr }}</span>
-                </div>
-            @endif
-            <button type="button"
-                @click="addItem('permanents', '{{ $fruit->id }}')"
-                :class="permanents.includes('{{ $fruit->id }}') ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50'"
-                class="rounded-lg border px-2 py-1.5 text-xs font-medium text-gray-800 text-center transition-all">
-                {{ $fruit->nama }}
-            </button>
+        @foreach($allPermanents as $perm)
+        <button type="button"
+            @click="addItem('permanents', '{{ $perm->id }}')"
+            :class="permanents.includes('{{ $perm->id }}') ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50'"
+            class="rounded-lg border px-2 py-1.5 text-xs font-medium text-gray-800 text-center transition-all">
+            {{ $perm->nama }}
+            <span class="block text-[10px] text-gray-400">{{ number_format($perm->harga_robux) }} R$</span>
+        </button>
         @endforeach
     </div>
 
@@ -209,7 +204,7 @@
             @endforeach
             @foreach($akun->permanentStocks as $stock)
             <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs">
-                Perm {{ $stock->fruit->nama ?? '?' }} <span class="font-bold">x{{ $stock->jumlah }}</span>
+                Perm {{ $stock->permanentPrice->nama ?? '?' }} <span class="font-bold">x{{ $stock->jumlah }}</span>
             </span>
             @endforeach
         </div>

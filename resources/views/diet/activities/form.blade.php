@@ -7,6 +7,16 @@
         @csrf
         @if(isset($activity)) @method('PUT') @endif
 
+        @if($errors->any())
+        <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+            <ul class="text-sm text-red-600 space-y-1">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="sm:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal *</label>
