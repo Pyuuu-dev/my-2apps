@@ -16,6 +16,11 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Username Roblox</label>
                 <input type="text" name="username" value="{{ old('username', $storage->username ?? '') }}" placeholder="Username Roblox" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
             </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Storage <span class="text-xs text-gray-400 font-normal">per item</span></label>
+                <input type="number" name="kapasitas_storage" value="{{ old('kapasitas_storage', $storage->kapasitas_storage ?? 1) }}" min="1" max="99" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <p class="text-[10px] text-gray-400 mt-1">Max jumlah per fruit/skin yang bisa disimpan</p>
+            </div>
         </div>
         @if(isset($storage))
         <div>

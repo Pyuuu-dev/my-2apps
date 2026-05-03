@@ -51,7 +51,8 @@
             {{-- Card body - clickable --}}
             <a href="{{ route('bloxfruit.storage.show', $akun) }}" class="block p-4 pb-3">
                 {{-- Username --}}
-                <p class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-3">{{ $akun->username ?? '-' }}</p>
+                <p class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">{{ $akun->username ?? '-' }}</p>
+                <p class="text-[10px] text-gray-400 mb-2">Storage: {{ $akun->kapasitas_storage }}/item</p>
 
                 {{-- Stats --}}
                 <div class="grid grid-cols-2 gap-1.5">

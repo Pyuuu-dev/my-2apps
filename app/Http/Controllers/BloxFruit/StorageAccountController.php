@@ -46,6 +46,7 @@ class StorageAccountController extends Controller
             'nama_akun' => 'required|string|max:255',
             'username' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
+            'kapasitas_storage' => 'nullable|integer|min:1|max:99',
         ]);
 
         $account = StorageAccount::create($validated);
@@ -89,6 +90,7 @@ class StorageAccountController extends Controller
             'username' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'aktif' => 'boolean',
+            'kapasitas_storage' => 'nullable|integer|min:1|max:99',
         ]);
         $validated['aktif'] = $request->has('aktif');
         $storage->update($validated);
@@ -99,6 +101,19 @@ class StorageAccountController extends Controller
     {
         $storage->delete();
         return redirect()->route('bloxfruit.storage.index')->with('sukses', 'Akun berhasil dihapus!');
+    }
+
+    /**
+     * Kosongkan semua stok dari akun storage
+     */
+    public function clearStocks(StorageAccount $storage)
+    {
+        $storage->fruitStocks()->delete();
+        $storage->skinStocks()->delete();
+        $storage->gamepassStocks()->delete();
+        $storage->permanentStocks()->delete();
+
+        return redirect()->route('bloxfruit.storage.show', $storage)->with('sukses', 'Semua stok berhasil dikosongkan!');
     }
 
     // === BULK SAVE ===

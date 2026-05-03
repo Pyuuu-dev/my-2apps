@@ -13,7 +13,7 @@ class StorageAccount extends Model
     protected string $slugSource = 'nama_akun';
 
     protected $fillable = [
-        'nama_akun', 'username', 'catatan', 'aktif', 'slug',
+        'nama_akun', 'username', 'catatan', 'aktif', 'kapasitas_storage',
     ];
 
     protected $casts = ['aktif' => 'boolean'];

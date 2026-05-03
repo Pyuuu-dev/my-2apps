@@ -47,11 +47,15 @@
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
     <div>
-        <p class="text-sm text-gray-500">Username: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $storage->username ?? '-' }}</span></p>
+        <p class="text-sm text-gray-500">Username: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $storage->username ?? '-' }}</span> &middot; Kapasitas: <span class="font-bold text-indigo-600">{{ $storage->kapasitas_storage }}</span>/item</p>
         @if($storage->catatan)<p class="text-xs text-gray-400 mt-0.5">{{ $storage->catatan }}</p>@endif
     </div>
     <div class="flex gap-2">
-        <a href="{{ route('bloxfruit.storage.edit', $storage) }}" class="rounded-lg bg-gray-100 dark:bg-slate-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600">Edit Akun</a>
+        <form method="POST" action="{{ route('bloxfruit.storage.clear', $storage) }}" onsubmit="return confirm('Kosongkan SEMUA stok (fruit, skin, gamepass, permanent) dari akun ini?\n\nData keuangan & lainnya TIDAK terpengaruh.')">
+            @csrf @method('DELETE')
+            <button type="submit" class="rounded-lg bg-red-50 dark:bg-red-950/30 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30">Kosongkan Stok</button>
+        </form>
+        <a href="{{ route('bloxfruit.storage.edit', $storage) }}" class="rounded-lg bg-gray-100 dark:bg-slate-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600">Edit</a>
         <a href="{{ route('bloxfruit.storage.index') }}" class="rounded-lg bg-gray-100 dark:bg-slate-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600">Kembali</a>
     </div>
 </div>
@@ -85,8 +89,11 @@
                 <button type="button" @click="$dispatch('quick-sell', {tipe:'fruit', stockId:{{ $sid }}, nama:'{{ addslashes($fruit->nama) }}', stok:{{ $qty }}, hargaJual:{{ $fruit->harga_jual }}, hargaModal:{{ $fruit->harga_beli }}})" class="rounded bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200">Jual</button>
                 @endif
             </div>
-            <p class="text-[11px] text-gray-400 mb-2">{{ $fruit->tipe }} &middot; Jual: {{ number_format($fruit->harga_jual) }}</p>
-            <input type="number" name="fruits[{{ $fruit->id }}]" value="{{ $qty }}" min="0" class="w-full rounded-md border-gray-300 text-center text-sm font-bold shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-9" placeholder="0">
+            <p class="text-[11px] text-gray-400 mb-1">{{ $fruit->tipe }} &middot; Jual: {{ number_format($fruit->harga_jual) }}</p>
+            <div class="h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700 mb-2 overflow-hidden">
+                <div class="h-1.5 rounded-full {{ $qty >= $storage->kapasitas_storage ? 'bg-red-500' : ($qty > 0 ? 'bg-indigo-500' : 'bg-gray-200') }}" style="width: {{ min(100, round(($qty / max(1, $storage->kapasitas_storage)) * 100)) }}%"></div>
+            </div>
+            <input type="number" name="fruits[{{ $fruit->id }}]" value="{{ $qty }}" min="0" max="{{ $storage->kapasitas_storage }}" class="w-full rounded-md border-gray-300 text-center text-sm font-bold shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-9" placeholder="0">
         </div>
         @if($loop->last)</div>@endif
     @endforeach
@@ -117,8 +124,11 @@
                 <button type="button" @click="$dispatch('quick-sell', {tipe:'skin', stockId:{{ $sid }}, nama:'{{ addslashes($skin->nama_skin) }}', stok:{{ $qty }}, hargaJual:{{ $skin->harga_jual }}, hargaModal:{{ $skin->harga_beli }}})" class="rounded bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200">Jual</button>
                 @endif
             </div>
-            <p class="text-[11px] text-gray-400 mb-2">Jual: {{ number_format($skin->harga_jual) }}</p>
-            <input type="number" name="skins[{{ $skin->id }}]" value="{{ $qty }}" min="0" class="w-full rounded-md border-gray-300 text-center text-sm font-bold shadow-sm focus:border-pink-500 focus:ring-pink-500 h-9" placeholder="0">
+            <p class="text-[11px] text-gray-400 mb-1">Jual: {{ number_format($skin->harga_jual) }}</p>
+            <div class="h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700 mb-2 overflow-hidden">
+                <div class="h-1.5 rounded-full {{ $qty >= $storage->kapasitas_storage ? 'bg-red-500' : ($qty > 0 ? 'bg-pink-500' : 'bg-gray-200') }}" style="width: {{ min(100, round(($qty / max(1, $storage->kapasitas_storage)) * 100)) }}%"></div>
+            </div>
+            <input type="number" name="skins[{{ $skin->id }}]" value="{{ $qty }}" min="0" max="{{ $storage->kapasitas_storage }}" class="w-full rounded-md border-gray-300 text-center text-sm font-bold shadow-sm focus:border-pink-500 focus:ring-pink-500 h-9" placeholder="0">
         </div>
         @endforeach
     </div>
