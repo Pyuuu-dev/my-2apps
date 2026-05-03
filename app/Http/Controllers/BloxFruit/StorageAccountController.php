@@ -104,7 +104,7 @@ class StorageAccountController extends Controller
     }
 
     /**
-     * Kosongkan semua stok dari akun storage
+     * Kosongkan semua stok dari 1 akun storage
      */
     public function clearStocks(StorageAccount $storage)
     {
@@ -114,6 +114,19 @@ class StorageAccountController extends Controller
         $storage->permanentStocks()->delete();
 
         return redirect()->route('bloxfruit.storage.show', $storage)->with('sukses', 'Semua stok berhasil dikosongkan!');
+    }
+
+    /**
+     * Kosongkan semua stok dari SEMUA akun storage
+     */
+    public function clearAllStocks()
+    {
+        FruitStock::truncate();
+        SkinStock::truncate();
+        GamepassStock::truncate();
+        PermanentFruitStock::truncate();
+
+        return redirect()->route('bloxfruit.storage.index')->with('sukses', 'Semua stok dari semua akun berhasil dikosongkan!');
     }
 
     // === BULK SAVE ===

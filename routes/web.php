@@ -183,6 +183,7 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::post('storage/{storage}/permanents', [StorageAccountController::class, 'bulkSavePermanentStock'])->name('storage.permanent.bulk');
     Route::post('storage/{storage}/skins', [StorageAccountController::class, 'bulkSaveSkinStock'])->name('storage.skin.bulk');
     Route::delete('storage/{storage}/clear', [StorageAccountController::class, 'clearStocks'])->name('storage.clear');
+    Route::delete('storage-clear-all', [StorageAccountController::class, 'clearAllStocks'])->name('storage.clearAll');
 
     // Stok Akun Jual
     Route::get('accounts', [AccountStockController::class, 'index'])->name('accounts.index');
