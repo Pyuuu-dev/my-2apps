@@ -48,6 +48,28 @@
     @endforeach
 </div>
 
+{{-- Keuangan Ringkas --}}
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <div class="glass-card rounded-xl p-4 border-l-4 border-emerald-500">
+        <p class="text-[10px] font-semibold text-gray-500 uppercase">Pendapatan Bulan Ini</p>
+        <p class="text-xl font-extrabold text-emerald-600">Rp {{ number_format($keuanganBulanIni['pendapatan']) }}</p>
+        <p class="text-[10px] text-gray-400">{{ $keuanganBulanIni['transaksi'] }} transaksi</p>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-blue-500">
+        <p class="text-[10px] font-semibold text-gray-500 uppercase">Keuntungan Bulan Ini</p>
+        <p class="text-xl font-extrabold text-blue-600">Rp {{ number_format($keuanganBulanIni['keuntungan']) }}</p>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-amber-500">
+        <p class="text-[10px] font-semibold text-gray-500 uppercase">Nilai Stok</p>
+        <p class="text-xl font-extrabold text-amber-600">Rp {{ number_format($nilaiStokTotal) }}</p>
+        <p class="text-[10px] text-gray-400">Fruit + Skin</p>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-purple-500">
+        <p class="text-[10px] font-semibold text-gray-500 uppercase">Saldo Wallet</p>
+        <p class="text-xl font-extrabold text-purple-600">Rp {{ number_format($saldoWallet) }}</p>
+    </div>
+</div>
+
 {{-- Secondary Stats --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     @php

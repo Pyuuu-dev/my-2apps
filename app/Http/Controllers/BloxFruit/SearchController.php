@@ -20,8 +20,10 @@ class SearchController extends Controller
         $allPermanents = PermanentFruitPrice::where('aktif', true)->orderByDesc('harga_jual')->get();
 
         $results = null;
+        $emptyResults = null;
         $searchedItems = [];
         $mode = $request->get('mode', 'semua'); // semua = akun punya semua item, sebagian = punya minimal 1
+        $searchEmpty = $request->get('search_empty'); // fruit_id to find empty slots
 
         $fruitIds = array_filter($request->get('fruits', []), fn($v) => $v);
         $skinIds = array_filter($request->get('skins', []), fn($v) => $v);
@@ -102,10 +104,33 @@ class SearchController extends Controller
             }
         }
 
+        // === CARI SLOT KOSONG ===
+        if ($searchEmpty) {
+            $fruit = BloxFruit::find($searchEmpty);
+            if ($fruit) {
+                $accounts = StorageAccount::where('aktif', true)->with(['fruitStocks' => function ($q) use ($searchEmpty) {
+                    $q->where('blox_fruit_id', $searchEmpty);
+                }])->get();
+
+                $emptyResults = $accounts->map(function ($acc) use ($searchEmpty) {
+                    $stock = $acc->fruitStocks->first();
+                    $current = $stock ? $stock->jumlah : 0;
+                    $capacity = $acc->kapasitas_storage;
+                    $available = $capacity - $current;
+                    return [
+                        'akun' => $acc,
+                        'current' => $current,
+                        'capacity' => $capacity,
+                        'available' => $available,
+                    ];
+                })->filter(fn($r) => $r['available'] > 0)->sortByDesc('available')->values();
+            }
+        }
+
         return view('bloxfruit.search.index', compact(
             'allFruits', 'allSkins', 'allGamepasses', 'allPermanents',
-            'results', 'searchedItems', 'hasSearch', 'mode',
-            'fruitIds', 'skinIds', 'gpIds', 'permIds'
+            'results', 'emptyResults', 'searchedItems', 'hasSearch', 'mode',
+            'fruitIds', 'skinIds', 'gpIds', 'permIds', 'searchEmpty'
         ));
     }
 }
