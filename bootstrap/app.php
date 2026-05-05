@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
             \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
         );
+
+        // Exclude Telegram webhook from CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhook/telegram-diet',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

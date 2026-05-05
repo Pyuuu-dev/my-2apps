@@ -46,6 +46,13 @@ Route::get('/store', [\App\Http\Controllers\BloxFruit\LandingController::class, 
 
 /*
 |--------------------------------------------------------------------------
+| Telegram Webhook (no auth, no CSRF)
+|--------------------------------------------------------------------------
+*/
+Route::post('/webhook/telegram-diet', [\App\Http\Controllers\DietTracker\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+
+/*
+|--------------------------------------------------------------------------
 | Protected Routes (Require Auth)
 |--------------------------------------------------------------------------
 */

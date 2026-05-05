@@ -214,6 +214,62 @@
         @endif
     </div>
 
+    {{-- ============ QUICK INPUT DIET ============ --}}
+    @if($dtStats)
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        {{-- Quick Minum Air --}}
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Tambah Air Minum</h3>
+            <div class="grid grid-cols-4 gap-2">
+                @foreach([150, 250, 350, 500] as $ml)
+                <form method="POST" action="{{ route('diet.water.store') }}">
+                    @csrf
+                    <input type="hidden" name="jumlah_ml" value="{{ $ml }}">
+                    <input type="hidden" name="tanggal" value="{{ now()->toDateString() }}">
+                    <button type="submit" class="w-full rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 px-1 py-2.5 text-center hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                        <p class="text-sm font-bold text-blue-700 dark:text-blue-400">+{{ $ml }}ml</p>
+                        <p class="text-[9px] text-blue-500">{{ $ml < 250 ? 'Cangkir' : ($ml == 250 ? '1 Gelas' : ($ml == 350 ? 'Botol Kecil' : 'Botol')) }}</p>
+                    </button>
+                </form>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Quick Catat Makan --}}
+        <div class="glass-card rounded-2xl p-5" x-data="{ open: false }">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Catat Makan Cepat</h3>
+                <button @click="open = !open" class="text-[11px] font-medium text-emerald-600" x-text="open ? 'Tutup' : 'Buka'"></button>
+            </div>
+            <div x-show="!open">
+                <p class="text-xs text-gray-400">Klik "Buka" untuk catat makan tanpa pindah halaman</p>
+            </div>
+            <div x-show="open" x-collapse x-cloak>
+                <form method="POST" action="{{ route('diet.meals.quick') }}" class="space-y-2">
+                    @csrf
+                    <input type="hidden" name="tanggal" value="{{ now()->toDateString() }}">
+                    <input type="hidden" name="porsi" value="1">
+                    <div class="grid grid-cols-2 gap-2">
+                        <select name="waktu_makan" required class="rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-xs focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="sarapan">Sarapan</option>
+                            <option value="makan_siang">Makan Siang</option>
+                            <option value="makan_malam">Makan Malam</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                        <select name="food_id" required class="rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-xs focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Pilih makanan...</option>
+                            @foreach(\App\Models\DietTracker\FoodDatabase::orderBy('nama')->get() as $food)
+                            <option value="{{ $food->id }}">{{ $food->nama }} ({{ $food->kalori }} kkal)</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700">Tambah</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- ============ AKSI CEPAT ============ --}}
     <div class="glass-card rounded-2xl p-5">
         <h3 class="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Aksi Cepat</h3>
