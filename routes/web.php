@@ -259,5 +259,6 @@ Route::prefix('diet')->name('diet.')->group(function () {
 Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
 Route::post('/settings/password', [AuthController::class, 'updatePassword'])->name('settings.password');
 Route::post('/settings/profile', [AuthController::class, 'updateProfile'])->name('settings.profile');
+Route::post('/settings/backup', [AuthController::class, 'manualBackup'])->name('settings.backup');
 
 }); // End auth middleware

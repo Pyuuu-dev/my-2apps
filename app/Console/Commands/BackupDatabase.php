@@ -38,7 +38,8 @@ class BackupDatabase extends Command
             . "🤖 Otomatis 4x/hari (02:00, 08:00, 14:00, 20:00)";
 
         $telegram = new TelegramService();
-        $sent = $telegram->sendDocumentWithToken($token, $chatId, $backupPath, $caption);
+        $result = $telegram->sendDocument($chatId, $backupPath, $caption, $token);
+        $sent = $result['ok'] ?? false;
 
         if (file_exists($backupPath)) {
             unlink($backupPath);

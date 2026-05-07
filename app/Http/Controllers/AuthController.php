@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Artisan;
 
 class AuthController extends Controller
 {
@@ -84,5 +85,21 @@ class AuthController extends Controller
         Auth::user()->update($request->only('name', 'username'));
 
         return back()->with('sukses', 'Profil berhasil diperbarui!');
+    }
+
+    public function manualBackup()
+    {
+        try {
+            Artisan::call('backup:database');
+            $output = Artisan::output();
+            
+            if (str_contains($output, 'berhasil')) {
+                return back()->with('sukses', 'Backup berhasil dikirim ke Telegram!');
+            }
+            
+            return back()->with('error', 'Gagal mengirim backup. Periksa konfigurasi Telegram.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 }

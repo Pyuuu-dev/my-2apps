@@ -54,13 +54,13 @@ class BackupController extends Controller
 
         // Pakai bot backup
         $telegram = new TelegramService();
-        $sent = $telegram->sendDocumentWithToken($token, $chatId, $backupPath, $caption);
+        $result = $telegram->sendDocument($chatId, $backupPath, $caption, $token);
 
         if (file_exists($backupPath)) {
             unlink($backupPath);
         }
 
-        if ($sent) {
+        if ($result['ok'] ?? false) {
             return redirect()->back()->with('sukses', 'Backup berhasil dikirim ke Telegram! (' . $size . ' KB)');
         }
 
@@ -101,9 +101,9 @@ class BackupController extends Controller
             return redirect()->back()->with('error', 'Bot Telegram Backup belum dikonfigurasi!');
         }
 
-        $telegram = new TelegramService();
-        $sent = $telegram->sendMessageWithToken($token, $chatId, "✅ <b>Bot Backup Terhubung!</b>\n\n🕐 " . now()->format('H:i:s d/m/Y') . "\nBot ini akan mengirim backup database otomatis setiap hari.");
+        $telegram = new TelegramService($token);
+        $result = $telegram->sendMessage($chatId, "✅ <b>Bot Backup Terhubung!</b>\n\n🕐 " . now()->format('H:i:s d/m/Y') . "\nBot ini akan mengirim backup database otomatis setiap hari.");
 
-        return redirect()->back()->with($sent ? 'sukses' : 'error', $sent ? 'Test bot backup berhasil!' : 'Gagal. Cek token dan chat_id.');
+        return redirect()->back()->with(($result['ok'] ?? false) ? 'sukses' : 'error', ($result['ok'] ?? false) ? 'Test bot backup berhasil!' : 'Gagal. Cek token dan chat_id.');
     }
 }
