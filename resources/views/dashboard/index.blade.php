@@ -216,57 +216,12 @@
 
     {{-- ============ QUICK INPUT DIET ============ --}}
     @if($dtStats)
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        {{-- Quick Minum Air --}}
-        <div class="glass-card rounded-2xl p-5">
-            <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Tambah Air Minum</h3>
-            <div class="grid grid-cols-4 gap-2">
-                @foreach([150, 250, 350, 500] as $ml)
-                <form method="POST" action="{{ route('diet.water.store') }}">
-                    @csrf
-                    <input type="hidden" name="jumlah_ml" value="{{ $ml }}">
-                    <input type="hidden" name="tanggal" value="{{ now()->toDateString() }}">
-                    <button type="submit" class="w-full rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 px-1 py-2.5 text-center hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                        <p class="text-sm font-bold text-blue-700 dark:text-blue-400">+{{ $ml }}ml</p>
-                        <p class="text-[9px] text-blue-500">{{ $ml < 250 ? 'Cangkir' : ($ml == 250 ? '1 Gelas' : ($ml == 350 ? 'Botol Kecil' : 'Botol')) }}</p>
-                    </button>
-                </form>
-                @endforeach
-            </div>
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Diet Tracker</h3>
+            <a href="{{ route('diet.dashboard') }}" class="text-[11px] font-medium text-emerald-600 hover:text-emerald-800">Buka Dashboard</a>
         </div>
-
-        {{-- Quick Catat Makan --}}
-        <div class="glass-card rounded-2xl p-5" x-data="{ open: false }">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Catat Makan Cepat</h3>
-                <button @click="open = !open" class="text-[11px] font-medium text-emerald-600" x-text="open ? 'Tutup' : 'Buka'"></button>
-            </div>
-            <div x-show="!open">
-                <p class="text-xs text-gray-400">Klik "Buka" untuk catat makan tanpa pindah halaman</p>
-            </div>
-            <div x-show="open" x-collapse x-cloak>
-                <form method="POST" action="{{ route('diet.meals.quick') }}" class="space-y-2">
-                    @csrf
-                    <input type="hidden" name="tanggal" value="{{ now()->toDateString() }}">
-                    <input type="hidden" name="porsi" value="1">
-                    <div class="grid grid-cols-2 gap-2">
-                        <select name="waktu_makan" required class="rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-xs focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="sarapan">Sarapan</option>
-                            <option value="makan_siang">Makan Siang</option>
-                            <option value="makan_malam">Makan Malam</option>
-                            <option value="snack">Snack</option>
-                        </select>
-                        <select name="food_id" required class="rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-xs focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Pilih makanan...</option>
-                            @foreach(\App\Models\DietTracker\FoodDatabase::orderBy('nama')->get() as $food)
-                            <option value="{{ $food->id }}">{{ $food->nama }} ({{ $food->kalori }} kkal)</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700">Tambah</button>
-                </form>
-            </div>
-        </div>
+        <p class="text-xs text-gray-400">Gunakan Telegram Bot untuk input makanan, minum, olahraga, dan lainnya secara smart.</p>
     </div>
     @endif
 
@@ -286,13 +241,9 @@
                 <svg class="h-5 w-5 mx-auto text-violet-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <p class="text-[10px] font-semibold text-gray-700 dark:text-gray-300">Cari Stok</p>
             </a>
-            <a href="{{ route('diet.meals.create') }}" class="rounded-xl border border-gray-200 dark:border-slate-700 p-3 text-center hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors">
-                <svg class="h-5 w-5 mx-auto text-orange-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                <p class="text-[10px] font-semibold text-gray-700 dark:text-gray-300">Catat Makan</p>
-            </a>
-            <a href="{{ route('diet.exercises.index') }}" class="rounded-xl border border-gray-200 dark:border-slate-700 p-3 text-center hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-                <svg class="h-5 w-5 mx-auto text-blue-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <p class="text-[10px] font-semibold text-gray-700 dark:text-gray-300">Olahraga</p>
+            <a href="{{ route('diet.dashboard') }}" class="rounded-xl border border-gray-200 dark:border-slate-700 p-3 text-center hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors">
+                <svg class="h-5 w-5 mx-auto text-emerald-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <p class="text-[10px] font-semibold text-gray-700 dark:text-gray-300">Diet Tracker</p>
             </a>
             <a href="{{ route('bloxfruit.accounts.index') }}" class="rounded-xl border border-gray-200 dark:border-slate-700 p-3 text-center hover:border-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-colors">
                 <svg class="h-5 w-5 mx-auto text-teal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>

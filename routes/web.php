@@ -19,14 +19,7 @@ use App\Http\Controllers\BloxFruit\QuickSellController;
 
 // === DietTracker Controllers ===
 use App\Http\Controllers\DietTracker\DashboardController as DietDashboard;
-use App\Http\Controllers\DietTracker\DietPlanController;
-use App\Http\Controllers\DietTracker\MealController;
-use App\Http\Controllers\DietTracker\ExerciseController;
-use App\Http\Controllers\DietTracker\ActivityController;
-use App\Http\Controllers\DietTracker\ReminderController;
-use App\Http\Controllers\DietTracker\MonthlyLogController;
-use App\Http\Controllers\DietTracker\WaterLogController;
-use App\Http\Controllers\DietTracker\FastingController;
+use App\Http\Controllers\DietTracker\AiLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,22 +99,21 @@ Route::get('/', function () {
     $transaksiTerakhir = \App\Models\BloxFruit\ProfitRecord::orderByDesc('tanggal')->orderByDesc('id')->limit(5)->get();
 
     // === DIET TRACKER ===
-    $plan = \App\Models\DietTracker\DietPlan::getActivePlan();
+    $profile = \App\Models\DietTracker\UserProfile::first();
     $dtStats = null;
-    if ($plan) {
-        $kaloriMasuk = \App\Models\DietTracker\Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('kalori');
-        $totalMinum = \App\Models\DietTracker\WaterLog::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('jumlah_ml');
-        $smart = \App\Services\DietHelperService::generateSmartPlan($plan->gender, $plan->umur, $plan->tinggi_cm, $plan->berat_sekarang ?? $plan->berat_awal, $plan->level_aktivitas);
+    if ($profile && $profile->kalori_target) {
+        $kaloriMasuk = \App\Models\DietTracker\FoodLog::where('profile_id', $profile->id)->whereDate('tanggal', $today)->sum('kalori');
+        $totalMinum = \App\Models\DietTracker\WaterLog::where('profile_id', $profile->id)->whereDate('tanggal', $today)->sum('jumlah_ml');
 
         $dtStats = [
-            'plan' => $plan,
+            'profile' => $profile,
             'kalori_masuk' => $kaloriMasuk,
-            'target_kalori' => $plan->kalori_harian_target,
+            'target_kalori' => $profile->kalori_target,
             'total_minum' => $totalMinum,
-            'target_air' => $smart['target_harian']['air_ml'],
-            'berat_sekarang' => $plan->berat_sekarang ?? $plan->berat_awal,
-            'berat_target' => $plan->berat_target,
-            'bmi' => $smart['bmi'],
+            'target_air' => 2500,
+            'berat_sekarang' => $profile->berat_kg,
+            'berat_target' => $profile->berat_target,
+            'bmi' => $profile->bmi,
         ];
     }
 
@@ -226,66 +218,14 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| DIET TRACKER - Monitoring Diet & Kesehatan
+| DIET TRACKER - Admin Panel & Monitoring
 |--------------------------------------------------------------------------
 */
 Route::prefix('diet')->name('diet.')->group(function () {
     Route::get('/', [DietDashboard::class, 'index'])->name('dashboard');
-
-    Route::get('plans', [DietPlanController::class, 'index'])->name('plans.index');
-    Route::get('plans/create', [DietPlanController::class, 'create'])->name('plans.create');
-    Route::post('plans', [DietPlanController::class, 'store'])->name('plans.store');
-    Route::get('plans/{plan}/edit', [DietPlanController::class, 'edit'])->name('plans.edit');
-    Route::put('plans/{plan}', [DietPlanController::class, 'update'])->name('plans.update');
-    Route::delete('plans/{plan}', [DietPlanController::class, 'destroy'])->name('plans.destroy');
-    Route::get('plans/{plan}/progress', [MonthlyLogController::class, 'show'])->name('plans.progress');
-    Route::get('plans/{plan}/monthly', [MonthlyLogController::class, 'create'])->name('plans.monthly.create');
-    Route::post('plans/{plan}/monthly', [MonthlyLogController::class, 'store'])->name('plans.monthly.store');
-    Route::get('plans/{plan}/monthly/{log}/edit', [MonthlyLogController::class, 'edit'])->name('plans.monthly.edit');
-    Route::put('plans/{plan}/monthly/{log}', [MonthlyLogController::class, 'update'])->name('plans.monthly.update');
-    Route::delete('plans/{plan}/monthly/{log}', [MonthlyLogController::class, 'destroy'])->name('plans.monthly.destroy');
-
-    Route::get('meals', [MealController::class, 'index'])->name('meals.index');
-    Route::get('meals/create', [MealController::class, 'create'])->name('meals.create');
-    Route::post('meals', [MealController::class, 'store'])->name('meals.store');
-    Route::post('meals/quick', [MealController::class, 'quickAdd'])->name('meals.quick');
-    Route::get('meals/{meal}/edit', [MealController::class, 'edit'])->name('meals.edit');
-    Route::put('meals/{meal}', [MealController::class, 'update'])->name('meals.update');
-    Route::delete('meals/{meal}', [MealController::class, 'destroy'])->name('meals.destroy');
-
-    Route::post('water', [WaterLogController::class, 'store'])->name('water.store');
-    Route::delete('water/{waterLog}', [WaterLogController::class, 'destroy'])->name('water.destroy');
-    Route::post('water/reset', [WaterLogController::class, 'reset'])->name('water.reset');
-
-    Route::post('fasting/toggle', [FastingController::class, 'toggle'])->name('fasting.toggle');
-    Route::post('fasting', [FastingController::class, 'store'])->name('fasting.store');
-    Route::patch('fasting/{fasting}/complete', [FastingController::class, 'complete'])->name('fasting.complete');
-
-    Route::get('exercises', [ExerciseController::class, 'index'])->name('exercises.index');
-    Route::get('exercises/create', [ExerciseController::class, 'create'])->name('exercises.create');
-    Route::post('exercises', [ExerciseController::class, 'store'])->name('exercises.store');
-    Route::get('exercises/{exercise}/edit', [ExerciseController::class, 'edit'])->name('exercises.edit');
-    Route::put('exercises/{exercise}', [ExerciseController::class, 'update'])->name('exercises.update');
-    Route::delete('exercises/{exercise}', [ExerciseController::class, 'destroy'])->name('exercises.destroy');
-
-    Route::get('activities', [ActivityController::class, 'index'])->name('activities.index');
-    Route::get('activities/create', [ActivityController::class, 'create'])->name('activities.create');
-    Route::post('activities', [ActivityController::class, 'store'])->name('activities.store');
-    Route::get('activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
-    Route::put('activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
-    Route::delete('activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
-
-    Route::get('reminders', [ReminderController::class, 'index'])->name('reminders.index');
-    Route::get('reminders/create', [ReminderController::class, 'create'])->name('reminders.create');
-    Route::post('reminders', [ReminderController::class, 'store'])->name('reminders.store');
-    Route::get('reminders/{reminder}/edit', [ReminderController::class, 'edit'])->name('reminders.edit');
-    Route::put('reminders/{reminder}', [ReminderController::class, 'update'])->name('reminders.update');
-    Route::patch('reminders/{reminder}/toggle', [ReminderController::class, 'toggleAktif'])->name('reminders.toggle');
-    Route::delete('reminders/destroy-all', [ReminderController::class, 'destroyAll'])->name('reminders.destroyAll');
-    Route::delete('reminders/{reminder}', [ReminderController::class, 'destroy'])->name('reminders.destroy');
-    Route::post('reminders/preset', [ReminderController::class, 'addPreset'])->name('reminders.preset');
-    Route::post('reminders/telegram/test', [ReminderController::class, 'testTelegram'])->name('reminders.telegram.test');
-    Route::post('reminders/telegram/config', [ReminderController::class, 'saveTelegramConfig'])->name('reminders.telegram.config');
+    Route::post('webhook/setup', [DietDashboard::class, 'setupWebhook'])->name('webhook.setup');
+    Route::get('webhook/info', [DietDashboard::class, 'webhookInfo'])->name('webhook.info');
+    Route::get('ai-logs', [AiLogController::class, 'index'])->name('ai-logs');
 
     // API
     Route::get('api/foods', function (\Illuminate\Http\Request $request) {

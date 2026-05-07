@@ -5,16 +5,17 @@ namespace App\Models\DietTracker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WaterLog extends Model
+class Badge extends Model
 {
-    protected $table = 'diet_water_logs';
+    protected $table = 'diet_badges';
 
     protected $fillable = [
-        'profile_id', 'tanggal', 'jumlah_ml', 'waktu',
+        'profile_id', 'badge_code', 'badge_name', 'badge_icon',
+        'deskripsi', 'earned_at',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
+        'earned_at' => 'datetime',
     ];
 
     public function profile(): BelongsTo

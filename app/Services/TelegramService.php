@@ -7,272 +7,228 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramService
 {
-    protected string $token;
-    protected string $chatId;
+    private string $botToken;
+    private string $baseUrl;
 
-    public function __construct()
+    public function __construct(?string $token = null)
     {
-        $this->token = config('services.telegram.bot_token', '');
-        $this->chatId = config('services.telegram.chat_id', '');
+        $this->botToken = $token ?? config('services.telegram.bot_token');
+        $this->baseUrl = "https://api.telegram.org/bot{$this->botToken}";
     }
 
     /**
-     * Cek apakah Telegram sudah dikonfigurasi
+     * Kirim pesan teks
      */
-    public function isConfigured(): bool
+    public function sendMessage(string $chatId, string $text, array $options = []): array
     {
-        return !empty($this->token) && !empty($this->chatId);
+        $payload = array_merge([
+            'chat_id' => $chatId,
+            'text' => $text,
+            'parse_mode' => 'HTML',
+        ], $options);
+
+        return $this->request('sendMessage', $payload);
     }
 
     /**
-     * Kirim pesan teks biasa
+     * Kirim pesan dengan inline keyboard
      */
-    public function sendMessage(string $text, ?string $chatId = null): bool
+    public function sendMessageWithKeyboard(string $chatId, string $text, array $keyboard): array
     {
-        if (!$this->isConfigured() && !$chatId) {
-            Log::warning('Telegram not configured');
-            return false;
-        }
-
-        try {
-            $response = Http::timeout(10)->post(
-                "https://api.telegram.org/bot{$this->token}/sendMessage",
-                [
-                    'chat_id' => $chatId ?? $this->chatId,
-                    'text' => $text,
-                    'parse_mode' => 'HTML',
-                    'disable_web_page_preview' => true,
-                ]
-            );
-
-            if ($response->successful()) {
-                return true;
-            }
-
-            Log::error('Telegram send failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-            return false;
-        } catch (\Exception $e) {
-            Log::error('Telegram error: ' . $e->getMessage());
-            return false;
-        }
+        return $this->sendMessage($chatId, $text, [
+            'reply_markup' => json_encode([
+                'inline_keyboard' => $keyboard,
+            ]),
+        ]);
     }
 
     /**
-     * Kirim pengingat makan
+     * Kirim pesan dengan reply keyboard
      */
-    public function sendMakanReminder(string $judul, string $pesan, array $stats = []): bool
+    public function sendMessageWithReplyKeyboard(string $chatId, string $text, array $keyboard, bool $oneTime = true): array
     {
-        $text = "🍽 <b>{$judul}</b>\n\n{$pesan}";
-
-        if (!empty($stats)) {
-            $text .= "\n\n📊 <b>Status Hari Ini:</b>";
-            if (isset($stats['kalori_masuk'])) {
-                $text .= "\n• Kalori masuk: {$stats['kalori_masuk']} / {$stats['target_kalori']} kkal";
-            }
-            if (isset($stats['sisa_kalori'])) {
-                $text .= "\n• Sisa budget: {$stats['sisa_kalori']} kkal";
-            }
-        }
-
-        return $this->sendMessage($text);
+        return $this->sendMessage($chatId, $text, [
+            'reply_markup' => json_encode([
+                'keyboard' => $keyboard,
+                'resize_keyboard' => true,
+                'one_time_keyboard' => $oneTime,
+            ]),
+        ]);
     }
 
     /**
-     * Kirim pengingat olahraga
+     * Hapus reply keyboard
      */
-    public function sendOlahragaReminder(string $judul, string $pesan, array $stats = []): bool
+    public function removeKeyboard(string $chatId, string $text): array
     {
-        $text = "🏃 <b>{$judul}</b>\n\n{$pesan}";
-
-        if (!empty($stats)) {
-            if (isset($stats['kalori_terbakar'])) {
-                $text .= "\n\n🔥 Kalori terbakar hari ini: {$stats['kalori_terbakar']} kkal";
-            }
-        }
-
-        return $this->sendMessage($text);
+        return $this->sendMessage($chatId, $text, [
+            'reply_markup' => json_encode([
+                'remove_keyboard' => true,
+            ]),
+        ]);
     }
 
     /**
-     * Kirim pengingat minum air
+     * Edit pesan yang sudah terkirim
      */
-    public function sendMinumReminder(string $judul, string $pesan, array $stats = []): bool
+    public function editMessage(string $chatId, int $messageId, string $text, ?array $keyboard = null): array
     {
-        $text = "💧 <b>{$judul}</b>\n\n{$pesan}";
-
-        if (!empty($stats)) {
-            if (isset($stats['total_minum'])) {
-                $persen = $stats['target_air'] > 0 ? round(($stats['total_minum'] / $stats['target_air']) * 100) : 0;
-                $text .= "\n\n📊 Progress: {$stats['total_minum']}ml / {$stats['target_air']}ml ({$persen}%)";
-                $sisa = max(0, $stats['target_air'] - $stats['total_minum']);
-                if ($sisa > 0) {
-                    $gelasLagi = ceil($sisa / 250);
-                    $text .= "\n• Sisa: {$sisa}ml (~{$gelasLagi} gelas lagi)";
-                } else {
-                    $text .= "\n✅ Target tercapai!";
-                }
-            }
-        }
-
-        return $this->sendMessage($text);
-    }
-
-    /**
-     * Kirim pengingat timbang badan
-     */
-    public function sendTimbangReminder(string $judul, string $pesan, array $stats = []): bool
-    {
-        $text = "⚖️ <b>{$judul}</b>\n\n{$pesan}";
-
-        if (!empty($stats)) {
-            if (isset($stats['berat_sekarang'])) {
-                $text .= "\n\n📊 Berat terakhir: {$stats['berat_sekarang']} kg";
-                $text .= "\n• Target: {$stats['berat_target']} kg";
-                $sisa = round($stats['berat_sekarang'] - $stats['berat_target'], 1);
-                $text .= "\n• Sisa: {$sisa} kg lagi";
-            }
-        }
-
-        return $this->sendMessage($text);
-    }
-
-    /**
-     * Kirim pengingat tidur
-     */
-    public function sendTidurReminder(string $judul, string $pesan): bool
-    {
-        $text = "😴 <b>{$judul}</b>\n\n{$pesan}";
-        return $this->sendMessage($text);
-    }
-
-    /**
-     * Kirim ringkasan harian
-     */
-    public function sendDailySummary(array $data): bool
-    {
-        $text = "📋 <b>Ringkasan Hari Ini</b>\n";
-        $text .= "📅 " . now()->translatedFormat('l, d F Y') . "\n\n";
-
-        $text .= "🍽 <b>Makan:</b>\n";
-        $text .= "• Kalori masuk: " . number_format($data['kalori_masuk']) . " / " . number_format($data['target_kalori']) . " kkal\n";
-        $text .= "• Sisa budget: " . number_format($data['sisa_kalori']) . " kkal\n\n";
-
-        $text .= "🏃 <b>Olahraga:</b>\n";
-        $text .= "• Kalori terbakar: " . number_format($data['kalori_terbakar']) . " kkal\n\n";
-
-        $text .= "💧 <b>Minum:</b>\n";
-        $text .= "• Total: " . number_format($data['total_minum']) . " / " . number_format($data['target_air']) . "ml\n\n";
-
-        $text .= "⚖️ <b>Berat:</b> {$data['berat_sekarang']} kg (target: {$data['berat_target']} kg)\n";
-
-        $status = $data['sisa_kalori'] >= 0 ? '✅ On Track' : '⚠️ Kalori Berlebih';
-        $text .= "\n<b>Status: {$status}</b>";
-
-        return $this->sendMessage($text);
-    }
-
-    /**
-     * Test koneksi
-     */
-    /**
-     * Kirim file/dokumen
-     */
-    public function sendDocument(string $filePath, ?string $caption = null, ?string $chatId = null): bool
-    {
-        if (!$this->isConfigured() && !$chatId) {
-            Log::warning('Telegram not configured');
-            return false;
-        }
-
-        if (!file_exists($filePath)) {
-            Log::error('Telegram sendDocument: file not found: ' . $filePath);
-            return false;
-        }
-
-        try {
-            $response = Http::timeout(30)
-                ->attach('document', file_get_contents($filePath), basename($filePath))
-                ->post("https://api.telegram.org/bot{$this->token}/sendDocument", [
-                    'chat_id' => $chatId ?? $this->chatId,
-                    'caption' => $caption,
-                    'parse_mode' => 'HTML',
-                ]);
-
-            if ($response->successful()) {
-                return true;
-            }
-
-            Log::error('Telegram sendDocument failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-            return false;
-        } catch (\Exception $e) {
-            Log::error('Telegram sendDocument error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Kirim pesan dengan token custom (untuk bot lain)
-     */
-    public function sendMessageWithToken(string $token, string $chatId, string $text): bool
-    {
-        try {
-            $response = Http::timeout(10)->post(
-                "https://api.telegram.org/bot{$token}/sendMessage",
-                [
-                    'chat_id' => $chatId,
-                    'text' => $text,
-                    'parse_mode' => 'HTML',
-                    'disable_web_page_preview' => true,
-                ]
-            );
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::error('Telegram error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Kirim file dengan token custom (untuk bot lain)
-     */
-    public function sendDocumentWithToken(string $token, string $chatId, string $filePath, ?string $caption = null): bool
-    {
-        if (!file_exists($filePath)) {
-            return false;
-        }
-
-        try {
-            $response = Http::timeout(30)
-                ->attach('document', file_get_contents($filePath), basename($filePath))
-                ->post("https://api.telegram.org/bot{$token}/sendDocument", [
-                    'chat_id' => $chatId,
-                    'caption' => $caption,
-                    'parse_mode' => 'HTML',
-                ]);
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::error('Telegram sendDocument error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function testConnection(): array
-    {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'Token atau Chat ID belum diisi'];
-        }
-
-        $sent = $this->sendMessage("✅ <b>Test Koneksi Berhasil!</b>\n\nBot pengingat diet sudah terhubung.\n🕐 " . now()->format('H:i:s d/m/Y'));
-
-        return [
-            'success' => $sent,
-            'message' => $sent ? 'Pesan test berhasil dikirim!' : 'Gagal mengirim pesan. Cek token dan chat_id.',
+        $payload = [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'text' => $text,
+            'parse_mode' => 'HTML',
         ];
+
+        if ($keyboard) {
+            $payload['reply_markup'] = json_encode([
+                'inline_keyboard' => $keyboard,
+            ]);
+        }
+
+        return $this->request('editMessageText', $payload);
+    }
+
+    /**
+     * Answer callback query
+     */
+    public function answerCallback(string $callbackId, string $text = '', bool $showAlert = false): array
+    {
+        return $this->request('answerCallbackQuery', [
+            'callback_query_id' => $callbackId,
+            'text' => $text,
+            'show_alert' => $showAlert,
+        ]);
+    }
+
+    /**
+     * Kirim foto
+     */
+    public function sendPhoto(string $chatId, string $photoUrl, string $caption = ''): array
+    {
+        return $this->request('sendPhoto', [
+            'chat_id' => $chatId,
+            'photo' => $photoUrl,
+            'caption' => $caption,
+            'parse_mode' => 'HTML',
+        ]);
+    }
+
+    /**
+     * Kirim action (typing, upload_photo, etc)
+     */
+    public function sendChatAction(string $chatId, string $action = 'typing'): array
+    {
+        return $this->request('sendChatAction', [
+            'chat_id' => $chatId,
+            'action' => $action,
+        ]);
+    }
+
+    /**
+     * Get file URL from file_id
+     */
+    public function getFileUrl(string $fileId): ?string
+    {
+        $result = $this->request('getFile', ['file_id' => $fileId]);
+
+        if (isset($result['result']['file_path'])) {
+            return "https://api.telegram.org/file/bot{$this->botToken}/{$result['result']['file_path']}";
+        }
+
+        return null;
+    }
+
+    /**
+     * Set webhook
+     */
+    public function setWebhook(string $url): array
+    {
+        return $this->request('setWebhook', [
+            'url' => $url,
+            'allowed_updates' => ['message', 'callback_query'],
+        ]);
+    }
+
+    /**
+     * Delete webhook
+     */
+    public function deleteWebhook(): array
+    {
+        return $this->request('deleteWebhook');
+    }
+
+    /**
+     * Get webhook info
+     */
+    public function getWebhookInfo(): array
+    {
+        return $this->request('getWebhookInfo');
+    }
+
+    /**
+     * Set bot commands menu
+     */
+    public function setMyCommands(): array
+    {
+        $commands = [
+            ['command' => 'start', 'description' => 'Mulai bot & setup profil'],
+            ['command' => 'menu', 'description' => 'Tampilkan menu utama'],
+            ['command' => 'makan', 'description' => 'Catat makanan (contoh: /makan nasi goreng)'],
+            ['command' => 'air', 'description' => 'Catat minum air (contoh: /air 500)'],
+            ['command' => 'berat', 'description' => 'Catat berat badan (contoh: /berat 70.5)'],
+            ['command' => 'olahraga', 'description' => 'Catat olahraga'],
+            ['command' => 'dashboard', 'description' => 'Lihat ringkasan hari ini'],
+            ['command' => 'stats', 'description' => 'Statistik mingguan'],
+            ['command' => 'profil', 'description' => 'Lihat/edit profil'],
+            ['command' => 'target', 'description' => 'Lihat target harian'],
+            ['command' => 'riwayat', 'description' => 'Riwayat makanan hari ini'],
+            ['command' => 'rekomendasi', 'description' => 'Rekomendasi menu AI'],
+            ['command' => 'badge', 'description' => 'Lihat achievement badges'],
+            ['command' => 'reminder', 'description' => 'Atur pengingat'],
+            ['command' => 'help', 'description' => 'Bantuan penggunaan bot'],
+        ];
+
+        return $this->request('setMyCommands', ['commands' => $commands]);
+    }
+
+    /**
+     * Send document
+     */
+    public function sendDocument(string $chatId, string $filePath, string $caption = '', ?string $token = null): array
+    {
+        $url = $token
+            ? "https://api.telegram.org/bot{$token}/sendDocument"
+            : "{$this->baseUrl}/sendDocument";
+
+        try {
+            $response = Http::timeout(30)
+                ->attach('document', file_get_contents($filePath), basename($filePath))
+                ->post($url, [
+                    'chat_id' => $chatId,
+                    'caption' => $caption,
+                ]);
+
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            Log::error('Telegram sendDocument error', ['error' => $e->getMessage()]);
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Make API request
+     */
+    private function request(string $method, array $params = []): array
+    {
+        try {
+            $response = Http::timeout(15)
+                ->post("{$this->baseUrl}/{$method}", $params);
+
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            Log::error("Telegram API error [{$method}]", ['error' => $e->getMessage()]);
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
     }
 }

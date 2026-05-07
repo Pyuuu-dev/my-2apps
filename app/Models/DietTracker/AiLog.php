@@ -5,16 +5,18 @@ namespace App\Models\DietTracker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WaterLog extends Model
+class AiLog extends Model
 {
-    protected $table = 'diet_water_logs';
+    protected $table = 'diet_ai_logs';
 
     protected $fillable = [
-        'profile_id', 'tanggal', 'jumlah_ml', 'waktu',
+        'profile_id', 'tipe', 'model_used', 'prompt',
+        'response', 'tokens_used', 'response_time_ms',
+        'success', 'error_message',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
+        'success' => 'boolean',
     ];
 
     public function profile(): BelongsTo

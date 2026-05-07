@@ -7,16 +7,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WeightLog extends Model
 {
+    protected $table = 'diet_weight_logs';
+
     protected $fillable = [
-        'diet_plan_id', 'tanggal', 'berat', 'catatan',
+        'profile_id', 'tanggal', 'berat_kg', 'bmi', 'body_fat_pct', 'catatan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'berat_kg' => 'float',
+        'bmi' => 'float',
+        'body_fat_pct' => 'float',
     ];
 
-    public function dietPlan(): BelongsTo
+    public function profile(): BelongsTo
     {
-        return $this->belongsTo(DietPlan::class);
+        return $this->belongsTo(UserProfile::class, 'profile_id');
     }
 }

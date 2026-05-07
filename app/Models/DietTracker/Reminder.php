@@ -7,43 +7,47 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reminder extends Model
 {
+    protected $table = 'diet_reminders';
+
     protected $fillable = [
-        'diet_plan_id', 'judul', 'pesan', 'waktu',
-        'hari_aktif', 'tipe', 'aktif', 'last_sent_at',
+        'profile_id', 'tipe', 'judul', 'pesan', 'waktu',
+        'hari_aktif', 'aktif', 'last_sent_at',
     ];
 
     protected $casts = [
+        'hari_aktif' => 'array',
         'aktif' => 'boolean',
         'last_sent_at' => 'datetime',
     ];
 
-    /**
-     * Cek apakah pengingat harus dikirim hari ini
-     */
-    public function shouldSendToday(): bool
+    public function profile(): BelongsTo
+    {
+        return $this->belongsTo(UserProfile::class, 'profile_id');
+    }
+
+    public function shouldSendNow(): bool
     {
         if (!$this->aktif) return false;
 
-        $dayOfWeek = now()->dayOfWeekIso; // 1=Senin, 7=Minggu
+        $now = now('Asia/Singapore');
+        $currentTime = $now->format('H:i');
+        $currentDay = $now->dayOfWeekIso; // 1=Monday, 7=Sunday
 
-        return match ($this->hari_aktif) {
-            'setiap_hari' => true,
-            'senin_jumat' => $dayOfWeek >= 1 && $dayOfWeek <= 5,
-            'weekend' => $dayOfWeek >= 6,
-            default => true,
-        };
-    }
+        // Check day
+        if ($this->hari_aktif && !in_array($currentDay, $this->hari_aktif)) {
+            return false;
+        }
 
-    /**
-     * Cek apakah sudah dikirim hari ini
-     */
-    public function alreadySentToday(): bool
-    {
-        return $this->last_sent_at && $this->last_sent_at->isToday();
-    }
+        // Check time (within 1 minute window)
+        if ($currentTime !== substr($this->waktu, 0, 5)) {
+            return false;
+        }
 
-    public function dietPlan(): BelongsTo
-    {
-        return $this->belongsTo(DietPlan::class);
+        // Check if already sent today
+        if ($this->last_sent_at && $this->last_sent_at->isToday()) {
+            return false;
+        }
+
+        return true;
     }
 }

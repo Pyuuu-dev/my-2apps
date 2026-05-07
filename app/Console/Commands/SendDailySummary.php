@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\DietTracker\DietPlan;
-use App\Models\DietTracker\Meal;
-use App\Models\DietTracker\Exercise;
-use App\Models\DietTracker\WaterLog;
+use App\Models\DietTracker\UserProfile;
+use App\Models\DietTracker\DailySummary;
 use App\Services\DietHelperService;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
@@ -13,54 +11,31 @@ use Illuminate\Console\Command;
 class SendDailySummary extends Command
 {
     protected $signature = 'reminders:daily-summary';
-    protected $description = 'Kirim ringkasan harian via Telegram';
+    protected $description = 'Kirim ringkasan harian ke semua user aktif';
 
-    public function handle(): int
+    public function handle(): void
     {
         $telegram = new TelegramService();
+        $profiles = UserProfile::where('aktif', true)
+            ->whereNotNull('kalori_target')
+            ->get();
 
-        if (!$telegram->isConfigured()) {
-            $this->info('Telegram belum dikonfigurasi. Skip.');
-            return 0;
+        $sent = 0;
+
+        foreach ($profiles as $profile) {
+            // Recalculate daily summary
+            $today = now('Asia/Singapore')->toDateString();
+            DailySummary::recalculate($profile->id, $today);
+
+            // Generate and send summary
+            $text = DietHelperService::generateDailySummaryText($profile);
+            $result = $telegram->sendMessage($profile->telegram_chat_id, $text);
+
+            if ($result['ok'] ?? false) {
+                $sent++;
+            }
         }
 
-        $plan = DietPlan::getActivePlan();
-        if (!$plan) {
-            $this->info('Tidak ada program diet aktif.');
-            return 0;
-        }
-
-        $today = now()->toDateString();
-
-        $kaloriMasuk = Meal::where('diet_plan_id', $plan->id)
-            ->whereDate('tanggal', $today)->sum('kalori');
-        $kaloriTerbakar = Exercise::where('diet_plan_id', $plan->id)
-            ->whereDate('tanggal', $today)->sum('kalori_terbakar');
-        $totalMinum = WaterLog::where('diet_plan_id', $plan->id)
-            ->whereDate('tanggal', $today)->sum('jumlah_ml');
-
-        $smart = DietHelperService::generateSmartPlan(
-            $plan->gender, $plan->umur, $plan->tinggi_cm,
-            $plan->berat_sekarang ?? $plan->berat_awal, $plan->level_aktivitas
-        );
-
-        $success = $telegram->sendDailySummary([
-            'kalori_masuk' => $kaloriMasuk,
-            'target_kalori' => $plan->kalori_harian_target,
-            'sisa_kalori' => $plan->kalori_harian_target - $kaloriMasuk,
-            'kalori_terbakar' => $kaloriTerbakar,
-            'total_minum' => $totalMinum,
-            'target_air' => $smart['target_harian']['air_ml'],
-            'berat_sekarang' => $plan->berat_sekarang ?? $plan->berat_awal,
-            'berat_target' => $plan->berat_target,
-        ]);
-
-        if ($success) {
-            $this->info('Ringkasan harian berhasil dikirim!');
-        } else {
-            $this->error('Gagal mengirim ringkasan harian.');
-        }
-
-        return $success ? 0 : 1;
+        $this->info("Sent daily summary to {$sent} users.");
     }
 }

@@ -5,10 +5,12 @@ namespace App\Models\DietTracker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Exercise extends Model
+class ExerciseLog extends Model
 {
+    protected $table = 'diet_exercise_logs';
+
     protected $fillable = [
-        'diet_plan_id', 'tanggal', 'jenis_olahraga', 'durasi_menit',
+        'profile_id', 'tanggal', 'jenis_olahraga', 'durasi_menit',
         'kalori_terbakar', 'intensitas', 'catatan',
     ];
 
@@ -16,8 +18,8 @@ class Exercise extends Model
         'tanggal' => 'date',
     ];
 
-    public function dietPlan(): BelongsTo
+    public function profile(): BelongsTo
     {
-        return $this->belongsTo(DietPlan::class);
+        return $this->belongsTo(UserProfile::class, 'profile_id');
     }
 }

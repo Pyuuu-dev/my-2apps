@@ -6,15 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class FoodDatabase extends Model
 {
-    protected $table = 'food_database';
+    protected $table = 'diet_food_database';
 
     protected $fillable = [
         'nama', 'kategori', 'kalori', 'protein', 'karbohidrat',
         'lemak', 'satuan_porsi', 'berat_gram',
     ];
 
-    public function scopeKategori($query, string $kategori)
+    public static function search(string $query, int $limit = 5): \Illuminate\Database\Eloquent\Collection
     {
-        return $query->where('kategori', $kategori);
+        return static::where('nama', 'like', "%{$query}%")
+            ->orderBy('nama')
+            ->limit($limit)
+            ->get();
     }
 }
