@@ -172,21 +172,24 @@ class TelegramService
     public function setMyCommands(): array
     {
         $commands = [
-            ['command' => 'start', 'description' => 'Mulai bot & setup profil'],
-            ['command' => 'menu', 'description' => 'Tampilkan menu utama'],
-            ['command' => 'makan', 'description' => 'Catat makanan (contoh: /makan nasi goreng)'],
-            ['command' => 'air', 'description' => 'Catat minum air (contoh: /air 500)'],
-            ['command' => 'berat', 'description' => 'Catat berat badan (contoh: /berat 70.5)'],
+            ['command' => 'menu', 'description' => 'Menu utama'],
+            ['command' => 'makan', 'description' => 'Catat makanan (support: nasi + ayam + teh)'],
+            ['command' => 'air', 'description' => 'Catat air minum (ml)'],
+            ['command' => 'berat', 'description' => 'Catat berat badan (kg)'],
             ['command' => 'olahraga', 'description' => 'Catat olahraga'],
-            ['command' => 'dashboard', 'description' => 'Lihat ringkasan hari ini'],
+            ['command' => 'd', 'description' => 'Dashboard hari ini'],
             ['command' => 'stats', 'description' => 'Statistik mingguan'],
-            ['command' => 'profil', 'description' => 'Lihat/edit profil'],
-            ['command' => 'target', 'description' => 'Lihat target harian'],
-            ['command' => 'riwayat', 'description' => 'Riwayat makanan hari ini'],
-            ['command' => 'rekomendasi', 'description' => 'Rekomendasi menu AI'],
-            ['command' => 'badge', 'description' => 'Lihat achievement badges'],
-            ['command' => 'reminder', 'description' => 'Atur pengingat'],
-            ['command' => 'help', 'description' => 'Bantuan penggunaan bot'],
+            ['command' => 'riwayat', 'description' => 'Riwayat makan (+ kemarin/3 hari)'],
+            ['command' => 'fav', 'description' => 'Quick add dari favorit'],
+            ['command' => 'rekomendasi', 'description' => 'AI rekomendasi menu'],
+            ['command' => 'smartreminder', 'description' => 'AI saran jadwal reminder'],
+            ['command' => 'timeline', 'description' => 'Estimasi capai target berat'],
+            ['command' => 'motivasi', 'description' => 'Motivasi harian AI'],
+            ['command' => 'puasa', 'description' => 'Intermittent fasting tracker'],
+            ['command' => 'tidur', 'description' => 'Catat tidur (23:00 06:30)'],
+            ['command' => 'profil', 'description' => 'Lihat profil & body metrics'],
+            ['command' => 'badge', 'description' => 'Achievement badges'],
+            ['command' => 'help', 'description' => 'Panduan lengkap'],
         ];
 
         return $this->request('setMyCommands', ['commands' => $commands]);

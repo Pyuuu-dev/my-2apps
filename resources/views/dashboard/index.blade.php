@@ -90,7 +90,7 @@
                     <p class="text-[9px] text-emerald-200">kg</p>
                 </div>
                 <div class="rounded-lg bg-white/15 p-2 text-center">
-                    <p class="text-base font-extrabold">{{ $dtStats['bmi']['bmi'] }}</p>
+                    <p class="text-base font-extrabold">{{ $dtStats['bmi'] ?? '-' }}</p>
                     <p class="text-[9px] text-emerald-200">BMI</p>
                 </div>
             </div>

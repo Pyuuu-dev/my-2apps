@@ -227,6 +227,25 @@ Route::prefix('diet')->name('diet.')->group(function () {
     Route::get('webhook/info', [DietDashboard::class, 'webhookInfo'])->name('webhook.info');
     Route::get('ai-logs', [AiLogController::class, 'index'])->name('ai-logs');
 
+    // Users
+    Route::get('users', [\App\Http\Controllers\DietTracker\UserController::class, 'index'])->name('users.index');
+    Route::get('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'show'])->name('users.show');
+    Route::put('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'update'])->name('users.update');
+    Route::post('users/{profile}/recalculate', [\App\Http\Controllers\DietTracker\UserController::class, 'recalculate'])->name('users.recalculate');
+    Route::post('users/{profile}/send-message', [\App\Http\Controllers\DietTracker\UserController::class, 'sendMessage'])->name('users.send-message');
+    Route::post('users/{profile}/reset-data', [\App\Http\Controllers\DietTracker\UserController::class, 'resetData'])->name('users.reset-data');
+    Route::delete('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('users-broadcast', [\App\Http\Controllers\DietTracker\UserController::class, 'broadcast'])->name('users.broadcast');
+
+    // Statistik
+    Route::get('stats', [\App\Http\Controllers\DietTracker\StatsController::class, 'index'])->name('stats');
+
+    // Food Database CRUD
+    Route::get('food-db', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'index'])->name('food-db');
+    Route::post('food-db', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'store'])->name('food-db.store');
+    Route::put('food-db/{food}', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'update'])->name('food-db.update');
+    Route::delete('food-db/{food}', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'destroy'])->name('food-db.destroy');
+
     // API
     Route::get('api/foods', function (\Illuminate\Http\Request $request) {
         $q = $request->get('q', '');

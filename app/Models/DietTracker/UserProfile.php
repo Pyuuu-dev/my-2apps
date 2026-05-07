@@ -14,13 +14,16 @@ class UserProfile extends Model
         'telegram_chat_id', 'nama', 'username', 'gender', 'umur',
         'tinggi_cm', 'berat_kg', 'berat_target', 'level_aktivitas', 'goal',
         'kalori_target', 'protein_target', 'karbo_target', 'lemak_target',
-        'bmr', 'tdee', 'bmi', 'body_fat_pct', 'timezone', 'aktif',
-        'state', 'state_data',
+        'air_target_ml', 'bmr', 'tdee', 'bmi', 'body_fat_pct', 'timezone', 'aktif',
+        'state', 'state_data', 'ai_requests_today', 'ai_requests_date',
+        'max_ai_requests', 'proactive_nudge', 'fasting_type', 'fasting_active',
     ];
 
     protected $casts = [
         'state_data' => 'array',
         'aktif' => 'boolean',
+        'proactive_nudge' => 'boolean',
+        'fasting_active' => 'boolean',
         'berat_kg' => 'float',
         'berat_target' => 'float',
         'tinggi_cm' => 'float',
@@ -28,6 +31,7 @@ class UserProfile extends Model
         'tdee' => 'float',
         'bmi' => 'float',
         'body_fat_pct' => 'float',
+        'ai_requests_date' => 'date',
     ];
 
     public static function findByChatId(string $chatId): ?self
@@ -81,6 +85,60 @@ class UserProfile extends Model
     public function dailySummaries(): HasMany
     {
         return $this->hasMany(DailySummary::class, 'profile_id');
+    }
+
+    public function foodFavorites(): HasMany
+    {
+        return $this->hasMany(FoodFavorite::class, 'profile_id');
+    }
+
+    public function fastingLogs(): HasMany
+    {
+        return $this->hasMany(FastingLog::class, 'profile_id');
+    }
+
+    public function sleepLogs(): HasMany
+    {
+        return $this->hasMany(SleepLog::class, 'profile_id');
+    }
+
+    // === HELPER METHODS ===
+
+    public function getAirTarget(): int
+    {
+        if ($this->air_target_ml) return $this->air_target_ml;
+        // 30-35ml per kg berat badan
+        if ($this->berat_kg) return (int) round($this->berat_kg * 33);
+        return 2500;
+    }
+
+    public function canUseAi(): bool
+    {
+        $today = now('Asia/Singapore')->toDateString();
+        if ($this->ai_requests_date?->toDateString() !== $today) {
+            $this->update(['ai_requests_today' => 0, 'ai_requests_date' => $today]);
+            return true;
+        }
+        return $this->ai_requests_today < ($this->max_ai_requests ?? 50);
+    }
+
+    public function incrementAiUsage(): void
+    {
+        $today = now('Asia/Singapore')->toDateString();
+        if ($this->ai_requests_date?->toDateString() !== $today) {
+            $this->update(['ai_requests_today' => 1, 'ai_requests_date' => $today]);
+        } else {
+            $this->increment('ai_requests_today');
+        }
+    }
+
+    public function getActiveFasting(): ?FastingLog
+    {
+        if (!$this->fasting_active) return null;
+        return FastingLog::where('profile_id', $this->id)
+            ->where('completed', false)
+            ->orderByDesc('created_at')
+            ->first();
     }
 
     public function aiLogs(): HasMany

@@ -193,67 +193,75 @@
     </div>
 
     {{-- Saldo Wallet --}}
-    <div class="glass-card rounded-2xl p-5" x-data="{ showForm: false }">
+    @php
+        $walletCards = [
+            'dana' => ['Dana', '#0070ba', 'from-blue-600 to-blue-700', 'border-blue-500'],
+            'gopay' => ['GoPay', '#00aed6', 'from-cyan-500 to-cyan-600', 'border-cyan-500'],
+            'shopeepay' => ['ShopeePay', '#ee4d2d', 'from-orange-500 to-red-500', 'border-orange-500'],
+            'seabank' => ['SeaBank', '#00b4d8', 'from-sky-500 to-sky-600', 'border-sky-500'],
+            'bank_kalsel' => ['Bank Kalsel', '#1a5276', 'from-slate-600 to-slate-700', 'border-slate-500'],
+            'bri' => ['BRI', '#003d79', 'from-blue-800 to-blue-900', 'border-blue-800'],
+            'qris' => ['QRIS', '#e31937', 'from-red-600 to-red-700', 'border-red-500'],
+            'cash' => ['Cash', '#6b7280', 'from-gray-500 to-gray-600', 'border-gray-500'],
+        ];
+    @endphp
+    <div class="glass-card rounded-2xl p-5" x-data="walletManager()">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold text-gray-900">Saldo Wallet</h3>
-            <button @click="showForm = !showForm" class="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" :class="showForm ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'" x-text="showForm ? 'Tutup' : 'Update Saldo'"></button>
-        </div>
-
-        @php
-            $walletCards = [
-                'dana' => ['Dana', '#0070ba', 'from-blue-600 to-blue-700'],
-                'gopay' => ['GoPay', '#00aed6', 'from-cyan-500 to-cyan-600'],
-                'shopeepay' => ['ShopeePay', '#ee4d2d', 'from-orange-500 to-red-500'],
-                'seabank' => ['SeaBank', '#00b4d8', 'from-sky-500 to-sky-600'],
-                'bank_kalsel' => ['Bank Kalsel', '#1a5276', 'from-slate-600 to-slate-700'],
-                'bri' => ['BRI', '#003d79', 'from-blue-800 to-blue-900'],
-                'qris' => ['QRIS', '#e31937', 'from-red-600 to-red-700'],
-                'cash' => ['Cash', '#6b7280', 'from-gray-500 to-gray-600'],
-            ];
-        @endphp
-
-        {{-- Display Mode --}}
-        <div x-show="!showForm">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                @foreach($walletCards as $key => [$label, $clr, $gradient])
-                @php $saldo = $wallet->$key ?? 0; @endphp
-                <div class="rounded-xl bg-gradient-to-br {{ $gradient }} p-2.5 text-white">
-                    <p class="text-[10px] text-white/70">{{ $label }}</p>
-                    <p class="text-sm font-extrabold">{{ number_format($saldo) }}</p>
-                </div>
-                @endforeach
+            <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">Saldo Wallet</h3>
+                @if($wallet)
+                <p class="text-[10px] text-gray-400">Terakhir update: {{ $wallet->tanggal->translatedFormat('d F Y') }}</p>
+                @endif
             </div>
-            @if($wallet)
-            <p class="text-[10px] text-gray-400 mt-3 text-right">Update: {{ $wallet->tanggal->translatedFormat('d F Y') }}</p>
-            @endif
+            <button @click="editing = !editing" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all" :class="editing ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400'">
+                <svg x-show="!editing" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <svg x-show="editing" x-cloak class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <span x-text="editing ? 'Batal' : 'Update'"></span>
+            </button>
         </div>
 
-        {{-- Edit Mode --}}
-        <div x-show="showForm" x-collapse x-cloak>
-            <form method="POST" action="{{ route('bloxfruit.profit.wallet') }}" class="space-y-3" x-data="walletForm()">
-                @csrf
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    @foreach($walletCards as $key => [$label, $clr, $gradient])
-                    <div class="rounded-xl border border-gray-200 dark:border-slate-700 p-2.5">
-                        <div class="flex items-center gap-1.5 mb-1.5">
+        <form method="POST" action="{{ route('bloxfruit.profit.wallet') }}">
+            @csrf
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+                @foreach($walletCards as $key => [$label, $clr, $gradient, $border])
+                @php $saldo = $wallet->$key ?? 0; @endphp
+                <div class="rounded-xl overflow-hidden transition-all" :class="editing ? 'border-2 {{ $border }} shadow-md' : ''">
+                    {{-- Display --}}
+                    <div x-show="!editing" class="bg-gradient-to-br {{ $gradient }} p-3 text-white">
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <div class="h-2 w-2 rounded-full bg-white/40"></div>
+                            <p class="text-[10px] text-white/80 font-medium">{{ $label }}</p>
+                        </div>
+                        <p class="text-base font-extrabold transition-all" :class="spoiler && 'blur-md select-none'">{{ number_format($saldo) }}</p>
+                    </div>
+                    {{-- Edit --}}
+                    <div x-show="editing" x-cloak class="bg-white dark:bg-slate-800 p-3">
+                        <div class="flex items-center gap-1.5 mb-2">
                             <div class="h-2.5 w-2.5 rounded-full" style="background: {{ $clr }}"></div>
                             <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">{{ $label }}</label>
                         </div>
-                        <input type="hidden" name="{{ $key }}" :value="vals['{{ $key }}']">
-                        <input type="text" :value="fmt(vals['{{ $key }}'])" @input="vals['{{ $key }}'] = parse($event.target.value); $event.target.value = fmt(vals['{{ $key }}'])" class="w-full rounded-lg border-gray-300 text-xs text-right font-bold h-9 focus:border-indigo-500 focus:ring-indigo-500 pr-2">
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">Rp</span>
+                            <input type="hidden" name="{{ $key }}" :value="vals['{{ $key }}']">
+                            <input type="text" :value="fmt(vals['{{ $key }}'])" @input="vals['{{ $key }}'] = parse($event.target.value); $event.target.value = fmt(vals['{{ $key }}'])" @focus="$event.target.select()" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm text-right font-bold h-10 focus:border-indigo-500 focus:ring-indigo-500 pr-2 pl-8">
+                        </div>
                     </div>
-                    @endforeach
                 </div>
-                <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                    <p class="text-[10px] text-gray-500">Total Saldo</p>
-                    <p class="text-lg font-extrabold text-emerald-600" x-text="'Rp ' + fmt(Object.values(vals).reduce((a,b) => a+b, 0))"></p>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Simpan Saldo</button>
-                    <button type="button" @click="showForm = false" class="rounded-lg bg-gray-100 dark:bg-slate-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Batal</button>
-                </div>
-            </form>
-        </div>
+                @endforeach
+            </div>
+
+            {{-- Total + Save --}}
+            <div class="rounded-xl p-3 text-center transition-all" :class="editing ? 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800' : 'bg-gray-50 dark:bg-slate-800'">
+                <p class="text-[10px] text-gray-500">Total Saldo</p>
+                <p class="text-xl font-extrabold text-emerald-600 transition-all" :class="spoiler && !editing && 'blur-md select-none'" x-text="'Rp ' + fmt(Object.values(vals).reduce((a,b) => a+b, 0))"></p>
+            </div>
+
+            <div x-show="editing" x-collapse x-cloak class="mt-3">
+                <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/20 transition-all">
+                    Simpan Saldo
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -404,8 +412,9 @@ function txHistory(records) {
         fmt(n) { return new Intl.NumberFormat('id-ID').format(n); }
     }
 }
-function walletForm() {
+function walletManager() {
     return {
+        editing: false,
         vals: {
             dana: {{ $wallet->dana ?? 0 }},
             gopay: {{ $wallet->gopay ?? 0 }},

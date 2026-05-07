@@ -32,7 +32,7 @@ class FoodLog extends Model
     public function scopeToday($query, $profileId)
     {
         return $query->where('profile_id', $profileId)
-            ->whereDate('tanggal', now()->toDateString());
+            ->whereDate('tanggal', now('Asia/Singapore')->toDateString());
     }
 
     public function scopeByDate($query, $profileId, $date)
