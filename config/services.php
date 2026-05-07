@@ -49,6 +49,7 @@ return [
         'api_url' => env('ENOWX_API_URL', 'http://localhost:1430/v1'),
         'api_key' => env('ENOWX_API_KEY'),
         'model' => env('ENOWX_MODEL', 'deepseek-3.2'),
+        'vision_model' => env('ENOWX_VISION_MODEL', 'claude-haiku-4.5'),
     ],
 
 ];

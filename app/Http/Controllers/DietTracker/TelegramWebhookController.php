@@ -27,7 +27,7 @@ class TelegramWebhookController extends Controller
         $data = $request->all();
         $message = $data['message'] ?? null;
 
-        if (!$message || !isset($message['text'])) {
+        if (!$message) {
             return response('ok');
         }
 
@@ -39,8 +39,18 @@ class TelegramWebhookController extends Controller
             return response('ok');
         }
 
-        $text = trim($message['text']);
         $telegram = new TelegramService();
+
+        // Handle photo
+        if (isset($message['photo'])) {
+            return $this->handlePhoto($message, $telegram);
+        }
+
+        if (!isset($message['text'])) {
+            return response('ok');
+        }
+
+        $text = trim($message['text']);
 
         // Parse command
         if (str_starts_with($text, '/minum')) {
@@ -60,6 +70,70 @@ class TelegramWebhookController extends Controller
         // If no command prefix, try AI estimation directly
         if (!str_starts_with($text, '/')) {
             return $this->handleMakan('/makan ' . $text, $telegram);
+        }
+
+        return response('ok');
+    }
+
+    private function handlePhoto(array $message, TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        // Get largest photo (last in array)
+        $photos = $message['photo'];
+        $photo = end($photos);
+        $fileId = $photo['file_id'];
+
+        // Get file URL from Telegram
+        $botToken = config('services.telegram.bot_token');
+        $fileInfo = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", ['file_id' => $fileId])->json();
+
+        if (!($fileInfo['ok'] ?? false)) {
+            $telegram->sendMessage("Gagal memproses foto. Coba lagi.");
+            return response('ok');
+        }
+
+        $filePath = $fileInfo['result']['file_path'];
+        $fileUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+
+        $telegram->sendMessage("📸 Menganalisis foto makanan...");
+
+        // Send to AI Vision
+        $ai = new AiNutritionService();
+        $estimation = $ai->estimateFromImage($fileUrl);
+
+        if ($estimation) {
+            Meal::create([
+                'diet_plan_id' => $plan->id,
+                'tanggal' => now()->toDateString(),
+                'waktu_makan' => $this->guessWaktuMakan(),
+                'nama_makanan' => ucfirst($estimation['nama'] ?? 'Makanan dari foto'),
+                'kalori' => (int) ($estimation['kalori'] ?? 0),
+                'protein' => (float) ($estimation['protein'] ?? 0),
+                'karbohidrat' => (float) ($estimation['karbohidrat'] ?? 0),
+                'lemak' => (float) ($estimation['lemak'] ?? 0),
+                'porsi' => 1,
+            ]);
+
+            $totalKalori = Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', now()->toDateString())->sum('kalori');
+            $nama = ucfirst($estimation['nama'] ?? 'Makanan');
+            $detail = $estimation['detail'] ?? '';
+
+            $msg = "📸 <b>Foto Dianalisis!</b>\n\n";
+            $msg .= "🍽 <b>{$nama}</b>\n";
+            if ($detail) $msg .= "📝 {$detail}\n";
+            $msg .= "🔥 {$estimation['kalori']} kkal\n";
+            $msg .= "📊 P:{$estimation['protein']}g K:{$estimation['karbohidrat']}g L:{$estimation['lemak']}g\n";
+            $msg .= "📏 Porsi: {$estimation['porsi']}\n\n";
+            $msg .= "Total hari ini: {$totalKalori} / {$plan->kalori_harian_target} kkal";
+
+            $telegram->sendMessage($msg);
+        } else {
+            $telegram->sendMessage("Tidak bisa menganalisis foto ini. Coba:\n- Foto lebih jelas/terang\n- Atau ketik manual: /makan [nama makanan]");
         }
 
         return response('ok');
@@ -261,19 +335,21 @@ class TelegramWebhookController extends Controller
     {
         $msg = "🤖 <b>Smart Diet Bot</b>\n\n";
         $msg .= "<b>Commands:</b>\n";
-        $msg .= "/makan [nama] - Catat makan (AI estimasi kalori)\n";
+        $msg .= "📸 Kirim foto makanan → AI analisis kalori\n";
+        $msg .= "/makan [nama] - Catat makan (AI estimasi)\n";
         $msg .= "/minum [ml] - Catat minum air (default 250ml)\n";
         $msg .= "/kalori [nama] [kkal] - Catat manual\n";
         $msg .= "/saran - Saran makanan dari AI\n";
         $msg .= "/status - Progress hari ini\n";
         $msg .= "/help - Bantuan\n\n";
         $msg .= "<b>Smart Input:</b>\n";
-        $msg .= "Ketik nama makanan langsung tanpa /makan juga bisa!\n\n";
+        $msg .= "• Ketik nama makanan langsung → AI estimasi\n";
+        $msg .= "• Kirim foto makanan → AI analisis dari gambar\n\n";
         $msg .= "<b>Contoh:</b>\n";
         $msg .= "nasi goreng\n";
         $msg .= "/makan ayam geprek\n";
         $msg .= "/minum 500\n";
-        $msg .= "/saran\n";
+        $msg .= "📸 [kirim foto]\n";
 
         $telegram->sendMessage($msg);
         return response('ok');
