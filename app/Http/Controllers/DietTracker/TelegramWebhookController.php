@@ -4,6 +4,8 @@ namespace App\Http\Controllers\DietTracker;
 
 use App\Http\Controllers\Controller;
 use App\Models\DietTracker\DietPlan;
+use App\Models\DietTracker\DailyActivity;
+use App\Models\DietTracker\Exercise;
 use App\Models\DietTracker\Meal;
 use App\Models\DietTracker\WaterLog;
 use App\Models\DietTracker\FoodDatabase;
@@ -59,6 +61,18 @@ class TelegramWebhookController extends Controller
             return $this->handleMakan($text, $telegram);
         } elseif (str_starts_with($text, '/kalori')) {
             return $this->handleKaloriManual($text, $telegram);
+        } elseif (str_starts_with($text, '/berat')) {
+            return $this->handleBerat($text, $telegram);
+        } elseif (str_starts_with($text, '/olahraga')) {
+            return $this->handleOlahraga($text, $telegram);
+        } elseif (str_starts_with($text, '/hapus')) {
+            return $this->handleHapus($telegram);
+        } elseif (str_starts_with($text, '/reset_air')) {
+            return $this->handleResetAir($telegram);
+        } elseif (str_starts_with($text, '/riwayat')) {
+            return $this->handleRiwayat($telegram);
+        } elseif (str_starts_with($text, '/target')) {
+            return $this->handleTarget($telegram);
         } elseif (str_starts_with($text, '/saran')) {
             return $this->handleSaran($telegram);
         } elseif (str_starts_with($text, '/status')) {
@@ -303,6 +317,207 @@ class TelegramWebhookController extends Controller
         return response('ok');
     }
 
+    private function handleBerat(string $text, TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $parts = explode(' ', $text, 2);
+        $berat = isset($parts[1]) ? (float) trim($parts[1]) : 0;
+
+        if ($berat < 20 || $berat > 300) {
+            $telegram->sendMessage("Format: /berat [kg]\nContoh: /berat 72.5");
+            return response('ok');
+        }
+
+        $beratLama = $plan->berat_sekarang ?? $plan->berat_awal;
+        $plan->update(['berat_sekarang' => $berat]);
+
+        // Catat ke daily activity
+        DailyActivity::updateOrCreate(
+            ['diet_plan_id' => $plan->id, 'tanggal' => now()->toDateString()],
+            ['berat_badan' => $berat]
+        );
+
+        $selisih = $berat - $beratLama;
+        $emoji = $selisih < 0 ? '📉' : ($selisih > 0 ? '📈' : '➡️');
+        $selisihText = $selisih != 0 ? ' (' . ($selisih > 0 ? '+' : '') . number_format($selisih, 1) . ' kg)' : '';
+        $sisaTarget = $berat - $plan->berat_target;
+
+        $msg = "⚖️ Berat badan diupdate!\n\n";
+        $msg .= "{$emoji} {$berat} kg{$selisihText}\n";
+        $msg .= "🎯 Target: {$plan->berat_target} kg\n";
+        $msg .= "📏 Sisa: " . number_format(abs($sisaTarget), 1) . " kg " . ($sisaTarget > 0 ? 'lagi' : '(sudah tercapai!)');
+
+        $telegram->sendMessage($msg);
+        return response('ok');
+    }
+
+    private function handleOlahraga(string $text, TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        // Parse: /olahraga jogging 30 or /olahraga push up 15
+        $text = trim(str_replace('/olahraga', '', $text));
+        $parts = explode(' ', $text);
+
+        $durasi = 0;
+        $nama = $text;
+
+        if (count($parts) >= 2 && is_numeric(end($parts))) {
+            $durasi = (int) array_pop($parts);
+            $nama = implode(' ', $parts);
+        }
+
+        if (empty($nama) || $durasi <= 0) {
+            $telegram->sendMessage("Format: /olahraga [nama] [menit]\nContoh: /olahraga jogging 30\n/olahraga push up 15");
+            return response('ok');
+        }
+
+        // Estimasi kalori terbakar (rough: 5-8 kal/menit tergantung intensitas)
+        $kalPerMenit = 6;
+        $kaloriTerbakar = $durasi * $kalPerMenit;
+
+        Exercise::create([
+            'diet_plan_id' => $plan->id,
+            'tanggal' => now()->toDateString(),
+            'jenis_olahraga' => ucfirst($nama),
+            'durasi_menit' => $durasi,
+            'kalori_terbakar' => $kaloriTerbakar,
+            'intensitas' => $durasi >= 30 ? 'sedang' : 'ringan',
+        ]);
+
+        $totalHariIni = Exercise::where('diet_plan_id', $plan->id)
+            ->whereDate('tanggal', now()->toDateString())
+            ->sum('kalori_terbakar');
+
+        $msg = "🏃 Olahraga tercatat!\n\n";
+        $msg .= "💪 " . ucfirst($nama) . "\n";
+        $msg .= "⏱ {$durasi} menit\n";
+        $msg .= "🔥 ~{$kaloriTerbakar} kkal terbakar\n\n";
+        $msg .= "Total kalori terbakar hari ini: {$totalHariIni} kkal";
+
+        $telegram->sendMessage($msg);
+        return response('ok');
+    }
+
+    private function handleHapus(TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $lastMeal = Meal::where('diet_plan_id', $plan->id)
+            ->whereDate('tanggal', now()->toDateString())
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$lastMeal) {
+            $telegram->sendMessage("Tidak ada catatan makan hari ini yang bisa dihapus.");
+            return response('ok');
+        }
+
+        $nama = $lastMeal->nama_makanan;
+        $kalori = $lastMeal->kalori;
+        $lastMeal->delete();
+
+        $totalKalori = Meal::where('diet_plan_id', $plan->id)
+            ->whereDate('tanggal', now()->toDateString())
+            ->sum('kalori');
+
+        $telegram->sendMessage("🗑 Dihapus: {$nama} ({$kalori} kkal)\n\nTotal kalori sekarang: {$totalKalori} kkal");
+        return response('ok');
+    }
+
+    private function handleResetAir(TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $count = WaterLog::where('diet_plan_id', $plan->id)
+            ->whereDate('tanggal', now()->toDateString())
+            ->delete();
+
+        $telegram->sendMessage("💧 Air minum hari ini di-reset! ({$count} catatan dihapus)\n\nTotal sekarang: 0 ml");
+        return response('ok');
+    }
+
+    private function handleRiwayat(TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $meals = Meal::where('diet_plan_id', $plan->id)
+            ->whereDate('tanggal', now()->toDateString())
+            ->orderBy('created_at')
+            ->get();
+
+        if ($meals->isEmpty()) {
+            $telegram->sendMessage("Belum ada catatan makan hari ini.");
+            return response('ok');
+        }
+
+        $msg = "📋 <b>Riwayat Makan Hari Ini</b>\n\n";
+        $labels = ['sarapan' => '🌅', 'makan_siang' => '☀️', 'makan_malam' => '🌙', 'snack' => '🍪'];
+        $total = 0;
+
+        foreach ($meals as $i => $meal) {
+            $emoji = $labels[$meal->waktu_makan] ?? '🍽';
+            $msg .= ($i + 1) . ". {$emoji} {$meal->nama_makanan} — {$meal->kalori} kkal\n";
+            $total += $meal->kalori;
+        }
+
+        $msg .= "\n<b>Total: {$total} / {$plan->kalori_harian_target} kkal</b>";
+        $sisa = $plan->kalori_harian_target - $total;
+        if ($sisa > 0) {
+            $msg .= "\nSisa: {$sisa} kkal";
+        } else {
+            $msg .= "\n⚠️ Sudah melebihi target!";
+        }
+
+        $telegram->sendMessage($msg);
+        return response('ok');
+    }
+
+    private function handleTarget(TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $berat = $plan->berat_sekarang ?? $plan->berat_awal;
+        $targetAir = round($berat * 33);
+
+        $msg = "🎯 <b>Target Diet Kamu</b>\n\n";
+        $msg .= "🔥 Kalori harian: {$plan->kalori_harian_target} kkal\n";
+        $msg .= "💧 Air minum: {$targetAir} ml/hari\n";
+        $msg .= "⚖️ Berat sekarang: {$berat} kg\n";
+        $msg .= "🏁 Berat target: {$plan->berat_target} kg\n";
+        $msg .= "📏 Sisa: " . number_format(abs($berat - $plan->berat_target), 1) . " kg\n\n";
+        $msg .= "📅 Program: " . ($plan->tanggal_mulai ? $plan->tanggal_mulai->format('d/m/Y') : '-') . "\n";
+        $msg .= "🏋️ Level aktivitas: {$plan->level_aktivitas}";
+
+        $telegram->sendMessage($msg);
+        return response('ok');
+    }
+
     private function handleSaran(TelegramService $telegram)
     {
         $plan = DietPlan::getActivePlan();
@@ -333,23 +548,28 @@ class TelegramWebhookController extends Controller
 
     private function handleHelp(TelegramService $telegram)
     {
-        $msg = "🤖 <b>Smart Diet Bot</b>\n\n";
-        $msg .= "<b>Commands:</b>\n";
-        $msg .= "📸 Kirim foto makanan → AI analisis kalori\n";
-        $msg .= "/makan [nama] - Catat makan (AI estimasi)\n";
-        $msg .= "/minum [ml] - Catat minum air (default 250ml)\n";
-        $msg .= "/kalori [nama] [kkal] - Catat manual\n";
-        $msg .= "/saran - Saran makanan dari AI\n";
+        $msg = "🤖 <b>Smart Diet Bot - Full Control</b>\n\n";
+        $msg .= "<b>📝 Input:</b>\n";
+        $msg .= "📸 Kirim foto → AI analisis kalori\n";
+        $msg .= "Ketik nama makanan → AI estimasi\n";
+        $msg .= "/makan [nama] - Catat makan\n";
+        $msg .= "/kalori [nama] [kkal] - Input manual\n";
+        $msg .= "/minum [ml] - Catat air (default 250)\n";
+        $msg .= "/berat [kg] - Update berat badan\n";
+        $msg .= "/olahraga [nama] [menit] - Catat olahraga\n\n";
+        $msg .= "<b>📊 Lihat:</b>\n";
         $msg .= "/status - Progress hari ini\n";
-        $msg .= "/help - Bantuan\n\n";
-        $msg .= "<b>Smart Input:</b>\n";
-        $msg .= "• Ketik nama makanan langsung → AI estimasi\n";
-        $msg .= "• Kirim foto makanan → AI analisis dari gambar\n\n";
+        $msg .= "/riwayat - Daftar makan hari ini\n";
+        $msg .= "/target - Target diet kamu\n";
+        $msg .= "/saran - AI saran makanan\n\n";
+        $msg .= "<b>🗑 Edit/Hapus:</b>\n";
+        $msg .= "/hapus - Hapus makan terakhir\n";
+        $msg .= "/reset_air - Reset air hari ini\n\n";
         $msg .= "<b>Contoh:</b>\n";
         $msg .= "nasi goreng\n";
-        $msg .= "/makan ayam geprek\n";
         $msg .= "/minum 500\n";
-        $msg .= "📸 [kirim foto]\n";
+        $msg .= "/berat 72.5\n";
+        $msg .= "/olahraga jogging 30\n";
 
         $telegram->sendMessage($msg);
         return response('ok');
