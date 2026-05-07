@@ -221,6 +221,7 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::delete('profit/{slug}/force', [ProfitController::class, 'forceDelete'])->name('profit.forceDelete');
     Route::post('profit/wallet', [ProfitController::class, 'updateWallet'])->name('profit.wallet');
     Route::post('quick-sell', [QuickSellController::class, 'sell'])->name('quicksell');
+    Route::get('rekap', [\App\Http\Controllers\BloxFruit\RekapController::class, 'index'])->name('rekap');
 });
 
 /*

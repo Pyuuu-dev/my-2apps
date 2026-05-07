@@ -104,33 +104,42 @@ class SearchController extends Controller
             }
         }
 
-        // === CARI SLOT KOSONG ===
-        if ($searchEmpty) {
-            $fruit = BloxFruit::find($searchEmpty);
-            if ($fruit) {
-                $accounts = StorageAccount::where('aktif', true)->with(['fruitStocks' => function ($q) use ($searchEmpty) {
-                    $q->where('blox_fruit_id', $searchEmpty);
-                }])->get();
+        // === CARI SLOT KOSONG (multi-fruit) ===
+        $searchEmptyIds = array_filter($request->get('search_empty', []), fn($v) => $v);
+        if ($searchEmptyIds) {
+            $searchedFruits = BloxFruit::whereIn('id', $searchEmptyIds)->get();
+            $accounts = StorageAccount::where('aktif', true)->with(['fruitStocks' => function ($q) use ($searchEmptyIds) {
+                $q->whereIn('blox_fruit_id', $searchEmptyIds);
+            }])->get();
 
-                $emptyResults = $accounts->map(function ($acc) use ($searchEmpty) {
-                    $stock = $acc->fruitStocks->first();
+            $emptyResults = $accounts->map(function ($acc) use ($searchEmptyIds) {
+                $capacity = $acc->kapasitas_storage;
+                $details = [];
+                $totalAvailable = 0;
+
+                foreach ($searchEmptyIds as $fruitId) {
+                    $stock = $acc->fruitStocks->firstWhere('blox_fruit_id', $fruitId);
                     $current = $stock ? $stock->jumlah : 0;
-                    $capacity = $acc->kapasitas_storage;
                     $available = $capacity - $current;
-                    return [
-                        'akun' => $acc,
-                        'current' => $current,
-                        'capacity' => $capacity,
-                        'available' => $available,
-                    ];
-                })->filter(fn($r) => $r['available'] > 0)->sortByDesc('available')->values();
-            }
+                    $details[$fruitId] = ['current' => $current, 'available' => $available];
+                    $totalAvailable += $available;
+                }
+
+                return [
+                    'akun' => $acc,
+                    'capacity' => $capacity,
+                    'details' => $details,
+                    'total_available' => $totalAvailable,
+                ];
+            })->filter(fn($r) => $r['total_available'] > 0)->sortByDesc('total_available')->values();
+        } else {
+            $searchedFruits = collect();
         }
 
         return view('bloxfruit.search.index', compact(
             'allFruits', 'allSkins', 'allGamepasses', 'allPermanents',
-            'results', 'emptyResults', 'searchedItems', 'hasSearch', 'mode',
-            'fruitIds', 'skinIds', 'gpIds', 'permIds', 'searchEmpty'
+            'results', 'emptyResults', 'searchedFruits', 'searchedItems', 'hasSearch', 'mode',
+            'fruitIds', 'skinIds', 'gpIds', 'permIds', 'searchEmptyIds'
         ));
     }
 }

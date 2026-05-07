@@ -185,7 +185,7 @@ class JokiOrderController extends Controller
             ProfitRecord::where('joki_order_id', $joki->id)->forceDelete();
         }
 
-        return redirect()->route('bloxfruit.joki.index', request()->only('cari', 'status', 'kategori'))
+        return redirect()->route('bloxfruit.joki.index', request()->only('cari', 'kategori'))
             ->with('sukses', 'Status ' . $joki->nama_pelanggan . ' diubah ke ' . ucfirst($statusBaru));
     }
 

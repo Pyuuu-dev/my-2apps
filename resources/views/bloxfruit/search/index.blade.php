@@ -145,9 +145,8 @@
 {{-- ============ CARI SLOT KOSONG ============ --}}
 <div class="glass-card rounded-2xl p-5 mb-6">
     <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Cari Slot Kosong</h3>
-    <p class="text-xs text-gray-500 mb-3">Cari akun yang masih punya slot kosong untuk fruit tertentu (belum penuh sesuai kapasitas storage)</p>
+    <p class="text-xs text-gray-500 mb-3">Cari akun yang masih punya slot kosong untuk fruit tertentu (bisa pilih lebih dari 1)</p>
     <form method="GET" class="flex flex-wrap gap-2 items-end">
-        {{-- Preserve existing search params --}}
         @foreach($fruitIds as $id)<input type="hidden" name="fruits[]" value="{{ $id }}">@endforeach
         @foreach($skinIds as $id)<input type="hidden" name="skins[]" value="{{ $id }}">@endforeach
         @foreach($gpIds as $id)<input type="hidden" name="gamepasses[]" value="{{ $id }}">@endforeach
@@ -155,46 +154,53 @@
         @if($mode !== 'semua')<input type="hidden" name="mode" value="{{ $mode }}">@endif
 
         <div class="flex-1 min-w-[200px]">
-            <select name="search_empty" class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">-- Pilih Fruit --</option>
+            <select name="search_empty[]" multiple class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-[72px]">
                 @php $cr = ''; @endphp
                 @foreach($allFruits as $f)
                     @if($f->rarity !== $cr)
                         @php $cr = $f->rarity; @endphp
                         <optgroup label="{{ $cr }}">
                     @endif
-                    <option value="{{ $f->id }}" {{ ($searchEmpty ?? '') == $f->id ? 'selected' : '' }}>{{ $f->nama }}</option>
+                    <option value="{{ $f->id }}" {{ in_array($f->id, $searchEmptyIds ?? []) ? 'selected' : '' }}>{{ $f->nama }}</option>
                 @endforeach
             </select>
+            <p class="text-[10px] text-gray-400 mt-1">Ctrl+klik untuk pilih lebih dari 1</p>
         </div>
         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Cari Slot</button>
     </form>
 
     @if($emptyResults !== null)
     <div class="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
-        @php $fruitName = $allFruits->firstWhere('id', $searchEmpty)?->nama ?? '?'; @endphp
         <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Akun dengan slot kosong untuk <span class="font-bold text-indigo-600">{{ $fruitName }}</span>: <strong>{{ $emptyResults->count() }}</strong> akun
+            Cari slot untuk: 
+            @foreach($searchedFruits as $sf)
+            <span class="inline-flex rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-bold mr-1">{{ $sf->nama }}</span>
+            @endforeach
+            &mdash; <strong>{{ $emptyResults->count() }}</strong> akun tersedia
         </p>
         @if($emptyResults->count() > 0)
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             @foreach($emptyResults as $r)
             <a href="{{ route('bloxfruit.storage.show', $r['akun']) }}" class="rounded-lg border border-gray-200 dark:border-slate-700 p-3 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-colors">
-                <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center justify-between mb-2">
                     <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $r['akun']->username ?? $r['akun']->nama_akun }}</p>
-                    <span class="text-xs font-bold text-emerald-600">+{{ $r['available'] }} slot</span>
+                    <span class="text-[10px] text-gray-400">Kap: {{ $r['capacity'] }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex-1 h-2 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
-                        <div class="h-2 rounded-full {{ $r['current'] > 0 ? 'bg-indigo-500' : 'bg-gray-200' }}" style="width: {{ round(($r['current'] / max(1, $r['capacity'])) * 100) }}%"></div>
+                @foreach($searchedFruits as $sf)
+                @php $d = $r['details'][$sf->id] ?? ['current' => 0, 'available' => 0]; @endphp
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] text-gray-500 w-16 truncate">{{ $sf->nama }}</span>
+                    <div class="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
+                        <div class="h-1.5 rounded-full {{ $d['current'] >= $r['capacity'] ? 'bg-red-500' : ($d['current'] > 0 ? 'bg-indigo-500' : 'bg-gray-200') }}" style="width: {{ round(($d['current'] / max(1, $r['capacity'])) * 100) }}%"></div>
                     </div>
-                    <span class="text-[10px] text-gray-500">{{ $r['current'] }}/{{ $r['capacity'] }}</span>
+                    <span class="text-[10px] {{ $d['available'] > 0 ? 'text-emerald-600 font-bold' : 'text-red-400' }}">{{ $d['available'] > 0 ? '+' . $d['available'] : 'Penuh' }}</span>
                 </div>
+                @endforeach
             </a>
             @endforeach
         </div>
         @else
-        <p class="text-sm text-gray-400">Semua akun sudah penuh untuk fruit ini.</p>
+        <p class="text-sm text-gray-400">Semua akun sudah penuh untuk fruit yang dipilih.</p>
         @endif
     </div>
     @endif
