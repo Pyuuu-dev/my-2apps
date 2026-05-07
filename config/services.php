@@ -45,4 +45,10 @@ return [
         'chat_id' => env('TELEGRAM_BACKUP_CHAT_ID'),
     ],
 
+    'enowx' => [
+        'api_url' => env('ENOWX_API_URL', 'http://localhost:1430/v1'),
+        'api_key' => env('ENOWX_API_KEY'),
+        'model' => env('ENOWX_MODEL', 'deepseek-3.2'),
+    ],
+
 ];

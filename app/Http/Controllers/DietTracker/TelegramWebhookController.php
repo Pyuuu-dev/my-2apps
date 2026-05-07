@@ -8,6 +8,7 @@ use App\Models\DietTracker\Meal;
 use App\Models\DietTracker\WaterLog;
 use App\Models\DietTracker\FoodDatabase;
 use App\Services\TelegramService;
+use App\Services\AiNutritionService;
 use Illuminate\Http\Request;
 
 class TelegramWebhookController extends Controller
@@ -48,10 +49,17 @@ class TelegramWebhookController extends Controller
             return $this->handleMakan($text, $telegram);
         } elseif (str_starts_with($text, '/kalori')) {
             return $this->handleKaloriManual($text, $telegram);
+        } elseif (str_starts_with($text, '/saran')) {
+            return $this->handleSaran($telegram);
         } elseif (str_starts_with($text, '/status')) {
             return $this->handleStatus($telegram);
         } elseif (str_starts_with($text, '/help') || $text === '/start') {
             return $this->handleHelp($telegram);
+        }
+
+        // If no command prefix, try AI estimation directly
+        if (!str_starts_with($text, '/')) {
+            return $this->handleMakan('/makan ' . $text, $telegram);
         }
 
         return response('ok');
@@ -97,41 +105,55 @@ class TelegramWebhookController extends Controller
         $query = trim($parts[1] ?? '');
 
         if (empty($query)) {
-            $telegram->sendMessage("Format: /makan [nama makanan]\nContoh: /makan nasi goreng");
+            $telegram->sendMessage("Format: /makan [nama makanan]\nContoh: /makan nasi goreng\n\nAI akan otomatis estimasi kalori jika tidak ada di database.");
             return response('ok');
         }
 
-        // Search food database
+        // Search food database first
         $food = FoodDatabase::where('nama', 'like', "%{$query}%")->first();
 
-        if (!$food) {
-            // Show suggestions
-            $suggestions = FoodDatabase::where('nama', 'like', "%{$query}%")->limit(5)->pluck('nama')->implode("\n- ");
-            if ($suggestions) {
-                $telegram->sendMessage("Tidak ditemukan persis. Mungkin maksud:\n- {$suggestions}\n\nAtau pakai /kalori [nama] [kkal] untuk input manual.");
+        if ($food) {
+            // Found in database
+            Meal::create([
+                'diet_plan_id' => $plan->id,
+                'tanggal' => now()->toDateString(),
+                'waktu_makan' => $this->guessWaktuMakan(),
+                'nama_makanan' => $food->nama,
+                'kalori' => $food->kalori,
+                'protein' => $food->protein,
+                'karbohidrat' => $food->karbohidrat,
+                'lemak' => $food->lemak,
+                'porsi' => 1,
+            ]);
+
+            $totalKalori = Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', now()->toDateString())->sum('kalori');
+            $telegram->sendMessage("🍽 {$food->nama} ({$food->kalori} kkal) tercatat!\n📊 P:{$food->protein}g K:{$food->karbohidrat}g L:{$food->lemak}g\n\nTotal hari ini: {$totalKalori} / {$plan->kalori_harian_target} kkal");
+        } else {
+            // Not in database - use AI estimation
+            $ai = new AiNutritionService();
+            $estimation = $ai->estimateCalories($query);
+
+            if ($estimation) {
+                Meal::create([
+                    'diet_plan_id' => $plan->id,
+                    'tanggal' => now()->toDateString(),
+                    'waktu_makan' => $this->guessWaktuMakan(),
+                    'nama_makanan' => ucfirst($estimation['nama'] ?? $query),
+                    'kalori' => (int) ($estimation['kalori'] ?? 0),
+                    'protein' => (float) ($estimation['protein'] ?? 0),
+                    'karbohidrat' => (float) ($estimation['karbohidrat'] ?? 0),
+                    'lemak' => (float) ($estimation['lemak'] ?? 0),
+                    'porsi' => 1,
+                ]);
+
+                $totalKalori = Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', now()->toDateString())->sum('kalori');
+                $nama = ucfirst($estimation['nama'] ?? $query);
+                $telegram->sendMessage("🤖 AI Estimasi: {$nama}\n🔥 {$estimation['kalori']} kkal | P:{$estimation['protein']}g K:{$estimation['karbohidrat']}g L:{$estimation['lemak']}g\n📏 Porsi: {$estimation['porsi']}\n\nTotal hari ini: {$totalKalori} / {$plan->kalori_harian_target} kkal");
             } else {
-                $telegram->sendMessage("Makanan '{$query}' tidak ditemukan di database.\n\nPakai /kalori {$query} [kkal] untuk input manual.");
+                $telegram->sendMessage("Tidak bisa estimasi '{$query}'.\n\nCoba:\n/makan [nama lebih spesifik]\n/kalori {$query} [kkal]");
             }
-            return response('ok');
         }
 
-        Meal::create([
-            'diet_plan_id' => $plan->id,
-            'tanggal' => now()->toDateString(),
-            'waktu_makan' => $this->guessWaktuMakan(),
-            'nama_makanan' => $food->nama,
-            'kalori' => $food->kalori,
-            'protein' => $food->protein,
-            'karbohidrat' => $food->karbohidrat,
-            'lemak' => $food->lemak,
-            'porsi' => 1,
-        ]);
-
-        $totalKalori = Meal::where('diet_plan_id', $plan->id)
-            ->whereDate('tanggal', now()->toDateString())
-            ->sum('kalori');
-
-        $telegram->sendMessage("🍽 {$food->nama} ({$food->kalori} kkal) tercatat!\n\nTotal kalori hari ini: {$totalKalori} kkal\nTarget: {$plan->kalori_harian_target} kkal");
         return response('ok');
     }
 
@@ -207,18 +229,51 @@ class TelegramWebhookController extends Controller
         return response('ok');
     }
 
+    private function handleSaran(TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $today = now()->toDateString();
+        $kaloriMasuk = Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('kalori');
+        $sisaKalori = max(0, $plan->kalori_harian_target - $kaloriMasuk);
+        $waktu = $this->guessWaktuMakan();
+
+        $ai = new AiNutritionService();
+        $saran = $ai->suggestMeals($sisaKalori, $waktu);
+
+        if ($saran) {
+            $msg = "💡 <b>Saran Makanan</b>\n\n";
+            $msg .= "Sisa kalori: {$sisaKalori} kkal\nWaktu: " . ucfirst(str_replace('_', ' ', $waktu)) . "\n\n";
+            $msg .= $saran;
+            $telegram->sendMessage($msg);
+        } else {
+            $telegram->sendMessage("Tidak bisa generate saran saat ini. Coba lagi nanti.");
+        }
+
+        return response('ok');
+    }
+
     private function handleHelp(TelegramService $telegram)
     {
-        $msg = "🤖 <b>Diet Bot Commands</b>\n\n";
+        $msg = "🤖 <b>Smart Diet Bot</b>\n\n";
+        $msg .= "<b>Commands:</b>\n";
+        $msg .= "/makan [nama] - Catat makan (AI estimasi kalori)\n";
         $msg .= "/minum [ml] - Catat minum air (default 250ml)\n";
-        $msg .= "/makan [nama] - Catat makan dari database\n";
-        $msg .= "/kalori [nama] [kkal] - Catat makan manual\n";
-        $msg .= "/status - Lihat progress hari ini\n";
-        $msg .= "/help - Tampilkan bantuan ini\n\n";
+        $msg .= "/kalori [nama] [kkal] - Catat manual\n";
+        $msg .= "/saran - Saran makanan dari AI\n";
+        $msg .= "/status - Progress hari ini\n";
+        $msg .= "/help - Bantuan\n\n";
+        $msg .= "<b>Smart Input:</b>\n";
+        $msg .= "Ketik nama makanan langsung tanpa /makan juga bisa!\n\n";
         $msg .= "<b>Contoh:</b>\n";
+        $msg .= "nasi goreng\n";
+        $msg .= "/makan ayam geprek\n";
         $msg .= "/minum 500\n";
-        $msg .= "/makan nasi goreng\n";
-        $msg .= "/kalori ayam bakar 250\n";
+        $msg .= "/saran\n";
 
         $telegram->sendMessage($msg);
         return response('ok');
