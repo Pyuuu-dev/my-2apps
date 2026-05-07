@@ -366,17 +366,24 @@ PROMPT;
      */
     public function estimateGoalTimeline(array $userData, ?int $profileId = null): array
     {
+        // Inject tanggal hari ini agar AI tidak salah tahun
+        $userData['tanggal_hari_ini'] = now('Asia/Singapore')->format('Y-m-d');
+        $userData['tahun_sekarang'] = (int) now('Asia/Singapore')->format('Y');
         $dataJson = json_encode($userData, JSON_PRETTY_PRINT);
+
+        $todayStr = now('Asia/Singapore')->format('Y-m-d');
 
         $prompt = <<<PROMPT
 Kamu adalah ahli gizi. Hitung estimasi timeline mencapai target berat badan.
+
+TANGGAL HARI INI: {$todayStr}
 
 Data: {$dataJson}
 
 Berikan response JSON SAJA:
 {
     "estimasi_minggu": angka_minggu,
-    "estimasi_tanggal": "YYYY-MM-DD",
+    "estimasi_tanggal": "YYYY-MM-DD (HARUS setelah {$todayStr})",
     "defisit_harian": angka_kkal_defisit_per_hari,
     "kg_per_minggu": angka_kg_turun_per_minggu,
     "realistis": true/false,
@@ -385,13 +392,34 @@ Berikan response JSON SAJA:
 }
 
 RULES:
+- PENTING: Tanggal estimasi HARUS di masa depan dari {$todayStr}
 - 1 kg lemak = 7700 kkal defisit
 - Max aman turun 0.5-1 kg/minggu
 - Jika target naik (bulking), surplus 300-500 kkal/hari
 - Pertimbangkan umur, gender, level aktivitas
 PROMPT;
 
-        return $this->callTextApi($prompt, $profileId, 'recommendation');
+        $result = $this->callTextApi($prompt, $profileId, 'recommendation');
+
+        // Safety: fix tanggal jika AI masih return tahun lama
+        if ($result['success'] && isset($result['data']['estimasi_tanggal'])) {
+            $estimasi = $result['data']['estimasi_tanggal'];
+            try {
+                $estDate = \Carbon\Carbon::parse($estimasi);
+                $today = now('Asia/Singapore');
+                if ($estDate->lt($today)) {
+                    // Hitung ulang: tambahkan minggu ke hari ini
+                    $weeks = $result['data']['estimasi_minggu'] ?? 12;
+                    $result['data']['estimasi_tanggal'] = $today->copy()->addWeeks((int) $weeks)->format('Y-m-d');
+                }
+            } catch (\Exception $e) {
+                // Fallback
+                $weeks = $result['data']['estimasi_minggu'] ?? 12;
+                $result['data']['estimasi_tanggal'] = now('Asia/Singapore')->addWeeks((int) $weeks)->format('Y-m-d');
+            }
+        }
+
+        return $result;
     }
 
     /**
