@@ -81,9 +81,9 @@ class TelegramWebhookController extends Controller
             return $this->handleHelp($telegram);
         }
 
-        // If no command prefix, try AI estimation directly
+        // If no command prefix, send to AI for natural language processing
         if (!str_starts_with($text, '/')) {
-            return $this->handleMakan('/makan ' . $text, $telegram);
+            return $this->handleNaturalInput($text, $telegram);
         }
 
         return response('ok');
@@ -572,6 +572,143 @@ class TelegramWebhookController extends Controller
         $msg .= "/olahraga jogging 30\n";
 
         $telegram->sendMessage($msg);
+        return response('ok');
+    }
+
+    private function handleNaturalInput(string $text, TelegramService $telegram)
+    {
+        $plan = DietPlan::getActivePlan();
+        if (!$plan) {
+            $telegram->sendMessage("Belum ada program diet aktif.");
+            return response('ok');
+        }
+
+        $today = now()->toDateString();
+        $kaloriMasuk = Meal::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('kalori');
+        $airMasuk = WaterLog::where('diet_plan_id', $plan->id)->whereDate('tanggal', $today)->sum('jumlah_ml');
+        $berat = $plan->berat_sekarang ?? $plan->berat_awal;
+        $targetAir = round($berat * 33);
+
+        $systemPrompt = <<<PROMPT
+Kamu adalah asisten diet pintar. User akan mengirim pesan dalam bahasa Indonesia tentang makanan, minuman, olahraga, atau pertanyaan diet.
+
+Konteks user saat ini:
+- Kalori masuk hari ini: {$kaloriMasuk} kkal (target: {$plan->kalori_harian_target} kkal)
+- Air minum hari ini: {$airMasuk} ml (target: {$targetAir} ml)
+- Berat sekarang: {$berat} kg (target: {$plan->berat_target} kg)
+
+Tugas kamu: Analisis pesan user dan jawab dalam format JSON TANPA markdown:
+{
+  "action": "makan|minum|olahraga|berat|tanya|saran",
+  "items": [{"nama": "...", "kalori": angka, "protein": angka, "karbohidrat": angka, "lemak": angka}],
+  "minum_ml": angka_atau_null,
+  "olahraga": {"nama": "...", "durasi": angka_menit} atau null,
+  "berat_kg": angka_atau_null,
+  "reply": "pesan balasan untuk user dalam bahasa Indonesia"
+}
+
+Rules:
+- action "makan": user menyebut makanan. Isi items dengan estimasi kalori per item.
+- action "minum": user menyebut minum air/minuman. Isi minum_ml.
+- action "olahraga": user menyebut olahraga. Isi olahraga.
+- action "berat": user menyebut berat badan. Isi berat_kg.
+- action "tanya": user bertanya tentang diet/kalori/progress. Isi reply saja.
+- action "saran": user minta saran makanan. Isi reply dengan 3 saran.
+- Jika user menyebut beberapa makanan sekaligus, masukkan semua ke items.
+- Untuk minuman berkalori (teh manis, kopi susu), masukkan ke items DAN minum_ml.
+- reply harus informatif dan friendly.
+PROMPT;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(20)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . config('services.enowx.api_key'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->post(config('services.enowx.api_url') . '/chat/completions', [
+                    'model' => config('services.enowx.model', 'deepseek-3.2'),
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $text],
+                    ],
+                    'max_tokens' => 500,
+                    'temperature' => 0.3,
+                ]);
+
+            if (!$response->successful()) {
+                return $this->handleMakan('/makan ' . $text, $telegram);
+            }
+
+            $content = $response->json('choices.0.message.content', '');
+            $content = preg_replace('/```json\s*/', '', $content);
+            $content = preg_replace('/```\s*/', '', $content);
+            $data = json_decode(trim($content), true);
+
+            if (!$data || !isset($data['action'])) {
+                return $this->handleMakan('/makan ' . $text, $telegram);
+            }
+
+            $msg = '';
+
+            // Process items (makan)
+            if (!empty($data['items']) && $data['action'] === 'makan') {
+                foreach ($data['items'] as $item) {
+                    Meal::create([
+                        'diet_plan_id' => $plan->id,
+                        'tanggal' => $today,
+                        'waktu_makan' => $this->guessWaktuMakan(),
+                        'nama_makanan' => ucfirst($item['nama'] ?? 'Makanan'),
+                        'kalori' => (int) ($item['kalori'] ?? 0),
+                        'protein' => (float) ($item['protein'] ?? 0),
+                        'karbohidrat' => (float) ($item['karbohidrat'] ?? 0),
+                        'lemak' => (float) ($item['lemak'] ?? 0),
+                        'porsi' => 1,
+                    ]);
+                }
+            }
+
+            // Process minum
+            if (!empty($data['minum_ml']) && $data['minum_ml'] > 0) {
+                WaterLog::create([
+                    'diet_plan_id' => $plan->id,
+                    'tanggal' => $today,
+                    'jumlah_ml' => (int) $data['minum_ml'],
+                ]);
+            }
+
+            // Process olahraga
+            if (!empty($data['olahraga']) && !empty($data['olahraga']['durasi'])) {
+                $durasi = (int) $data['olahraga']['durasi'];
+                Exercise::create([
+                    'diet_plan_id' => $plan->id,
+                    'tanggal' => $today,
+                    'jenis_olahraga' => ucfirst($data['olahraga']['nama'] ?? 'Olahraga'),
+                    'durasi_menit' => $durasi,
+                    'kalori_terbakar' => $durasi * 6,
+                    'intensitas' => $durasi >= 30 ? 'sedang' : 'ringan',
+                ]);
+            }
+
+            // Process berat
+            if (!empty($data['berat_kg']) && $data['berat_kg'] > 20) {
+                $plan->update(['berat_sekarang' => (float) $data['berat_kg']]);
+                DailyActivity::updateOrCreate(
+                    ['diet_plan_id' => $plan->id, 'tanggal' => $today],
+                    ['berat_badan' => (float) $data['berat_kg']]
+                );
+            }
+
+            // Send reply
+            $reply = $data['reply'] ?? '';
+            if ($reply) {
+                $telegram->sendMessage($reply);
+            }
+
+        } catch (\Exception $e) {
+            // Fallback: treat as food name
+            return $this->handleMakan('/makan ' . $text, $telegram);
+        }
+
         return response('ok');
     }
 
