@@ -5,19 +5,17 @@ namespace App\Models\DietTracker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ExerciseLog extends Model
+class BodyMeasurement extends Model
 {
-    protected $table = 'diet_exercise_logs';
+    protected $table = 'diet_body_measurements';
 
     protected $fillable = [
-        'profile_id', 'tanggal', 'jenis_olahraga', 'durasi_menit',
-        'kalori_terbakar', 'intensitas', 'catatan',
-        'langkah', 'jarak_km', 'reps_sets', 'tipe_input',
+        'profile_id', 'tanggal', 'lingkar_pinggang', 'lingkar_dada',
+        'lingkar_lengan', 'lingkar_paha', 'lingkar_pinggul', 'catatan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'jarak_km' => 'float',
     ];
 
     public function profile(): BelongsTo

@@ -186,6 +186,14 @@ PROMPT;
             }
         }
 
+        // Filter out items that are still pending (AI failed)
+        $results = array_filter($results, fn($r) => ($r['source'] ?? 'pending') !== 'pending');
+        $results = array_values($results);
+
+        if (empty($results)) {
+            return ['success' => false, 'error' => 'Gagal mengenali makanan. Coba satu per satu.'];
+        }
+
         // Calculate totals
         foreach ($results as $r) {
             $totalKalori += $r['kalori'] ?? 0;
@@ -420,6 +428,46 @@ PROMPT;
         }
 
         return $result;
+    }
+
+    /**
+     * Generate meal prep plan untuk besok/beberapa hari
+     */
+    public function generateMealPlan(array $userData, ?int $profileId = null): array
+    {
+        $dataJson = json_encode($userData, JSON_PRETTY_PRINT);
+        $todayStr = now('Asia/Singapore')->format('Y-m-d');
+
+        $prompt = <<<PROMPT
+Kamu adalah meal prep coach Indonesia. Buatkan rencana makan untuk besok.
+
+TANGGAL HARI INI: {$todayStr}
+
+Data user: {$dataJson}
+
+Berikan response JSON SAJA:
+{
+    "tanggal": "YYYY-MM-DD (besok)",
+    "sarapan": [{"nama": "makanan", "kalori": angka, "protein": angka, "porsi": "deskripsi"}],
+    "makan_siang": [{"nama": "makanan", "kalori": angka, "protein": angka, "porsi": "deskripsi"}],
+    "makan_malam": [{"nama": "makanan", "kalori": angka, "protein": angka, "porsi": "deskripsi"}],
+    "snack": [{"nama": "makanan", "kalori": angka, "protein": angka, "porsi": "deskripsi"}],
+    "total_kalori": total,
+    "total_protein": total_gram,
+    "tips_prep": "tips persiapan makanan",
+    "belanja": ["bahan 1", "bahan 2", "bahan 3"]
+}
+
+RULES:
+- Target kalori: sesuai data user
+- Makanan Indonesia yang mudah dibuat/dibeli
+- Prioritaskan protein tinggi jika goal cutting/diet
+- Variasi dari hari-hari sebelumnya
+- Include snack sehat
+- Tips prep yang praktis
+PROMPT;
+
+        return $this->callTextApi($prompt, $profileId, 'recommendation');
     }
 
     /**

@@ -15,6 +15,8 @@ use App\Models\DietTracker\Streak;
 use App\Models\DietTracker\Badge;
 use App\Models\DietTracker\DailySummary;
 use App\Models\DietTracker\FoodDatabase;
+use App\Models\DietTracker\BodyMeasurement;
+use App\Models\DietTracker\MealPlan;
 use App\Services\AiNutritionService;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
@@ -85,6 +87,10 @@ class TelegramWebhookController extends Controller
             '/puasa' => $this->cmdPuasa($profile, $args),
             '/tidur' => $this->cmdTidur($profile, $args),
             '/hapus' => $this->cmdHapus($profile, $args),
+            '/langkah' => $this->cmdLangkah($profile, $args),
+            '/mealprep' => $this->cmdMealPrep($profile),
+            '/ukur' => $this->cmdUkur($profile, $args),
+            '/cheatday' => $this->cmdCheatDay($profile),
             '/timeline' => $this->cmdTimeline($profile),
             '/motivasi' => $this->cmdMotivasi($profile),
             '/smartreminder' => $this->cmdSmartReminder($profile),
@@ -120,10 +126,11 @@ class TelegramWebhookController extends Controller
             [['text'=>'🏃 Olahraga','callback_data'=>'log_exercise'],['text'=>'⭐ Favorit','callback_data'=>'favorites']],
             [['text'=>'🕐 Puasa','callback_data'=>'fasting_menu'],['text'=>'😴 Tidur','callback_data'=>'sleep_menu']],
             [['text'=>'📈 Stats','callback_data'=>'stats'],['text'=>'🏆 Badge','callback_data'=>'badges']],
-            [['text'=>'💡 Rekomendasi','callback_data'=>'recommend'],['text'=>'🎯 Timeline','callback_data'=>'timeline']],
-            [['text'=>'🧠 Smart Reminder','callback_data'=>'smart_reminder'],['text'=>'💪 Motivasi','callback_data'=>'motivasi']],
+            [['text'=>'🍱 Meal Prep','callback_data'=>'mealprep'],['text'=>'💡 Rekomendasi','callback_data'=>'recommend']],
+            [['text'=>'🎯 Timeline','callback_data'=>'timeline'],['text'=>'💪 Motivasi','callback_data'=>'motivasi']],
+            [['text'=>'📐 Ukur Tubuh','callback_data'=>'ukur'],['text'=>'🎉 Cheat Day','callback_data'=>'cheatday']],
             [['text'=>'👤 Profil','callback_data'=>'profile'],['text'=>'⏰ Reminder','callback_data'=>'reminder_menu']],
-            [['text'=>'❓ Help','callback_data'=>'help']],
+            [['text'=>'🧠 Smart Reminder','callback_data'=>'smart_reminder'],['text'=>'❓ Help','callback_data'=>'help']],
         ];
         $this->telegram->sendMessageWithKeyboard($profile->telegram_chat_id, $text, $keyboard);
         return response()->json(['ok' => true]);
@@ -171,8 +178,20 @@ class TelegramWebhookController extends Controller
     {
         if (!empty($args)) return $this->parseAndLogExercise($profile, $args);
         $profile->update(['state'=>'waiting_exercise','state_data'=>null]);
-        $kb = [[['text'=>'🏃 Lari','callback_data'=>'exercise_lari'],['text'=>'🚶 Jalan','callback_data'=>'exercise_jalan'],['text'=>'🏋️ Gym','callback_data'=>'exercise_gym']],[['text'=>'🏊 Renang','callback_data'=>'exercise_renang'],['text'=>'🚴 Sepeda','callback_data'=>'exercise_sepeda'],['text'=>'🧘 Yoga','callback_data'=>'exercise_yoga']],[['text'=>'⚡ HIIT','callback_data'=>'exercise_hiit'],['text'=>'🏸 Badminton','callback_data'=>'exercise_badminton'],['text'=>'⚽ Futsal','callback_data'=>'exercise_futsal']]];
-        $this->telegram->sendMessageWithKeyboard($profile->telegram_chat_id, "🏃 <b>Olahraga</b>\n\nKetik: <code>lari 30 menit</code>\nAtau pilih:", $kb);
+
+        $text = "🏃 <b>Olahraga</b>\n\nBerbagai cara input:\n";
+        $text .= "• <code>lari 30 menit</code>\n";
+        $text .= "• <code>lari 5 km</code>\n";
+        $text .= "• <code>push up 3x20</code> (3 set x 20 reps)\n";
+        $text .= "• /langkah 5000\n\nAtau pilih:";
+
+        $kb = [
+            [['text'=>'🏃 Lari','callback_data'=>'exercise_lari'],['text'=>'🚶 Jalan','callback_data'=>'exercise_jalan'],['text'=>'🏋️ Gym','callback_data'=>'exercise_gym']],
+            [['text'=>'🏊 Renang','callback_data'=>'exercise_renang'],['text'=>'🚴 Sepeda','callback_data'=>'exercise_sepeda'],['text'=>'🧘 Yoga','callback_data'=>'exercise_yoga']],
+            [['text'=>'⚡ HIIT','callback_data'=>'exercise_hiit'],['text'=>'🏸 Badminton','callback_data'=>'exercise_badminton'],['text'=>'⚽ Futsal','callback_data'=>'exercise_futsal']],
+            [['text'=>'👟 Langkah/Steps','callback_data'=>'exercise_steps']],
+        ];
+        $this->telegram->sendMessageWithKeyboard($profile->telegram_chat_id, $text, $kb);
         return response()->json(['ok' => true]);
     }
 
@@ -527,26 +546,235 @@ class TelegramWebhookController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    private function cmdLangkah(UserProfile $profile, string $args): \Illuminate\Http\JsonResponse
+    {
+        if (empty($args)) {
+            $this->telegram->sendMessage($profile->telegram_chat_id, "👟 <b>Catat Langkah</b>\n\nKetik jumlah langkah:\n<code>/langkah 5000</code>\n<code>/langkah 10000</code>");
+            return response()->json(['ok' => true]);
+        }
+
+        $steps = (int) preg_replace('/[^0-9]/', '', $args);
+        if ($steps <= 0 || $steps > 100000) {
+            $this->telegram->sendMessage($profile->telegram_chat_id, "❌ Jumlah langkah tidak valid (1-100000).");
+            return response()->json(['ok' => true]);
+        }
+
+        // Conservative: 1 langkah = ~0.03-0.04 kkal (kita pakai 0.03)
+        $kalori = (int) round($steps * 0.03 * 0.85); // -15% conservative
+        $jarak = round($steps * 0.0007, 1); // ~0.7m per langkah
+        $durasi = (int) round($steps / 100); // ~100 langkah/menit
+
+        $today = now('Asia/Singapore')->toDateString();
+        ExerciseLog::create([
+            'profile_id' => $profile->id, 'tanggal' => $today,
+            'jenis_olahraga' => 'Jalan Kaki', 'durasi_menit' => $durasi,
+            'kalori_terbakar' => $kalori, 'intensitas' => $steps > 7000 ? 'sedang' : 'ringan',
+            'langkah' => $steps, 'jarak_km' => $jarak, 'tipe_input' => 'langkah',
+        ]);
+
+        $this->updateStreak($profile);
+        DailySummary::recalculate($profile->id, $today);
+
+        // Total langkah hari ini
+        $totalSteps = ExerciseLog::where('profile_id', $profile->id)
+            ->whereDate('tanggal', $today)->sum('langkah');
+
+        $text = "👟 <b>Langkah Tercatat!</b>\n\n";
+        $text .= "🚶 {$steps} langkah (~{$jarak} km)\n";
+        $text .= "🔥 ~{$kalori} kkal terbakar\n";
+        $text .= "⏱ ~{$durasi} menit\n\n";
+        $text .= "📊 Total hari ini: <b>{$totalSteps} langkah</b>\n";
+
+        if ($totalSteps >= 10000) $text .= "🎉 Target 10.000 langkah tercapai!";
+        elseif ($totalSteps >= 7000) $text .= "👍 Bagus! Sedikit lagi 10.000!";
+        else $text .= "💡 Target: 10.000 langkah/hari. Sisa: " . (10000 - $totalSteps);
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
+    private function cmdMealPrep(UserProfile $profile): \Illuminate\Http\JsonResponse
+    {
+        if (!$profile->canUseAi()) {
+            $this->telegram->sendMessage($profile->telegram_chat_id, "⚠️ AI limit.");
+            return response()->json(['ok' => true]);
+        }
+
+        $this->telegram->sendChatAction($profile->telegram_chat_id, 'typing');
+
+        // Kumpulkan data untuk AI
+        $recentFoods = FoodLog::where('profile_id', $profile->id)
+            ->where('tanggal', '>=', now('Asia/Singapore')->subDays(3)->toDateString())
+            ->pluck('nama_makanan')->unique()->take(10)->toArray();
+
+        $result = $this->ai->generateMealPlan([
+            'kalori_target' => $profile->kalori_target,
+            'protein_target' => $profile->protein_target,
+            'goal' => $profile->goal,
+            'berat_kg' => $profile->berat_kg,
+            'makanan_terakhir' => $recentFoods,
+            'preferensi' => 'makanan Indonesia, mudah dibuat',
+        ], $profile->id);
+        $profile->incrementAiUsage();
+
+        if (!$result['success']) {
+            $this->telegram->sendMessage($profile->telegram_chat_id, "❌ Gagal generate meal plan.");
+            return response()->json(['ok' => true]);
+        }
+
+        $d = $result['data'];
+        $text = "🍱 <b>Meal Prep Besok</b>\n━━━━━━━━━━━━━━━\n\n";
+
+        $meals = ['sarapan' => '🌅', 'makan_siang' => '☀️', 'makan_malam' => '🌙', 'snack' => '🍪'];
+        foreach ($meals as $key => $icon) {
+            if (isset($d[$key]) && is_array($d[$key])) {
+                $text .= "{$icon} <b>" . ucfirst(str_replace('_', ' ', $key)) . ":</b>\n";
+                foreach ($d[$key] as $item) {
+                    $text .= "  • " . ($item['nama'] ?? '?') . " (~" . ($item['kalori'] ?? '?') . " kkal)\n";
+                }
+                $text .= "\n";
+            }
+        }
+
+        if (isset($d['total_kalori'])) $text .= "📊 Total: <b>{$d['total_kalori']} kkal</b> | P: " . ($d['total_protein'] ?? '?') . "g\n\n";
+        if (isset($d['tips_prep'])) $text .= "💡 <b>Tips:</b> {$d['tips_prep']}\n\n";
+        if (isset($d['belanja']) && is_array($d['belanja'])) {
+            $text .= "🛒 <b>Belanja:</b>\n";
+            foreach ($d['belanja'] as $item) $text .= "  • {$item}\n";
+        }
+
+        // Save meal plan
+        MealPlan::updateOrCreate(
+            ['profile_id' => $profile->id, 'tanggal' => now('Asia/Singapore')->addDay()->toDateString()],
+            [
+                'sarapan' => $d['sarapan'] ?? null,
+                'makan_siang' => $d['makan_siang'] ?? null,
+                'makan_malam' => $d['makan_malam'] ?? null,
+                'snack' => $d['snack'] ?? null,
+                'total_kalori' => $d['total_kalori'] ?? 0,
+                'total_protein' => $d['total_protein'] ?? 0,
+                'catatan_ai' => $d['tips_prep'] ?? null,
+            ]
+        );
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
+    private function cmdUkur(UserProfile $profile, string $args): \Illuminate\Http\JsonResponse
+    {
+        if (empty($args)) {
+            $last = BodyMeasurement::where('profile_id', $profile->id)->orderByDesc('tanggal')->first();
+
+            $text = "📐 <b>Ukur Tubuh</b>\n━━━━━━━━━━━━━━━\n\n";
+            if ($last) {
+                $text .= "Terakhir ({$last->tanggal->format('d/m')}):\n";
+                if ($last->lingkar_pinggang) $text .= "  Pinggang: {$last->lingkar_pinggang} cm\n";
+                if ($last->lingkar_dada) $text .= "  Dada: {$last->lingkar_dada} cm\n";
+                if ($last->lingkar_lengan) $text .= "  Lengan: {$last->lingkar_lengan} cm\n";
+                if ($last->lingkar_paha) $text .= "  Paha: {$last->lingkar_paha} cm\n";
+                if ($last->lingkar_pinggul) $text .= "  Pinggul: {$last->lingkar_pinggul} cm\n";
+                $text .= "\n";
+            }
+            $text .= "Ketik ukuran (cm):\n<code>/ukur pinggang 80 dada 95 lengan 32</code>\n\nAtau satu-satu:\n<code>/ukur pinggang 80</code>";
+
+            $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+            return response()->json(['ok' => true]);
+        }
+
+        // Parse: "pinggang 80 dada 95 lengan 32 paha 55 pinggul 90"
+        $data = ['profile_id' => $profile->id, 'tanggal' => now('Asia/Singapore')->toDateString()];
+        $map = ['pinggang' => 'lingkar_pinggang', 'dada' => 'lingkar_dada', 'lengan' => 'lingkar_lengan', 'paha' => 'lingkar_paha', 'pinggul' => 'lingkar_pinggul'];
+
+        preg_match_all('/(pinggang|dada|lengan|paha|pinggul)\s+([\d.]+)/i', $args, $matches, PREG_SET_ORDER);
+
+        if (empty($matches)) {
+            $this->telegram->sendMessage($profile->telegram_chat_id, "❌ Format: <code>/ukur pinggang 80 dada 95</code>");
+            return response()->json(['ok' => true]);
+        }
+
+        foreach ($matches as $m) {
+            $key = $map[strtolower($m[1])] ?? null;
+            if ($key) $data[$key] = (float) $m[2];
+        }
+
+        BodyMeasurement::updateOrCreate(
+            ['profile_id' => $profile->id, 'tanggal' => $data['tanggal']],
+            $data
+        );
+
+        $text = "📐 <b>Ukuran Tercatat!</b>\n\n";
+        foreach ($matches as $m) {
+            $text .= "📏 " . ucfirst($m[1]) . ": <b>{$m[2]} cm</b>\n";
+        }
+
+        // Compare with previous
+        $prev = BodyMeasurement::where('profile_id', $profile->id)
+            ->where('tanggal', '<', $data['tanggal'])
+            ->orderByDesc('tanggal')->first();
+
+        if ($prev) {
+            $text .= "\n📊 <b>vs Sebelumnya:</b>\n";
+            foreach ($matches as $m) {
+                $key = $map[strtolower($m[1])] ?? null;
+                if ($key && $prev->$key) {
+                    $diff = round((float) $m[2] - $prev->$key, 1);
+                    $arrow = $diff > 0 ? '📈+' : ($diff < 0 ? '📉' : '➡️');
+                    $text .= "  {$m[1]}: {$arrow}{$diff} cm\n";
+                }
+            }
+        }
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
+    private function cmdCheatDay(UserProfile $profile): \Illuminate\Http\JsonResponse
+    {
+        $isCheat = !$profile->is_cheat_day;
+        $profile->update(['is_cheat_day' => $isCheat]);
+
+        if ($isCheat) {
+            $text = "🎉 <b>Cheat Day ON!</b>\n\n";
+            $text .= "Hari ini bebas makan tanpa guilt.\n";
+            $text .= "Streak tetap jalan, tapi tetap dicatat ya!\n\n";
+            $text .= "⚠️ Tips cheat day sehat:\n";
+            $text .= "• Tetap minum air cukup\n";
+            $text .= "• Nikmati tapi jangan binge\n";
+            $text .= "• Besok kembali ke jalur!\n\n";
+            $text .= "Ketik /cheatday lagi untuk matikan.";
+        } else {
+            $text = "✅ <b>Cheat Day OFF</b>\n\nKembali ke mode diet! 💪";
+        }
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
     private function cmdHelp(UserProfile $profile): \Illuminate\Http\JsonResponse
     {
         $text = "❓ <b>Help</b>\n━━━━━━━━━━━━━━━\n\n";
         $text .= "🍽 <b>MAKAN:</b>\n";
-        $text .= "/makan nasi goreng\n";
         $text .= "/makan nasi goreng + ayam + es teh\n";
-        $text .= "/s ayam (sarapan) | /ms (siang) | /mm (malam)\n";
+        $text .= "/s (sarapan) | /ms (siang) | /mm (malam)\n";
         $text .= "Kirim foto + caption | Ketik langsung\n\n";
-        $text .= "💧 /air 500 | ⚖️ /berat 70.5\n";
-        $text .= "🏃 /olahraga lari 30 menit\n";
-        $text .= "🕐 /puasa | /puasa buka\n";
-        $text .= "😴 /tidur 23:00 06:30\n\n";
-        $text .= "📊 /d (dashboard) | /stats | /target\n";
-        $text .= "📋 /riwayat | /riwayat kemarin\n";
-        $text .= "⭐ /fav | 🏆 /badge\n\n";
+        $text .= "🏃 <b>OLAHRAGA:</b>\n";
+        $text .= "/olahraga lari 30 menit\n";
+        $text .= "/langkah 5000 (catat steps)\n\n";
+        $text .= "📏 <b>TRACKING:</b>\n";
+        $text .= "/air 500 | /berat 70.5\n";
+        $text .= "/tidur 23:00 06:30\n";
+        $text .= "/ukur pinggang 80 dada 95\n";
+        $text .= "/puasa | /puasa buka\n";
+        $text .= "/cheatday (toggle)\n\n";
+        $text .= "📊 <b>INFO:</b>\n";
+        $text .= "/d (dashboard) | /stats | /target\n";
+        $text .= "/riwayat | /riwayat kemarin\n";
+        $text .= "/fav | /badge\n\n";
         $text .= "🤖 <b>AI:</b>\n";
-        $text .= "/rekomendasi - Saran menu\n";
-        $text .= "/smartreminder - AI saran jadwal\n";
-        $text .= "/timeline - Estimasi capai target\n";
-        $text .= "/motivasi - Motivasi harian\n\n";
+        $text .= "/rekomendasi | /mealprep\n";
+        $text .= "/smartreminder | /timeline\n";
+        $text .= "/motivasi\n\n";
         $text .= "⚙️ /setup | /reminder | /hapus [ID]\n";
         $text .= "/menu | /batal | /reset\n\n";
         $text .= "💡 <b>Tips:</b> Ketik nama makanan langsung!\n";
@@ -576,6 +804,7 @@ class TelegramWebhookController extends Controller
             'waiting_weight'=>$this->stateWeight($profile,$text),
             'waiting_exercise'=>$this->parseAndLogExercise($profile,$text),
             'waiting_exercise_duration'=>$this->stateExDuration($profile,$text),
+            'waiting_steps'=>$this->stateSteps($profile,$text),
             'waiting_sleep'=>$this->parseSleep($profile,$text),
             'setup_umur'=>$this->stateSetupUmur($profile,$text),
             'setup_tinggi'=>$this->stateSetupTinggi($profile,$text),
@@ -589,7 +818,30 @@ class TelegramWebhookController extends Controller
     }
 
     private function stateWeight(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse { $b=(float)$t; if($b<20||$b>300){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 20-300kg.");return response()->json(['ok'=>true]);} $profile->update(['state'=>null,'state_data'=>null]); return $this->logWeight($profile,$b); }
-    private function stateExDuration(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse { $d=(int)preg_replace('/[^0-9]/','',$t); if($d<=0||$d>480){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 1-480min.");return response()->json(['ok'=>true]);} $data=$profile->state_data??[]; $profile->update(['state'=>null,'state_data'=>null]); return $this->saveExercise($profile,$data['jenis']??'Olahraga',$d); }
+    private function stateExDuration(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse {
+        // Support: "30", "30 menit", "5 km", "3x20"
+        if (preg_match('/([\d.]+)\s*(km|kilometer)/i', $t, $m)) {
+            $data = $profile->state_data ?? [];
+            $profile->update(['state'=>null,'state_data'=>null]);
+            return $this->saveExerciseByDistance($profile, $data['jenis'] ?? 'Olahraga', (float) $m[1]);
+        }
+        if (preg_match('/(\d+)\s*[xX×]\s*(\d+)/', $t, $m)) {
+            $data = $profile->state_data ?? [];
+            $profile->update(['state'=>null,'state_data'=>null]);
+            return $this->saveExerciseByReps($profile, $data['jenis'] ?? 'Olahraga', (int) $m[1], (int) $m[2]);
+        }
+        $d=(int)preg_replace('/[^0-9]/','',$t);
+        if($d<=0||$d>480){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 1-480 menit.");return response()->json(['ok'=>true]);}
+        $data=$profile->state_data??[];
+        $profile->update(['state'=>null,'state_data'=>null]);
+        return $this->saveExercise($profile,$data['jenis']??'Olahraga',$d);
+    }
+    private function stateSteps(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse {
+        $steps = (int) preg_replace('/[^0-9]/', '', $t);
+        if ($steps <= 0 || $steps > 100000) { $this->telegram->sendMessage($profile->telegram_chat_id, "❌ 1-100000 langkah."); return response()->json(['ok'=>true]); }
+        $profile->update(['state'=>null,'state_data'=>null]);
+        return $this->cmdLangkah($profile, (string) $steps);
+    }
     private function stateSetupUmur(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse { $u=(int)$t; if($u<10||$u>100){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 10-100.");return response()->json(['ok'=>true]);} $d=$profile->state_data??[];$d['umur']=$u; $profile->update(['state'=>'setup_tinggi','state_data'=>$d]); $this->telegram->sendMessage($profile->telegram_chat_id,"✅ Umur: {$u}\n\n📏 Tinggi (cm)? <code>170</code>"); return response()->json(['ok'=>true]); }
     private function stateSetupTinggi(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse { $v=(float)$t; if($v<100||$v>250){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 100-250cm.");return response()->json(['ok'=>true]);} $d=$profile->state_data??[];$d['tinggi']=$v; $profile->update(['state'=>'setup_berat','state_data'=>$d]); $this->telegram->sendMessage($profile->telegram_chat_id,"✅ {$v}cm\n\n⚖️ Berat (kg)? <code>70.5</code>"); return response()->json(['ok'=>true]); }
     private function stateSetupBerat(UserProfile $profile, string $t): \Illuminate\Http\JsonResponse { $b=(float)$t; if($b<20||$b>300){$this->telegram->sendMessage($profile->telegram_chat_id,"❌ 20-300kg.");return response()->json(['ok'=>true]);} $d=$profile->state_data??[];$d['berat']=$b; $profile->update(['state'=>'setup_target','state_data'=>$d]); $this->telegram->sendMessage($profile->telegram_chat_id,"✅ {$b}kg\n\n🎯 Target (kg)? <code>0</code> jika tidak ada."); return response()->json(['ok'=>true]); }
@@ -628,7 +880,8 @@ class TelegramWebhookController extends Controller
         if ($isMulti) {
             foreach ($data['items'] as $item) {
                 $srcIcon = ($item['source'] ?? '') === 'database' ? '📚' : '🤖';
-                $text .= "{$srcIcon} <b>{$item['nama']}</b> — {$item['kalori']} kkal\n";
+                $itemKal = $item['kalori'] ?? 0;
+                $text .= "{$srcIcon} <b>" . ($item['nama'] ?? '?') . "</b> — {$itemKal} kkal\n";
             }
             $text .= "\n📊 <b>Total: {$kal} kkal</b>\n";
             $text .= "🥩 P:{$p}g | 🍚 K:{$k}g | 🧈 L:{$l}g\n";
@@ -755,6 +1008,10 @@ class TelegramWebhookController extends Controller
             $data==='timeline'=>$this->cmdTimeline($profile),
             $data==='motivasi'=>$this->cmdMotivasi($profile),
             $data==='smart_reminder'=>$this->cmdSmartReminder($profile),
+            $data==='mealprep'=>$this->cmdMealPrep($profile),
+            $data==='cheatday'=>$this->cmdCheatDay($profile),
+            $data==='ukur'=>$this->cmdUkur($profile,''),
+            $data==='langkah'=>$this->cmdLangkah($profile,''),
             str_starts_with($data,'setreminder_')=>$this->cbSetSmartReminder($profile,$data),
             default=>response()->json(['ok'=>true]),
         };
@@ -854,7 +1111,22 @@ class TelegramWebhookController extends Controller
     private function editFoodKalori(UserProfile $profile): \Illuminate\Http\JsonResponse { $sd=$profile->state_data??[]; $kal=$sd['pending_food']['kalori']??0; $profile->update(['state'=>'edit_food_kalori']); $this->telegram->sendMessage($profile->telegram_chat_id,"✏️ Sekarang: {$kal}\nKetik kalori baru:"); return response()->json(['ok'=>true]); }
     private function cbMealTime(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse { $map=['meal_sarapan'=>'sarapan','meal_siang'=>'makan_siang','meal_malam'=>'makan_malam','meal_snack'=>'snack']; $w=$map[$data]??'snack'; $sd=$profile->state_data??[];$sd['waktu_makan']=$w; $profile->update(['state'=>'waiting_food','state_data'=>$sd]); $this->telegram->sendMessage($profile->telegram_chat_id,"✅ ".$this->getMealLabel($w)."\n\nKetik makanan/foto:"); return response()->json(['ok'=>true]); }
     private function quickAdd(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse { $id=(int)str_replace('quickadd_','',$data); $f=FoodFavorite::where('profile_id',$profile->id)->where('id',$id)->first(); if(!$f){$this->telegram->sendMessage($profile->telegram_chat_id,"❌");return response()->json(['ok'=>true]);} $today=now('Asia/Singapore')->toDateString(); FoodLog::create(['profile_id'=>$profile->id,'tanggal'=>$today,'waktu_makan'=>$this->detectMealTime(),'nama_makanan'=>$f->nama_makanan,'porsi'=>$f->porsi,'satuan_porsi'=>$f->satuan_porsi,'kalori'=>$f->kalori,'protein'=>$f->protein,'karbohidrat'=>$f->karbohidrat,'lemak'=>$f->lemak,'sumber'=>'database']); $f->incrementUse(); $this->updateStreak($profile); DailySummary::recalculate($profile->id,$today); $this->telegram->sendMessage($profile->telegram_chat_id,"⭐ <b>{$f->nama_makanan}</b> ({$f->kalori} kkal) ✅"); return response()->json(['ok'=>true]); }
-    private function cbExercise(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse { $j=str_replace('exercise_','',$data); $map=['lari'=>'Lari','jalan'=>'Jalan Kaki','gym'=>'Gym','renang'=>'Renang','sepeda'=>'Bersepeda','yoga'=>'Yoga','hiit'=>'HIIT','badminton'=>'Badminton','futsal'=>'Futsal']; $profile->update(['state'=>'waiting_exercise_duration','state_data'=>['jenis'=>$map[$j]??ucfirst($j)]]); $this->telegram->sendMessage($profile->telegram_chat_id,"🏃 <b>".($map[$j]??$j)."</b>\nMenit? <code>30</code>"); return response()->json(['ok'=>true]); }
+    private function cbExercise(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse {
+        $j = str_replace('exercise_', '', $data);
+
+        // Steps shortcut
+        if ($j === 'steps') {
+            $profile->update(['state' => 'waiting_steps', 'state_data' => null]);
+            $this->telegram->sendMessage($profile->telegram_chat_id, "👟 Berapa langkah?\nContoh: <code>5000</code>");
+            return response()->json(['ok' => true]);
+        }
+
+        $map = ['lari'=>'Lari','jalan'=>'Jalan Kaki','gym'=>'Gym','renang'=>'Renang','sepeda'=>'Bersepeda','yoga'=>'Yoga','hiit'=>'HIIT','badminton'=>'Badminton','futsal'=>'Futsal'];
+        $nama = $map[$j] ?? ucfirst($j);
+        $profile->update(['state'=>'waiting_exercise_duration','state_data'=>['jenis'=>$nama]]);
+        $this->telegram->sendMessage($profile->telegram_chat_id, "🏃 <b>{$nama}</b>\n\nKetik:\n• <code>30</code> (menit)\n• <code>5 km</code> (jarak)\n• <code>3x20</code> (reps)");
+        return response()->json(['ok'=>true]);
+    }
     private function cbSetupGender(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse { $g=str_replace('setup_gender_','',$data); $d=$profile->state_data??[];$d['gender']=$g; $profile->update(['state'=>'setup_umur','state_data'=>$d]); $this->telegram->sendMessage($profile->telegram_chat_id,"✅ ".ucfirst($g)."\n\n🎂 Umur? <code>25</code>"); return response()->json(['ok'=>true]); }
     private function cbSetupActivity(UserProfile $profile, string $data): \Illuminate\Http\JsonResponse
     {
@@ -946,7 +1218,30 @@ class TelegramWebhookController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function parseAndLogExercise(UserProfile $profile, string $text): \Illuminate\Http\JsonResponse { preg_match('/(.+?)\s+(\d+)\s*(menit|min|m)?/i',$text,$m); if(empty($m)){$profile->update(['state'=>'waiting_exercise_duration','state_data'=>['jenis'=>$text]]);$this->telegram->sendMessage($profile->telegram_chat_id,"🏃 <b>{$text}</b>\nMenit?");return response()->json(['ok'=>true]);} $profile->update(['state'=>null,'state_data'=>null]); return $this->saveExercise($profile,trim($m[1]),(int)$m[2]); }
+    private function parseAndLogExercise(UserProfile $profile, string $text): \Illuminate\Http\JsonResponse
+    {
+        $profile->update(['state' => null, 'state_data' => null]);
+
+        // Detect: "lari 5 km" or "lari 5km"
+        if (preg_match('/(.+?)\s+([\d.]+)\s*(km|kilometer)/i', $text, $m)) {
+            return $this->saveExerciseByDistance($profile, trim($m[1]), (float) $m[2]);
+        }
+
+        // Detect: "push up 3x20" or "plank 3x60detik"
+        if (preg_match('/(.+?)\s+(\d+)\s*[xX×]\s*(\d+)/i', $text, $m)) {
+            return $this->saveExerciseByReps($profile, trim($m[1]), (int) $m[2], (int) $m[3]);
+        }
+
+        // Detect: "lari 30 menit" or "gym 60"
+        if (preg_match('/(.+?)\s+(\d+)\s*(menit|min|m)?/i', $text, $m)) {
+            return $this->saveExercise($profile, trim($m[1]), (int) $m[2]);
+        }
+
+        // Tidak terdeteksi format - tanya durasi
+        $profile->update(['state' => 'waiting_exercise_duration', 'state_data' => ['jenis' => $text]]);
+        $this->telegram->sendMessage($profile->telegram_chat_id, "🏃 <b>{$text}</b>\n\nBerapa menit? Atau ketik:\n• <code>30 menit</code>\n• <code>5 km</code>\n• <code>3x20</code> (reps)");
+        return response()->json(['ok' => true]);
+    }
 
     private function saveExercise(UserProfile $profile, string $jenis, int $durasi): \Illuminate\Http\JsonResponse
     {
@@ -994,6 +1289,93 @@ class TelegramWebhookController extends Controller
             );
             $text .= "\n\n🎉 Badge: 💪 First Workout!";
         }
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
+    private function saveExerciseByDistance(UserProfile $profile, string $jenis, float $km): \Illuminate\Http\JsonResponse
+    {
+        // Estimasi durasi dari jarak: lari ~6min/km, jalan ~12min/km, sepeda ~3min/km
+        $minPerKm = match(strtolower($jenis)) {
+            'lari','jogging','running' => 6,
+            'jalan','jalan kaki','walking' => 12,
+            'sepeda','bersepeda','cycling' => 3,
+            'renang','swimming' => 20, // per km di air
+            default => 8,
+        };
+        $durasi = (int) round($km * $minPerKm);
+
+        // MET conservative
+        $met = match(strtolower($jenis)) {
+            'lari','jogging','running' => 7.0,
+            'jalan','jalan kaki','walking' => 2.8,
+            'sepeda','bersepeda','cycling' => 5.5,
+            'renang','swimming' => 5.0,
+            default => 5.0,
+        };
+
+        $kalori = (int) round($met * ($profile->berat_kg ?? 65) * ($durasi / 60) * 0.85);
+        $today = now('Asia/Singapore')->toDateString();
+
+        ExerciseLog::create([
+            'profile_id' => $profile->id, 'tanggal' => $today,
+            'jenis_olahraga' => ucfirst($jenis), 'durasi_menit' => $durasi,
+            'kalori_terbakar' => $kalori, 'intensitas' => $met >= 7 ? 'berat' : ($met >= 4 ? 'sedang' : 'ringan'),
+            'jarak_km' => $km, 'tipe_input' => 'jarak',
+        ]);
+
+        $this->updateStreak($profile);
+        DailySummary::recalculate($profile->id, $today);
+
+        $text = "🏃 <b>" . ucfirst($jenis) . "</b>\n\n";
+        $text .= "📏 Jarak: <b>{$km} km</b>\n";
+        $text .= "⏱ ~{$durasi} menit\n";
+        $text .= "🔥 ~{$kalori} kkal terbakar\n\n";
+        $text .= "💡 <i>Estimasi konservatif.</i> 💪";
+
+        $this->telegram->sendMessage($profile->telegram_chat_id, $text);
+        return response()->json(['ok' => true]);
+    }
+
+    private function saveExerciseByReps(UserProfile $profile, string $jenis, int $sets, int $reps): \Illuminate\Http\JsonResponse
+    {
+        // Estimasi kalori dari reps: ~0.3-0.5 kkal per rep tergantung exercise
+        $calPerRep = match(strtolower($jenis)) {
+            'push up','pushup' => 0.4,
+            'sit up','situp','crunch' => 0.3,
+            'squat' => 0.5,
+            'burpee' => 1.0,
+            'lunge','lunges' => 0.5,
+            'pull up','pullup' => 0.8,
+            'plank' => 0.15, // per detik
+            'jumping jack' => 0.3,
+            'deadlift' => 0.6,
+            'bench press' => 0.5,
+            default => 0.4,
+        };
+
+        $totalReps = $sets * $reps;
+        $kalori = (int) round($totalReps * $calPerRep * ($profile->berat_kg ?? 65) / 65 * 0.85);
+        $durasi = (int) round($totalReps * 0.05 + $sets * 1.5); // ~3 sec/rep + 1.5 min rest/set
+
+        $today = now('Asia/Singapore')->toDateString();
+
+        ExerciseLog::create([
+            'profile_id' => $profile->id, 'tanggal' => $today,
+            'jenis_olahraga' => ucfirst($jenis), 'durasi_menit' => max(1, $durasi),
+            'kalori_terbakar' => $kalori, 'intensitas' => 'sedang',
+            'reps_sets' => "{$sets}x{$reps}", 'tipe_input' => 'reps',
+        ]);
+
+        $this->updateStreak($profile);
+        DailySummary::recalculate($profile->id, $today);
+
+        $text = "💪 <b>" . ucfirst($jenis) . "</b>\n\n";
+        $text .= "🔄 {$sets} set × {$reps} reps = <b>{$totalReps} total</b>\n";
+        $text .= "⏱ ~{$durasi} menit\n";
+        $text .= "🔥 ~{$kalori} kkal terbakar\n\n";
+        $text .= "💡 <i>Estimasi konservatif.</i> Keep pushing! 💪";
 
         $this->telegram->sendMessage($profile->telegram_chat_id, $text);
         return response()->json(['ok' => true]);
