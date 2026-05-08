@@ -780,7 +780,7 @@ class TelegramWebhookController extends Controller
                     'satuan_porsi' => $item['satuan_porsi'] ?? 'porsi',
                     'kalori' => $item['kalori'] ?? 0, 'protein' => $item['protein'] ?? 0,
                     'karbohidrat' => $item['karbohidrat'] ?? 0, 'lemak' => $item['lemak'] ?? 0,
-                    'sumber' => $item['source'] ?? 'manual',
+                    'sumber' => in_array($item['source'] ?? '', ['manual','foto','database','ai']) ? $item['source'] : 'manual',
                 ]);
                 $this->autoFavorite($profile, $item);
                 $text .= "• {$item['nama']} ({$item['kalori']} kkal)\n";
@@ -793,7 +793,7 @@ class TelegramWebhookController extends Controller
                 'nama_makanan' => $p['nama'], 'porsi' => $p['porsi'], 'satuan_porsi' => $p['satuan_porsi'],
                 'kalori' => $p['kalori'], 'protein' => $p['protein'],
                 'karbohidrat' => $p['karbohidrat'], 'lemak' => $p['lemak'],
-                'sumber' => $p['sumber'] ?? 'manual',
+                'sumber' => in_array($p['sumber'] ?? '', ['manual','foto','database','ai']) ? $p['sumber'] : 'manual',
             ]);
             $this->autoFavorite($profile, $p);
             if ($fav) FoodFavorite::updateOrCreate(
