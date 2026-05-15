@@ -63,8 +63,8 @@
             </div>
             @if($user->kalori_target)
             @php
-                $todayKal = $user->foodLogs()->whereDate('tanggal', now('Asia/Singapore')->toDateString())->sum('kalori');
-                $pct = min(100, round(($todayKal / $user->kalori_target) * 100));
+                $todayKal = (int) ($user->today_kalori ?? 0);
+                $pct = min(100, round(($todayKal / max(1, $user->kalori_target)) * 100));
             @endphp
             <div class="mt-3 flex items-center gap-2">
                 <div class="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">

@@ -1,59 +1,114 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MyApp — BloxFruit Management & Diet Tracker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel admin panel untuk dua modul bisnis terpisah:
 
-## About Laravel
+- **BloxFruit (LDC Store)** — manajemen toko jasa joki & jualan akun Blox Fruits Roblox
+- **DietTracker** — admin panel + Telegram bot untuk monitoring diet & kesehatan
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Laravel 12 (PHP 8.2+)
+- Tailwind CSS v4
+- Alpine.js
+- Vite
+- SQLite / MySQL
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Modul
 
-## Learning Laravel
+### BloxFruit
+- Master data: Fruit, Skin, Gamepass, Permanent Fruit, Joki Service
+- Storage account & stock management dengan kapasitas per item
+- Joki order workflow (antrian → proses → selesai)
+- Profit tracking + 8-channel wallet (Dana / GoPay / ShopeePay / SeaBank / Bank Kalsel / BRI / QRIS / Cash)
+- Analisa harga otomatis dengan saran min / ideal / market ceiling
+- Rekap bulanan dengan compare month-over-month
+- Cari stok & cari slot kosong (multi-tipe: fruit/skin/gamepass/permanent)
+- Public landing page (`/`) dengan search realtime
+- Stock alert banner untuk item perlu restock
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### DietTracker
+- User profile management
+- Food logs + AI calorie estimation
+- Telegram bot integration (webhook)
+- Statistics global + per user
+- Broadcast & send-message ke user aktif
+- Food database CRUD
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Setup Development
 
-## Laravel Sponsors
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm run build
+php artisan serve
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Routing Penting
 
-### Premium Partners
+- `/` — landing page publik (LDC Store)
+- `/login` — form login admin
+- `/dashboard` — admin dashboard (butuh auth)
+- `/bloxfruit/*` — modul BloxFruit (butuh auth)
+- `/diet/*` — modul DietTracker (butuh auth)
+- `/settings/store` — pengaturan brand, kontak, marketing copy
+- `/webhook/telegram-diet` — endpoint webhook bot Telegram
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Struktur Project
 
-## Contributing
+```
+app/
+  Http/Controllers/
+    BloxFruit/      — controllers untuk modul BloxFruit
+    DietTracker/    — controllers untuk modul DietTracker
+    HomeController  — admin dashboard
+    StoreSettingsController — UI settings store
+  Services/         — service layer (StockAlertService, dll)
+  Helpers/          — helper functions auto-loaded (format, settings)
+  Models/
+    BloxFruit/      — model BloxFruit
+    DietTracker/    — model DietTracker
+    Setting         — settings table generic key-value
+config/
+  stock.php         — threshold stock alert per kategori
+resources/
+  views/
+    components/     — Blade components reusable (btn, stat-card, modal, dll)
+    layouts/        — layout utama
+    bloxfruit/      — view bloxfruit
+    diet/           — view diet
+docs/
+  plans/            — design & implementation plans
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Design System
 
-## Code of Conduct
+Aplikasi pakai design system **refined minimal**:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Single accent color (indigo) + semantic colors (success/warning/danger/info)
+- CSS variables untuk theming light/dark mode
+- 11 reusable Blade components dengan API konsisten
+- Font Inter (weight 400/500/600/700)
+- Border-only flat card, no heavy shadow
+- Sidebar context-aware (light di light mode, dark di dark mode)
 
-## Security Vulnerabilities
+Detail design tokens & komponen di `docs/plans/2026-05-14-redesign-refined-minimal.md`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Settings Dinamis
 
-## License
+Brand name, kontak (WA, IG, TikTok, Discord), template marketing copy, dan konfigurasi app dapat di-edit lewat halaman `/settings/store` tanpa perlu deploy ulang. Nilai disimpan di tabel `settings` dengan caching otomatis.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Performance
+
+- Cache stats home (TTL 60s)
+- Cache stock alert (TTL 5 menit)
+- Cache settings forever (auto-invalidate saat update)
+- Database indexes pada kolom yang sering di-filter (status, tanggal, kategori)
+- Eager loading agresif untuk hindari N+1
+- CSS bundle target < 120 KB
+
+## Lisensi
+
+MIT (Laravel default)

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 
 // === BloxFruit Controllers ===
 use App\Http\Controllers\BloxFruit\DashboardController as BloxDashboard;
@@ -32,10 +33,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| Public Landing Page
+| Public Landing Page (root)
 |--------------------------------------------------------------------------
 */
-Route::get('/store', [\App\Http\Controllers\BloxFruit\LandingController::class, 'index'])->name('landing.bloxfruit');
+Route::get('/', [\App\Http\Controllers\BloxFruit\LandingController::class, 'index'])->name('landing');
+
+// Backward compat: /store -> / (permanent redirect)
+Route::redirect('/store', '/', 301);
 
 /*
 |--------------------------------------------------------------------------
@@ -56,69 +60,7 @@ Route::post('/backup/telegram', [\App\Http\Controllers\BackupController::class, 
 Route::post('/backup/config', [\App\Http\Controllers\BackupController::class, 'saveConfig'])->name('backup.config');
 Route::post('/backup/test', [\App\Http\Controllers\BackupController::class, 'testBackupBot'])->name('backup.test');
 
-Route::get('/', function () {
-    $today = now()->toDateString();
-    $bulanIni = [now()->startOfMonth(), now()->endOfMonth()];
-
-    // === BLOX FRUIT ===
-    $bfStats = [
-        'total_buah' => \App\Models\BloxFruit\BloxFruit::count(),
-        'total_skin' => \App\Models\BloxFruit\FruitSkin::count(),
-        'total_akun_storage' => \App\Models\BloxFruit\StorageAccount::count(),
-        'total_joki' => \App\Models\BloxFruit\JokiOrder::count(),
-        'joki_aktif' => \App\Models\BloxFruit\JokiOrder::whereIn('status', ['antrian', 'proses'])->count(),
-        'joki_proses' => \App\Models\BloxFruit\JokiOrder::where('status', 'proses')->count(),
-        'joki_antrian' => \App\Models\BloxFruit\JokiOrder::where('status', 'antrian')->count(),
-    ];
-
-    // Keuangan bulan ini
-    $profitBulanIni = \App\Models\BloxFruit\ProfitRecord::whereBetween('tanggal', $bulanIni);
-    $keuangan = [
-        'pendapatan' => (clone $profitBulanIni)->sum('pendapatan'),
-        'keuntungan' => (clone $profitBulanIni)->sum('keuntungan'),
-        'transaksi' => (clone $profitBulanIni)->count(),
-    ];
-
-    // Wallet
-    $wallet = \App\Models\BloxFruit\WalletBalance::orderByDesc('tanggal')->orderByDesc('id')->first();
-    $keuangan['saldo_wallet'] = $wallet->total ?? 0;
-
-    // Akun jual
-    $akunJual = [
-        'total' => \App\Models\BloxFruit\AccountStock::count(),
-        'tersedia' => \App\Models\BloxFruit\AccountStock::where('status', 'tersedia')->count(),
-        'terjual' => \App\Models\BloxFruit\AccountStock::where('status', 'terjual')->count(),
-    ];
-
-    // Joki aktif (proses + antrian) - 5 terbaru
-    $jokiAktif = \App\Models\BloxFruit\JokiOrder::whereIn('status', ['proses', 'antrian'])
-        ->orderByRaw("CASE status WHEN 'proses' THEN 1 WHEN 'antrian' THEN 2 END")
-        ->orderByDesc('id')->limit(5)->get();
-
-    // Transaksi terakhir - 5 terbaru
-    $transaksiTerakhir = \App\Models\BloxFruit\ProfitRecord::orderByDesc('tanggal')->orderByDesc('id')->limit(5)->get();
-
-    // === DIET TRACKER ===
-    $profile = \App\Models\DietTracker\UserProfile::first();
-    $dtStats = null;
-    if ($profile && $profile->kalori_target) {
-        $kaloriMasuk = \App\Models\DietTracker\FoodLog::where('profile_id', $profile->id)->whereDate('tanggal', $today)->sum('kalori');
-        $totalMinum = \App\Models\DietTracker\WaterLog::where('profile_id', $profile->id)->whereDate('tanggal', $today)->sum('jumlah_ml');
-
-        $dtStats = [
-            'profile' => $profile,
-            'kalori_masuk' => $kaloriMasuk,
-            'target_kalori' => $profile->kalori_target,
-            'total_minum' => $totalMinum,
-            'target_air' => 2500,
-            'berat_sekarang' => $profile->berat_kg,
-            'berat_target' => $profile->berat_target,
-            'bmi' => $profile->bmi,
-        ];
-    }
-
-    return view('dashboard.index', compact('bfStats', 'keuangan', 'akunJual', 'jokiAktif', 'transaksiTerakhir', 'dtStats'));
-})->name('home');
+Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
@@ -214,6 +156,7 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::post('profit/wallet', [ProfitController::class, 'updateWallet'])->name('profit.wallet');
     Route::post('quick-sell', [QuickSellController::class, 'sell'])->name('quicksell');
     Route::get('rekap', [\App\Http\Controllers\BloxFruit\RekapController::class, 'index'])->name('rekap');
+    Route::get('analisa-harga', [\App\Http\Controllers\BloxFruit\PriceAnalysisController::class, 'index'])->name('price-analysis');
 });
 
 /*
@@ -260,5 +203,9 @@ Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings
 Route::post('/settings/password', [AuthController::class, 'updatePassword'])->name('settings.password');
 Route::post('/settings/profile', [AuthController::class, 'updateProfile'])->name('settings.profile');
 Route::post('/settings/backup', [AuthController::class, 'manualBackup'])->name('settings.backup');
+
+// Store Settings (brand, kontak, marketing)
+Route::get('/settings/store', [\App\Http\Controllers\StoreSettingsController::class, 'edit'])->name('settings.store.edit');
+Route::post('/settings/store', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->name('settings.store.update');
 
 }); // End auth middleware

@@ -63,26 +63,27 @@ class ProfitController extends Controller
         // Total nilai stok (harga jual x jumlah)
         $nilaiStok = $this->hitungNilaiStok();
 
-        // Ringkasan Joki bulan ini (dari joki_orders)
+        // Ringkasan Joki bulan ini (single query agregat per status)
+        // Fetch semua joki yang relevan sekali, lalu group di PHP — hemat DB calls.
+        $jokiSelesaiQuery = JokiOrder::where('status', 'selesai')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_selesai', [$startDate, $endDate])
+                  ->orWhere(function ($q2) use ($startDate, $endDate) {
+                      $q2->whereNull('tanggal_selesai')->whereBetween('updated_at', [$startDate, $endDate]);
+                  });
+            })->get();
+
+        $jokiAktif = JokiOrder::whereIn('status', ['proses', 'antrian'])->get();
+        $jokiProses = $jokiAktif->where('status', 'proses')->values();
+        $jokiAntrian = $jokiAktif->where('status', 'antrian')->values();
+
         $jokiBulanIni = [
-            'selesai' => JokiOrder::where('status', 'selesai')
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('tanggal_selesai', [$startDate, $endDate])
-                      ->orWhere(function ($q2) use ($startDate, $endDate) {
-                          $q2->whereNull('tanggal_selesai')->whereBetween('updated_at', [$startDate, $endDate]);
-                      });
-                })->get(),
-            'proses' => JokiOrder::where('status', 'proses')->get(),
-            'antrian' => JokiOrder::where('status', 'antrian')->get(),
-            'total_selesai' => JokiOrder::where('status', 'selesai')
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('tanggal_selesai', [$startDate, $endDate])
-                      ->orWhere(function ($q2) use ($startDate, $endDate) {
-                          $q2->whereNull('tanggal_selesai')->whereBetween('updated_at', [$startDate, $endDate]);
-                      });
-                })->sum('harga'),
-            'total_proses' => JokiOrder::where('status', 'proses')->sum('harga'),
-            'total_antrian' => JokiOrder::where('status', 'antrian')->sum('harga'),
+            'selesai' => $jokiSelesaiQuery,
+            'proses' => $jokiProses,
+            'antrian' => $jokiAntrian,
+            'total_selesai' => (int) $jokiSelesaiQuery->sum('harga'),
+            'total_proses' => (int) $jokiProses->sum('harga'),
+            'total_antrian' => (int) $jokiAntrian->sum('harga'),
         ];
 
         // Pendapatan per bulan (6 bulan terakhir)

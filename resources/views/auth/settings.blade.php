@@ -2,51 +2,52 @@
 @section('title', 'Pengaturan Akun')
 
 @section('content')
-<div class="max-w-2xl">
+<div class="max-w-2xl space-y-6">
     {{-- Profil --}}
-    <div class="glass-card rounded-2xl p-6 mb-6">
+    <x-form-card>
         <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Profil</h3>
         <form method="POST" action="{{ route('settings.profile') }}" class="space-y-4">
             @csrf
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-                    <input type="text" name="name" value="{{ auth()->user()->name }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <x-form-label required>Nama</x-form-label>
+                    <x-form-input name="name" :value="auth()->user()->name" required />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <input type="text" name="username" value="{{ auth()->user()->username }}" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <x-form-label required>Username</x-form-label>
+                    <x-form-input name="username" :value="auth()->user()->username" required />
                 </div>
             </div>
-            <button type="submit" class="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700">Simpan Profil</button>
+            <x-btn type="submit" variant="primary" size="lg">Simpan Profil</x-btn>
         </form>
-    </div>
+    </x-form-card>
 
     {{-- Ganti Password --}}
-    <div class="glass-card rounded-2xl p-6 mb-6">
+    <x-form-card>
         <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Ganti Password</h3>
-        <form method="POST" action="{{ route('settings.password') }}" class="space-y-4">
+        <form method="POST" action="{{ route('settings.password') }}" class="space-y-4"
+            onsubmit="return confirm('Yakin mau ganti password?')">
             @csrf
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password Lama</label>
-                <input type="password" name="current_password" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <x-form-label required>Password Lama</x-form-label>
+                <x-form-input type="password" name="current_password" required />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
-                    <input type="password" name="password" required minlength="6" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <x-form-label required>Password Baru</x-form-label>
+                    <x-form-input type="password" name="password" required minlength="6" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-                    <input type="password" name="password_confirmation" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <x-form-label required>Konfirmasi Password</x-form-label>
+                    <x-form-input type="password" name="password_confirmation" required />
                 </div>
             </div>
-            <button type="submit" class="rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white hover:bg-red-700">Ganti Password</button>
+            <x-btn type="submit" variant="danger" size="lg">Ganti Password</x-btn>
         </form>
-    </div>
+    </x-form-card>
 
     {{-- Backup Database --}}
-    <div class="glass-card rounded-2xl p-6" x-data="{ loading: false }">
+    <x-form-card x-data="{ loading: false }">
         <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Backup Database</h3>
         <div class="space-y-3">
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -54,11 +55,10 @@
             </p>
             <form method="POST" action="{{ route('settings.backup') }}" @submit="loading = true">
                 @csrf
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     :disabled="loading"
-                    class="rounded-lg bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
-                >
+                    class="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                     <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                     </svg>
@@ -70,6 +70,6 @@
                 </button>
             </form>
         </div>
-    </div>
+    </x-form-card>
 </div>
 @endsection

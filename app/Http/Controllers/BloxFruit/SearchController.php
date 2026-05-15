@@ -22,8 +22,7 @@ class SearchController extends Controller
         $results = null;
         $emptyResults = null;
         $searchedItems = [];
-        $mode = $request->get('mode', 'semua'); // semua = akun punya semua item, sebagian = punya minimal 1
-        $searchEmpty = $request->get('search_empty'); // fruit_id to find empty slots
+        $mode = $request->get('mode', 'semua'); // semua = punya semua, sebagian = punya minimal 1
 
         $fruitIds = array_filter($request->get('fruits', []), fn($v) => $v);
         $skinIds = array_filter($request->get('skins', []), fn($v) => $v);
@@ -57,10 +56,8 @@ class SearchController extends Controller
 
             $totalCriteria = count($fruitIds) + count($skinIds) + count($gpIds) + count($permIds);
 
-            // Query akun storage yang punya item-item tersebut
             $query = StorageAccount::where('aktif', true);
 
-            // Hitung berapa kriteria yang match per akun
             $query->withCount([
                 'fruitStocks as matched_fruits' => function ($q) use ($fruitIds) {
                     if ($fruitIds) $q->whereIn('blox_fruit_id', $fruitIds)->where('jumlah', '>', 0);
@@ -80,7 +77,6 @@ class SearchController extends Controller
                 },
             ]);
 
-            // Juga load detail stok yang match
             $query->with([
                 'fruitStocks' => fn($q) => $fruitIds ? $q->whereIn('blox_fruit_id', $fruitIds)->where('jumlah', '>', 0)->with('fruit') : $q->whereRaw('0 = 1'),
                 'skinStocks' => fn($q) => $skinIds ? $q->whereIn('fruit_skin_id', $skinIds)->where('jumlah', '>', 0)->with('skin') : $q->whereRaw('0 = 1'),
@@ -90,38 +86,81 @@ class SearchController extends Controller
 
             $allAccounts = $query->get();
 
-            // Hitung total match per akun
             $allAccounts->each(function ($acc) {
                 $acc->total_matched = $acc->matched_fruits + $acc->matched_skins + $acc->matched_gp + $acc->matched_perm;
             });
 
             if ($mode === 'semua') {
-                // Hanya akun yang punya SEMUA item
                 $results = $allAccounts->filter(fn($a) => $a->total_matched >= $totalCriteria)->sortByDesc('total_matched')->values();
             } else {
-                // Akun yang punya minimal 1 item, urutkan dari yang paling banyak match
                 $results = $allAccounts->filter(fn($a) => $a->total_matched > 0)->sortByDesc('total_matched')->values();
             }
         }
 
-        // === CARI SLOT KOSONG (multi-fruit) ===
-        $searchEmptyIds = array_filter($request->get('search_empty', []), fn($v) => $v);
-        if ($searchEmptyIds) {
-            $searchedFruits = BloxFruit::whereIn('id', $searchEmptyIds)->get();
-            $accounts = StorageAccount::where('aktif', true)->with(['fruitStocks' => function ($q) use ($searchEmptyIds) {
-                $q->whereIn('blox_fruit_id', $searchEmptyIds);
-            }])->get();
+        // ============================================================
+        // CARI SLOT KOSONG — multi-tipe (fruits/skins/gamepasses/permanents)
+        // ============================================================
+        $emptyFruitIds = array_filter($request->get('empty_fruits', []), fn($v) => $v);
+        $emptySkinIds = array_filter($request->get('empty_skins', []), fn($v) => $v);
+        $emptyGpIds = array_filter($request->get('empty_gamepasses', []), fn($v) => $v);
+        $emptyPermIds = array_filter($request->get('empty_permanents', []), fn($v) => $v);
 
-            $emptyResults = $accounts->map(function ($acc) use ($searchEmptyIds) {
+        $hasEmptySearch = count($emptyFruitIds) || count($emptySkinIds) || count($emptyGpIds) || count($emptyPermIds);
+
+        $searchedEmptyItems = [
+            'fruits' => collect(),
+            'skins' => collect(),
+            'gamepasses' => collect(),
+            'permanents' => collect(),
+        ];
+
+        if ($hasEmptySearch) {
+            if ($emptyFruitIds) $searchedEmptyItems['fruits'] = BloxFruit::whereIn('id', $emptyFruitIds)->get();
+            if ($emptySkinIds) $searchedEmptyItems['skins'] = FruitSkin::whereIn('id', $emptySkinIds)->get();
+            if ($emptyGpIds) $searchedEmptyItems['gamepasses'] = Gamepass::whereIn('id', $emptyGpIds)->get();
+            if ($emptyPermIds) $searchedEmptyItems['permanents'] = PermanentFruitPrice::whereIn('id', $emptyPermIds)->get();
+
+            $accounts = StorageAccount::where('aktif', true)
+                ->with([
+                    'fruitStocks' => fn($q) => $emptyFruitIds ? $q->whereIn('blox_fruit_id', $emptyFruitIds) : $q->whereRaw('0=1'),
+                    'skinStocks' => fn($q) => $emptySkinIds ? $q->whereIn('fruit_skin_id', $emptySkinIds) : $q->whereRaw('0=1'),
+                    'gamepassStocks' => fn($q) => $emptyGpIds ? $q->whereIn('gamepass_id', $emptyGpIds) : $q->whereRaw('0=1'),
+                    'permanentStocks' => fn($q) => $emptyPermIds ? $q->whereIn('permanent_fruit_price_id', $emptyPermIds) : $q->whereRaw('0=1'),
+                ])->get();
+
+            $emptyResults = $accounts->map(function ($acc) use (
+                $emptyFruitIds, $emptySkinIds, $emptyGpIds, $emptyPermIds
+            ) {
                 $capacity = $acc->kapasitas_storage;
-                $details = [];
+                $details = ['fruits' => [], 'skins' => [], 'gamepasses' => [], 'permanents' => []];
                 $totalAvailable = 0;
 
-                foreach ($searchEmptyIds as $fruitId) {
-                    $stock = $acc->fruitStocks->firstWhere('blox_fruit_id', $fruitId);
+                foreach ($emptyFruitIds as $id) {
+                    $stock = $acc->fruitStocks->firstWhere('blox_fruit_id', $id);
                     $current = $stock ? $stock->jumlah : 0;
-                    $available = $capacity - $current;
-                    $details[$fruitId] = ['current' => $current, 'available' => $available];
+                    $available = max(0, $capacity - $current);
+                    $details['fruits'][$id] = ['current' => $current, 'available' => $available];
+                    $totalAvailable += $available;
+                }
+                foreach ($emptySkinIds as $id) {
+                    $stock = $acc->skinStocks->firstWhere('fruit_skin_id', $id);
+                    $current = $stock ? $stock->jumlah : 0;
+                    $available = max(0, $capacity - $current);
+                    $details['skins'][$id] = ['current' => $current, 'available' => $available];
+                    $totalAvailable += $available;
+                }
+                foreach ($emptyGpIds as $id) {
+                    $stock = $acc->gamepassStocks->firstWhere('gamepass_id', $id);
+                    $current = $stock ? $stock->jumlah : 0;
+                    $available = max(0, $capacity - $current);
+                    $details['gamepasses'][$id] = ['current' => $current, 'available' => $available];
+                    $totalAvailable += $available;
+                }
+                foreach ($emptyPermIds as $id) {
+                    $stock = $acc->permanentStocks->firstWhere('permanent_fruit_price_id', $id);
+                    $current = $stock ? $stock->jumlah : 0;
+                    $available = max(0, $capacity - $current);
+                    $details['permanents'][$id] = ['current' => $current, 'available' => $available];
                     $totalAvailable += $available;
                 }
 
@@ -131,15 +170,16 @@ class SearchController extends Controller
                     'details' => $details,
                     'total_available' => $totalAvailable,
                 ];
-            })->filter(fn($r) => $r['total_available'] > 0)->sortByDesc('total_available')->values();
-        } else {
-            $searchedFruits = collect();
+            })->filter(fn($r) => $r['total_available'] > 0)
+              ->sortByDesc('total_available')
+              ->values();
         }
 
         return view('bloxfruit.search.index', compact(
             'allFruits', 'allSkins', 'allGamepasses', 'allPermanents',
-            'results', 'emptyResults', 'searchedFruits', 'searchedItems', 'hasSearch', 'mode',
-            'fruitIds', 'skinIds', 'gpIds', 'permIds', 'searchEmptyIds'
+            'results', 'emptyResults', 'searchedEmptyItems', 'searchedItems', 'hasSearch', 'hasEmptySearch', 'mode',
+            'fruitIds', 'skinIds', 'gpIds', 'permIds',
+            'emptyFruitIds', 'emptySkinIds', 'emptyGpIds', 'emptyPermIds'
         ));
     }
 }

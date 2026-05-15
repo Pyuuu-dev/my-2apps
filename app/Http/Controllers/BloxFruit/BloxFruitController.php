@@ -39,11 +39,11 @@ class BloxFruitController extends Controller
             ->where('aktif', true)->orderByDesc('harga_jual')
             ->get()->map(fn($s) => ['nama' => $s->nama_skin, 'harga_jual' => $s->harga_jual, 'stok' => (int)($s->stok ?? 0)]);
 
-        $gamepassesForCopy = Gamepass::where('aktif', true)->orderByDesc('harga_jual')
-            ->get()->map(fn($g) => ['nama' => $g->nama, 'harga_jual' => $g->harga_jual]);
+        $gamepassesForCopy = Gamepass::withSum('stocks as stok', 'jumlah')->where('aktif', true)->orderByDesc('harga_jual')
+            ->get()->map(fn($g) => ['nama' => $g->nama, 'harga_jual' => $g->harga_jual, 'stok' => (int)($g->stok ?? 0)]);
 
-        $permanentsForCopy = PermanentFruitPrice::where('aktif', true)->orderByDesc('harga_jual')
-            ->get()->map(fn($p) => ['nama' => $p->nama, 'harga_jual' => $p->harga_jual]);
+        $permanentsForCopy = PermanentFruitPrice::withSum('stocks as stok', 'jumlah')->where('aktif', true)->orderByDesc('harga_jual')
+            ->get()->map(fn($p) => ['nama' => $p->nama, 'harga_jual' => $p->harga_jual, 'stok' => (int)($p->stok ?? 0)]);
 
         return view('bloxfruit.fruits.index', compact(
             'fruits', 'totalStok', 'fruitsForCopy', 'skinsForCopy', 'gamepassesForCopy', 'permanentsForCopy'

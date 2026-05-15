@@ -23,7 +23,13 @@ class UserController extends Controller
 {
     public function index()
     {
+        $today = now('Asia/Singapore')->toDateString();
+
+        // Eager load counts + sum kalori hari ini (fix N+1 di blade)
         $users = UserProfile::withCount(['foodLogs', 'weightLogs', 'badges', 'exerciseLogs'])
+            ->withSum([
+                'foodLogs as today_kalori' => fn ($q) => $q->whereDate('tanggal', $today),
+            ], 'kalori')
             ->orderByDesc('updated_at')
             ->get();
 

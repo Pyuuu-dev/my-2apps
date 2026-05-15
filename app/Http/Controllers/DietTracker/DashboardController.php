@@ -22,22 +22,34 @@ class DashboardController extends Controller
         $today = now('Asia/Singapore')->toDateString();
         $date = $request->get('date', $today);
 
-        // Get all profiles (admin view)
-        $profiles = UserProfile::withCount(['foodLogs', 'weightLogs', 'badges'])->get();
+        // Get all profiles + counts + today kalori sum (fix N+1 di blade)
+        $profiles = UserProfile::withCount(['foodLogs', 'weightLogs', 'badges'])
+            ->withSum([
+                'foodLogs as today_kalori' => fn ($q) => $q->whereDate('tanggal', $today),
+            ], 'kalori')
+            ->get();
         $activeProfile = $profiles->first();
 
-        // Stats overview
+        // Stats overview — single aggregate query untuk AI logs
+        $aiAggregate = AiLog::selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN DATE(created_at) = ? THEN 1 ELSE 0 END) as today,
+            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as success_count,
+            AVG(CASE WHEN success = 1 THEN response_time_ms END) as avg_response
+        ", [$today])->first();
+
+        $aiTotal = (int) ($aiAggregate->total ?? 0);
+        $aiSuccess = (int) ($aiAggregate->success_count ?? 0);
+
         $stats = [
             'total_users' => UserProfile::count(),
             'active_users' => UserProfile::where('aktif', true)->count(),
             'total_food_logs' => FoodLog::count(),
             'total_food_today' => FoodLog::whereDate('tanggal', $today)->count(),
-            'total_ai_requests' => AiLog::count(),
-            'ai_requests_today' => AiLog::whereDate('created_at', $today)->count(),
-            'ai_success_rate' => AiLog::count() > 0
-                ? round(AiLog::where('success', true)->count() / AiLog::count() * 100, 1)
-                : 0,
-            'avg_response_time' => round(AiLog::where('success', true)->avg('response_time_ms') ?? 0),
+            'total_ai_requests' => $aiTotal,
+            'ai_requests_today' => (int) ($aiAggregate->today ?? 0),
+            'ai_success_rate' => $aiTotal > 0 ? round($aiSuccess / $aiTotal * 100, 1) : 0,
+            'avg_response_time' => round((float) ($aiAggregate->avg_response ?? 0)),
         ];
 
         // Recent food logs
