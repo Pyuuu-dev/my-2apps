@@ -11,19 +11,63 @@
         @endif
     </form>
     <div class="flex items-center gap-2">
-        <form method="POST" action="{{ route('bloxfruit.storage.clearAll') }}" onsubmit="return confirm('KOSONGKAN SEMUA STOK dari SEMUA AKUN?\n\nFruit, Skin, Gamepass, Permanent akan di-reset ke 0.\nData keuangan & lainnya TIDAK terpengaruh.\n\nLanjutkan?')">
-            @csrf @method('DELETE')
-            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                Kosongkan Semua
-            </button>
-        </form>
+        <button type="button" @click="$dispatch('open-modal-clear-all-stocks')" class="inline-flex items-center gap-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Kosongkan Semua
+        </button>
         <a href="{{ route('bloxfruit.storage.create') }}" class="btn-primary inline-flex items-center gap-2">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Tambah Akun
         </a>
     </div>
 </div>
+
+{{-- ============================================================
+     Modal Konfirmasi Kosongkan Semua — ketik manual untuk safety
+     ============================================================ --}}
+<x-modal name="clear-all-stocks" title="Kosongkan Semua Stok">
+    <div class="p-5" x-data="{ confirmText: '' }">
+        <div class="rounded-lg bg-[var(--danger-soft)] border border-[var(--danger)]/20 p-4 mb-4">
+            <div class="flex items-start gap-2.5">
+                <svg class="h-5 w-5 text-[var(--danger)] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <div>
+                    <p class="text-sm font-semibold text-[var(--danger)]">Aksi Tidak Bisa Dibatalkan</p>
+                    <p class="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
+                        Semua stok <strong>fruit, skin, gamepass, permanent</strong> dari <strong>SEMUA akun storage</strong>
+                        akan dihapus permanent. Data keuangan, joki order, dan akun jual <strong>tidak terpengaruh</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-sm text-[var(--text-muted)] mb-2">
+            Untuk konfirmasi, ketik <code class="bg-[var(--surface-2)] px-2 py-0.5 rounded text-[var(--danger)] font-bold tracking-wide">HAPUS SEMUA STOK</code> di bawah:
+        </p>
+        <input
+            type="text"
+            x-model="confirmText"
+            placeholder="Ketik di sini..."
+            autocomplete="off"
+            class="w-full h-10 px-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm placeholder:text-[var(--text-subtle)] focus:border-[var(--danger)] focus:ring-0 focus:outline-none transition-colors font-mono">
+
+        <form method="POST" action="{{ route('bloxfruit.storage.clearAll') }}" class="flex gap-2 mt-4">
+            @csrf
+            @method('DELETE')
+            <button
+                type="submit"
+                :disabled="confirmText !== 'HAPUS SEMUA STOK'"
+                :class="confirmText === 'HAPUS SEMUA STOK' ? 'bg-[var(--danger)] hover:opacity-90 cursor-pointer' : 'bg-[var(--surface-2)] text-[var(--text-subtle)] cursor-not-allowed'"
+                class="flex-1 h-10 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
+                :class="confirmText === 'HAPUS SEMUA STOK' ? 'text-white' : ''">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Kosongkan Semua
+            </button>
+            <button type="button" @click="$dispatch('close-modal-clear-all-stocks'); confirmText = ''" class="h-10 px-4 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--surface-2)] text-sm font-semibold transition-colors">
+                Batal
+            </button>
+        </form>
+    </div>
+</x-modal>
 
 @php
     function getBrowserKey($name) {

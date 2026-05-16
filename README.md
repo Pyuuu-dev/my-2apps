@@ -109,6 +109,14 @@ Brand name, kontak (WA, IG, TikTok, Discord), template marketing copy, dan konfi
 - Eager loading agresif untuk hindari N+1
 - CSS bundle target < 120 KB
 
+## Safety & Backup
+
+- Backup database otomatis 4× sehari (02:00, 08:00, 14:00, 20:00) via Telegram bot
+- Manual backup tersedia di topbar dropdown
+- Aksi destruktif (kosongkan semua stok) dilindungi modal konfirmasi dengan input ketik manual
+- Soft delete + halaman trash untuk transaksi profit
+- Selective restore dari backup file tersedia via tinker (lihat `docs/plans/`)
+
 ## Lisensi
 
 MIT (Laravel default)
