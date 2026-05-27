@@ -17,6 +17,7 @@ class SettingsSeeder extends Seeder
 
             // Kontak
             ['key' => 'store.wa_number', 'value' => '6282353085502', 'group' => 'kontak', 'label' => 'Nomor WhatsApp (62...)', 'type' => 'tel'],
+            ['key' => 'store.wa_channel_url', 'value' => '', 'group' => 'kontak', 'label' => 'URL Saluran WhatsApp', 'type' => 'url'],
             ['key' => 'store.tiktok_url', 'value' => 'https://www.tiktok.com/@ldc_storee', 'group' => 'kontak', 'label' => 'URL TikTok', 'type' => 'url'],
             ['key' => 'store.instagram_url', 'value' => 'https://www.instagram.com/ldcstoree/', 'group' => 'kontak', 'label' => 'URL Instagram', 'type' => 'url'],
             ['key' => 'store.discord_url', 'value' => '', 'group' => 'kontak', 'label' => 'URL Discord', 'type' => 'url'],

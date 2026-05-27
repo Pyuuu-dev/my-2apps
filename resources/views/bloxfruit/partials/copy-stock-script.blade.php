@@ -11,7 +11,7 @@
 function stockPage(fruits, skins, gamepasses, permanents) {
     // Header default dibaca dari Settings (key: store.copy_header_template)
     // Fallback ke template default kalau setting belum diisi
-    const defaultHeader = {!! json_encode($defaultHeader) !!};
+    const defaultHeader = {!! json_encode($defaultHeader, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
     return {
         showCopy: false,

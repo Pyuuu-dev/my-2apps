@@ -32,7 +32,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 | Public Landing Page (root)
 |--------------------------------------------------------------------------
 */
-Route::get('/', [\App\Http\Controllers\BloxFruit\LandingController::class, 'index'])->name('landing');
+Route::get('/', [\App\Http\Controllers\BloxFruit\LandingController::class, 'index'])
+    ->middleware('throttle:120,1')
+    ->name('landing');
 
 // Backward compat: /store -> / (permanent redirect)
 Route::redirect('/store', '/', 301);

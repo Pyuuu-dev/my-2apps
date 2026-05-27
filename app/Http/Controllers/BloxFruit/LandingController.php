@@ -10,6 +10,7 @@ use App\Models\BloxFruit\BloxFruit;
 use App\Models\BloxFruit\FruitSkin;
 use App\Models\BloxFruit\Gamepass;
 use App\Models\BloxFruit\PermanentFruitPrice;
+use App\Models\BloxFruit\ProfitRecord;
 
 class LandingController extends Controller
 {
@@ -53,11 +54,22 @@ class LandingController extends Controller
         $permanents = PermanentFruitPrice::where('aktif', true)
             ->orderBy('harga_jual')->get();
 
+        // Penjualan kategori (dari profit_records: 1 row = 1 transaksi)
+        $kategoriTerjual = ProfitRecord::query()
+            ->whereIn('kategori', ['fruit', 'skin', 'gamepass', 'permanent'])
+            ->selectRaw('kategori, COUNT(*) as total')
+            ->groupBy('kategori')
+            ->pluck('total', 'kategori');
+
         // Stats
         $stats = [
-            'joki_selesai' => JokiOrder::where('status', 'selesai')->count(),
-            'akun_terjual' => AccountStock::where('status', 'terjual')->count(),
-            'total_services' => JokiService::where('aktif', true)->count(),
+            'joki_selesai'      => JokiOrder::where('status', 'selesai')->count(),
+            'akun_terjual'      => AccountStock::where('status', 'terjual')->count(),
+            'total_services'    => JokiService::where('aktif', true)->count(),
+            'fruit_terjual'     => (int) ($kategoriTerjual['fruit']     ?? 0),
+            'skin_terjual'      => (int) ($kategoriTerjual['skin']      ?? 0),
+            'gamepass_terjual'  => (int) ($kategoriTerjual['gamepass']  ?? 0),
+            'permanent_terjual' => (int) ($kategoriTerjual['permanent'] ?? 0),
         ];
 
         return view('bloxfruit.landing', compact(
