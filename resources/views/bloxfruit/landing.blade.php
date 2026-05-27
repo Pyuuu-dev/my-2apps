@@ -10,7 +10,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:title" content="LDC Store - Blox Fruit Joki & Akun Murah">
-    <meta property="og:description" content="Jasa joki terpercaya, permanent fruit & gamepass dengan harga terjangkau. {{ $stats['joki_selesai'] }}+ joki selesai, {{ $stats['akun_terjual'] }}+ akun terjual. Proses cepat & aman!">
+    <meta property="og:description" content="Jasa joki terpercaya, permanent fruit & gamepass dengan harga terjangkau. {{ $stats['joki_selesai'] }}+ joki selesai, {{ $stats['akun_terjual'] }}+ akun terjual, {{ $stats['item_terjual'] }}+ item terjual. Proses cepat & aman!">
     <meta property="og:image" content="{{ url('/og-image.svg') }}">
     <meta property="og:image:type" content="image/svg+xml">
     <meta property="og:image:width" content="1200">
@@ -76,7 +76,7 @@
         <div class="max-w-3xl mx-auto text-center relative">
             <div class="inline-flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-4 py-1.5 mb-6">
                 <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-xs font-medium text-slate-300">{{ $stats['joki_selesai'] }}+ Joki Selesai &middot; {{ $stats['akun_terjual'] }}+ Akun Terjual</span>
+                <span class="text-xs font-medium text-slate-300">{{ $stats['joki_selesai'] }}+ Joki Selesai &middot; {{ $stats['akun_terjual'] }}+ Akun Terjual &middot; {{ $stats['item_terjual'] }}+ Item Terjual</span>
             </div>
             <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 text-white tracking-tight">
                 {{ explode(' ', setting('store.brand_name', 'LDC Store'))[0] ?? 'LDC' }} <span class="text-indigo-400">{{ explode(' ', setting('store.brand_name', 'LDC Store'))[1] ?? 'Store' }}</span>
@@ -84,7 +84,7 @@
             <p class="text-slate-400 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed">Jasa joki terpercaya dan permanent fruit dengan harga terjangkau. Proses cepat &amp; aman.</p>
 
             {{-- Stats --}}
-            <div class="grid grid-cols-3 gap-3 max-w-sm mx-auto">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto">
                 <div class="rounded-xl bg-slate-800/80 border border-slate-700/50 p-3">
                     <p class="text-2xl font-bold text-white">{{ $stats['joki_selesai'] }}+</p>
                     <p class="text-[10px] text-slate-500 mt-0.5">Joki Selesai</p>
@@ -92,6 +92,10 @@
                 <div class="rounded-xl bg-slate-800/80 border border-slate-700/50 p-3">
                     <p class="text-2xl font-bold text-white">{{ $stats['akun_terjual'] }}+</p>
                     <p class="text-[10px] text-slate-500 mt-0.5">Akun Terjual</p>
+                </div>
+                <div class="rounded-xl bg-slate-800/80 border border-slate-700/50 p-3">
+                    <p class="text-2xl font-bold text-white">{{ $stats['item_terjual'] }}+</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Item Terjual</p>
                 </div>
                 <div class="rounded-xl bg-slate-800/80 border border-slate-700/50 p-3">
                     <p class="text-2xl font-bold text-white">{{ $stats['total_services'] }}</p>
@@ -209,12 +213,7 @@
             <div class="text-center mb-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">Fruit</p>
                 <h2 class="text-3xl font-bold text-white tracking-tight">Harga Fruit</h2>
-                <p class="text-sm text-slate-500 mt-2">
-                    Harga jual fruit per rarity
-                    @if(($stats['fruit_terjual'] ?? 0) > 0)
-                        &middot; <span class="text-emerald-400 font-medium">{{ $stats['fruit_terjual'] }} terjual</span>
-                    @endif
-                </p>
+                <p class="text-sm text-slate-500 mt-2">Harga jual fruit per rarity</p>
             </div>
 
             @php
@@ -259,12 +258,7 @@
             <div class="text-center mb-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-pink-400 mb-2">Skin</p>
                 <h2 class="text-3xl font-bold text-white tracking-tight">Harga Skin</h2>
-                <p class="text-sm text-slate-500 mt-2">
-                    {{ $skins->count() }} skin tersedia
-                    @if(($stats['skin_terjual'] ?? 0) > 0)
-                        &middot; <span class="text-emerald-400 font-medium">{{ $stats['skin_terjual'] }} terjual</span>
-                    @endif
-                </p>
+                <p class="text-sm text-slate-500 mt-2">{{ $skins->count() }} skin tersedia</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -288,12 +282,7 @@
             <div class="text-center mb-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">Gamepass</p>
                 <h2 class="text-3xl font-bold text-white tracking-tight">Harga Gamepass</h2>
-                <p class="text-sm text-slate-500 mt-2">
-                    {{ $gamepasses->count() }} gamepass tersedia
-                    @if(($stats['gamepass_terjual'] ?? 0) > 0)
-                        &middot; <span class="text-emerald-400 font-medium">{{ $stats['gamepass_terjual'] }} terjual</span>
-                    @endif
-                </p>
+                <p class="text-sm text-slate-500 mt-2">{{ $gamepasses->count() }} gamepass tersedia</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
@@ -320,12 +309,7 @@
             <div class="text-center mb-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2">Permanent</p>
                 <h2 class="text-3xl font-bold text-white tracking-tight">Harga Permanent Fruit</h2>
-                <p class="text-sm text-slate-500 mt-2">
-                    {{ $permanents->count() }} buah tersedia
-                    @if(($stats['permanent_terjual'] ?? 0) > 0)
-                        &middot; <span class="text-emerald-400 font-medium">{{ $stats['permanent_terjual'] }} terjual</span>
-                    @endif
-                </p>
+                <p class="text-sm text-slate-500 mt-2">{{ $permanents->count() }} buah tersedia</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">

@@ -70,6 +70,7 @@ class LandingController extends Controller
             'skin_terjual'      => (int) ($kategoriTerjual['skin']      ?? 0),
             'gamepass_terjual'  => (int) ($kategoriTerjual['gamepass']  ?? 0),
             'permanent_terjual' => (int) ($kategoriTerjual['permanent'] ?? 0),
+            'item_terjual'      => (int) $kategoriTerjual->sum(),
         ];
 
         return view('bloxfruit.landing', compact(
