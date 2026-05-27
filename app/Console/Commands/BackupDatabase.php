@@ -37,7 +37,7 @@ class BackupDatabase extends Command
             . "📦 Ukuran: {$size} KB\n"
             . "🤖 Otomatis 4x/hari (02:00, 08:00, 14:00, 20:00)";
 
-        $telegram = new TelegramService();
+        $telegram = new TelegramService($token);
         $result = $telegram->sendDocument($chatId, $backupPath, $caption, $token);
         $sent = $result['ok'] ?? false;
 

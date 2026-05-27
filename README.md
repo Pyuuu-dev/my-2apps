@@ -1,9 +1,6 @@
-# MyApp — BloxFruit Management & Diet Tracker
+# LDC Store Management — BloxFruit
 
-Laravel admin panel untuk dua modul bisnis terpisah:
-
-- **BloxFruit (LDC Store)** — manajemen toko jasa joki & jualan akun Blox Fruits Roblox
-- **DietTracker** — admin panel + Telegram bot untuk monitoring diet & kesehatan
+Laravel admin panel untuk **LDC Store** — manajemen toko jasa joki & jualan akun Blox Fruits Roblox.
 
 ## Tech Stack
 
@@ -13,9 +10,8 @@ Laravel admin panel untuk dua modul bisnis terpisah:
 - Vite
 - SQLite / MySQL
 
-## Modul
+## Fitur
 
-### BloxFruit
 - Master data: Fruit, Skin, Gamepass, Permanent Fruit, Joki Service
 - Storage account & stock management dengan kapasitas per item
 - Joki order workflow (antrian → proses → selesai)
@@ -25,14 +21,6 @@ Laravel admin panel untuk dua modul bisnis terpisah:
 - Cari stok & cari slot kosong (multi-tipe: fruit/skin/gamepass/permanent)
 - Public landing page (`/`) dengan search realtime
 - Stock alert banner untuk item perlu restock
-
-### DietTracker
-- User profile management
-- Food logs + AI calorie estimation
-- Telegram bot integration (webhook)
-- Statistics global + per user
-- Broadcast & send-message ke user aktif
-- Food database CRUD
 
 ## Setup Development
 
@@ -52,9 +40,7 @@ php artisan serve
 - `/login` — form login admin
 - `/dashboard` — admin dashboard (butuh auth)
 - `/bloxfruit/*` — modul BloxFruit (butuh auth)
-- `/diet/*` — modul DietTracker (butuh auth)
 - `/settings/store` — pengaturan brand, kontak, marketing copy
-- `/webhook/telegram-diet` — endpoint webhook bot Telegram
 
 ## Struktur Project
 
@@ -62,14 +48,13 @@ php artisan serve
 app/
   Http/Controllers/
     BloxFruit/      — controllers untuk modul BloxFruit
-    DietTracker/    — controllers untuk modul DietTracker
     HomeController  — admin dashboard
     StoreSettingsController — UI settings store
-  Services/         — service layer (StockAlertService, dll)
+    BackupController — backup database via Telegram
+  Services/         — service layer (StockAlertService, TelegramService, dll)
   Helpers/          — helper functions auto-loaded (format, settings)
   Models/
     BloxFruit/      — model BloxFruit
-    DietTracker/    — model DietTracker
     Setting         — settings table generic key-value
 config/
   stock.php         — threshold stock alert per kategori
@@ -78,7 +63,6 @@ resources/
     components/     — Blade components reusable (btn, stat-card, modal, dll)
     layouts/        — layout utama
     bloxfruit/      — view bloxfruit
-    diet/           — view diet
 docs/
   plans/            — design & implementation plans
 ```

@@ -1,7 +1,8 @@
-# Audit & Redesign Plan — MyApp (BloxFruit + DietTracker)
+# Audit & Redesign Plan — LDC Store (BloxFruit)
 
 **Tanggal:** 2026-05-14
-**Scope:** 37 blade files, 1 layout, 14 BloxFruit controllers, 6 DietTracker controllers
+**Update:** 2026-05-26 — modul DietTracker dihapus dari project; section terkait diet di-prune.
+**Scope:** Blade files BloxFruit, layout, 14 BloxFruit controllers
 **Brand:** MyApp (admin) + LDC Store (landing publik)
 **Status:** Approved, eksekusi bertahap
 
@@ -9,18 +10,13 @@
 
 ## A. Konteks Aplikasi
 
-Aplikasi Laravel dengan 2 modul utama:
+Aplikasi Laravel single-module (sejak 2026-05-26):
 
-1. **BloxFruit** — manajemen toko jasa joki & jual akun Roblox (LDC Store)
-   - Dashboard, Search, Landing publik
-   - Master data: Fruits, Skins, Gamepasses, Permanent Fruits, Joki Services
-   - Operasional: Storage Account, Account Stock, Joki Order
-   - Keuangan: Profit, Wallet, Trash, Rekap, Quick Sell
-
-2. **DietTracker** — admin panel + bot Telegram diet
-   - Dashboard, Stats
-   - Users management (broadcast, send-message, reset, recalculate)
-   - AI Logs, Food Database, Telegram webhook
+**BloxFruit** — manajemen toko jasa joki & jual akun Roblox (LDC Store)
+- Dashboard, Search, Landing publik
+- Master data: Fruits, Skins, Gamepasses, Permanent Fruits, Joki Services
+- Operasional: Storage Account, Account Stock, Joki Order
+- Keuangan: Profit, Wallet, Trash, Rekap, Quick Sell
 
 **Stack:** Laravel + Tailwind v4 + Alpine.js + Vite. Tanpa Livewire/Inertia.
 
@@ -39,7 +35,6 @@ Aplikasi Laravel dengan 2 modul utama:
 - Dark mode partial: ~60% lengkap, ~40% tidak (form labels & beberapa card)
 - Tombol "+ Tambah" ukuran beragam
 - Format tanggal acak (5+ varian)
-- BloxFruit pakai SVG, Diet pakai emoji — mixed identity
 
 ### Hardcoded yang seharusnya konfigurabel
 - Marketing copy LDC + nomor WA + link sosmed di `copy-stock-script.blade.php`
@@ -47,18 +42,15 @@ Aplikasi Laravel dengan 2 modul utama:
 - Achievement threshold, timezone label
 
 ### Performance Issue
-- N+1 query di `dashboard/index.blade.php:95` & `users/index.blade.php:66`
-- Closure dashboard di `routes/web.php:62-118` execute 8+ query per render
+- N+1 query di `dashboard/index.blade.php`
+- Closure dashboard di `routes/web.php` execute 8+ query per render
 
 ### Security
 - `password_roblox` SUDAH encrypted di DB (cast di model, baris 22) ✓
 - `accounts/form.blade.php:17` input pakai `type="text"` — bocor visual
-- Broadcast & send-message HTML supported tanpa info sanitasi
 - Backup config form tag-balancing rapuh
 
 ### Feature Gap
-- `food-db` tidak ada edit (hanya add+delete)
-- `ai-logs` tidak ada filter/export
 - `rekap` tidak menampilkan revenue/profit di hero
 
 ### Dead Code
@@ -150,8 +142,7 @@ Estimasi: 6-8 jam
 - Single agregate query
 
 **4.2 Fix N+1**
-- `users/index.blade.php:66` → `withSum()` di controller
-- `dashboard/index.blade.php:95` → sama
+- `dashboard/index.blade.php` → `withSum()` di controller
 
 Estimasi: 3-4 jam
 
@@ -164,37 +155,24 @@ Estimasi: 3-4 jam
 - `accounts/index.blade.php` → masked display, reveal via dedicated endpoint
 - Migration rotate **DIBATALKAN** (sudah encrypted)
 
-**5.2 Broadcast & send-message**
-- Audit `UserController@broadcast` & `sendMessage`
-- Whitelist HTML tag (`<b>`, `<i>`, `<a>`, `<code>`) untuk Telegram parse_mode=HTML
-- `e()` saat preview di app
-
-**5.3 Backup config form**
+**5.2 Backup config form**
 - Pisah jadi 2 form clean (hilangkan tag-balancing manual)
 - Pertimbangkan store ke settings DB instead of `.env`
 
-**5.4 Rate limit login**
+**5.3 Rate limit login**
 - `throttle:5,1` di `login.post`
 
-Estimasi: 4-5 jam
+Estimasi: 3-4 jam
 
 ---
 
 ### Fase 6 — Feature Gap
 
-**6.1 Food DB edit**
-- Modal edit di `diet/food-db/index.blade.php`
-- Route `PUT diet/food-db/{food}` sudah ada, tinggal UI
-
-**6.2 AI Logs filter & export**
-- Filter form: tipe, model, status, user, date range
-- Tombol Export CSV
-
-**6.3 Rekap revenue di hero**
+**6.1 Rekap revenue di hero**
 - Aggregate `total_revenue`, `total_profit` di `RekapController`
 - Display di hero card
 
-Estimasi: 4-5 jam
+Estimasi: 2-3 jam
 
 ---
 
@@ -219,17 +197,13 @@ Fase 1 (Foundation) ─┬─ Fase 2 (Dark mode)
                                     └─ Fase 7 (Visual rebrand) opsional
 ```
 
-**Total estimasi tanpa Fase 7:** ~25-35 jam
-
 ---
 
 ## E. Aturan Kerja
 
 1. **Data lama jangan dihilangkan** — termasuk `welcome.blade.php`, Python scripts, file `.txt`
 2. **Brand tetap "MyApp"** untuk admin, "LDC Store" untuk landing publik
-3. **Tidak ada DROP migration** — semua perubahan additive
-4. **Settings table belum ada** — perlu dibuat (Fase 1.3)
-5. **Password Roblox sudah encrypted** di model — tidak perlu rotate
+3. **Password Roblox sudah encrypted** di model — tidak perlu rotate
 
 ---
 

@@ -125,40 +125,6 @@
                 </a>
                 @endforeach
 
-                {{-- ====== DIET TRACKER ====== --}}
-                <div class="pt-5 pb-1.5 px-3">
-                    <p class="sidebar-section-label">Diet Tracker</p>
-                </div>
-                @php
-                    $dtMain = [
-                        ['route' => 'diet.dashboard', 'match' => 'diet.dashboard', 'label' => 'Dashboard', 'icon' => 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
-                        ['route' => 'diet.users.index', 'match' => 'diet.users.*', 'label' => 'Users', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
-                        ['route' => 'diet.stats', 'match' => 'diet.stats', 'label' => 'Statistik', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
-                    ];
-                @endphp
-                @foreach($dtMain as $link)
-                <a href="{{ route($link['route']) }}" @click="closeSidebar()" class="sidebar-link {{ request()->routeIs($link['match']) ? 'sidebar-link-active' : '' }}">
-                    <span class="sidebar-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $link['icon'] }}"/></svg></span>
-                    {{ $link['label'] }}
-                </a>
-                @endforeach
-
-                <div class="pt-3 pb-1 px-3">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">Data &amp; Log</p>
-                </div>
-                @php
-                    $dtData = [
-                        ['route' => 'diet.food-db', 'match' => 'diet.food-db*', 'label' => 'Database Makanan', 'icon' => 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4'],
-                        ['route' => 'diet.ai-logs', 'match' => 'diet.ai-logs', 'label' => 'AI Logs', 'icon' => 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z'],
-                    ];
-                @endphp
-                @foreach($dtData as $link)
-                <a href="{{ route($link['route']) }}" @click="closeSidebar()" class="sidebar-link {{ request()->routeIs($link['match']) ? 'sidebar-link-active' : '' }}">
-                    <span class="sidebar-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $link['icon'] }}"/></svg></span>
-                    {{ $link['label'] }}
-                </a>
-                @endforeach
-
                 <div class="pt-3 pb-1 px-3">
                     <p class="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">Pengaturan</p>
                 </div>

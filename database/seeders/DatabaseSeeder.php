@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SettingsSeeder::class,
             BloxFruitSeeder::class,
-            DietDatabaseSeeder::class,
         ]);
     }
 }

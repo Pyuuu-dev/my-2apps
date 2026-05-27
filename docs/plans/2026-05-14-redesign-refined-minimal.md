@@ -176,7 +176,6 @@ Border-left 3px semantic, slide-in dari kanan
 ### Fase R3 — Dashboard Pages
 - `dashboard/index.blade.php`
 - `bloxfruit/dashboard.blade.php`
-- `diet/dashboard/index.blade.php` (chart adapt color)
 
 ### Fase R4 — Master Data Konsolidasi
 - `<x-stock-grid-page>` Blade component
@@ -184,7 +183,6 @@ Border-left 3px semantic, slide-in dari kanan
 
 ### Fase R5 — Halaman Besar
 - `bloxfruit/profit/index.blade.php` (434 baris)
-- `diet/users/show.blade.php` (416 baris)
 - `bloxfruit/storage/show.blade.php` extract bulk form
 
 ### Fase R6 — Polish Detail

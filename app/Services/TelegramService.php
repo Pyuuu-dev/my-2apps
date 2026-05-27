@@ -12,7 +12,7 @@ class TelegramService
 
     public function __construct(?string $token = null)
     {
-        $this->botToken = $token ?? config('services.telegram.bot_token');
+        $this->botToken = $token ?? config('services.telegram_backup.bot_token', '');
         $this->baseUrl = "https://api.telegram.org/bot{$this->botToken}";
     }
 
@@ -164,35 +164,6 @@ class TelegramService
     public function getWebhookInfo(): array
     {
         return $this->request('getWebhookInfo');
-    }
-
-    /**
-     * Set bot commands menu
-     */
-    public function setMyCommands(): array
-    {
-        $commands = [
-            ['command' => 'menu', 'description' => 'Menu utama'],
-            ['command' => 'makan', 'description' => 'Catat makanan (support: nasi + ayam + teh)'],
-            ['command' => 'air', 'description' => 'Catat air minum (ml)'],
-            ['command' => 'berat', 'description' => 'Catat berat badan (kg)'],
-            ['command' => 'olahraga', 'description' => 'Catat olahraga'],
-            ['command' => 'd', 'description' => 'Dashboard hari ini'],
-            ['command' => 'stats', 'description' => 'Statistik mingguan'],
-            ['command' => 'riwayat', 'description' => 'Riwayat makan (+ kemarin/3 hari)'],
-            ['command' => 'fav', 'description' => 'Quick add dari favorit'],
-            ['command' => 'rekomendasi', 'description' => 'AI rekomendasi menu'],
-            ['command' => 'smartreminder', 'description' => 'AI saran jadwal reminder'],
-            ['command' => 'timeline', 'description' => 'Estimasi capai target berat'],
-            ['command' => 'motivasi', 'description' => 'Motivasi harian AI'],
-            ['command' => 'puasa', 'description' => 'Intermittent fasting tracker'],
-            ['command' => 'tidur', 'description' => 'Catat tidur (23:00 06:30)'],
-            ['command' => 'profil', 'description' => 'Lihat profil & body metrics'],
-            ['command' => 'badge', 'description' => 'Achievement badges'],
-            ['command' => 'help', 'description' => 'Panduan lengkap'],
-        ];
-
-        return $this->request('setMyCommands', ['commands' => $commands]);
     }
 
     /**

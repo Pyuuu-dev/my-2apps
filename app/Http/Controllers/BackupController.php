@@ -53,7 +53,7 @@ class BackupController extends Controller
             . "🔧 Manual backup dari web";
 
         // Pakai bot backup
-        $telegram = new TelegramService();
+        $telegram = new TelegramService($token);
         $result = $telegram->sendDocument($chatId, $backupPath, $caption, $token);
 
         if (file_exists($backupPath)) {

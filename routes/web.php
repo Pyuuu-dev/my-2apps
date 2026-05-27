@@ -18,10 +18,6 @@ use App\Http\Controllers\BloxFruit\ProfitController;
 use App\Http\Controllers\BloxFruit\JokiServiceController;
 use App\Http\Controllers\BloxFruit\QuickSellController;
 
-// === DietTracker Controllers ===
-use App\Http\Controllers\DietTracker\DashboardController as DietDashboard;
-use App\Http\Controllers\DietTracker\AiLogController;
-
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Public)
@@ -40,13 +36,6 @@ Route::get('/', [\App\Http\Controllers\BloxFruit\LandingController::class, 'inde
 
 // Backward compat: /store -> / (permanent redirect)
 Route::redirect('/store', '/', 301);
-
-/*
-|--------------------------------------------------------------------------
-| Telegram Webhook (no auth, no CSRF)
-|--------------------------------------------------------------------------
-*/
-Route::post('/webhook/telegram-diet', [\App\Http\Controllers\DietTracker\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
 
 /*
 |--------------------------------------------------------------------------
@@ -157,45 +146,6 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::post('quick-sell', [QuickSellController::class, 'sell'])->name('quicksell');
     Route::get('rekap', [\App\Http\Controllers\BloxFruit\RekapController::class, 'index'])->name('rekap');
     Route::get('analisa-harga', [\App\Http\Controllers\BloxFruit\PriceAnalysisController::class, 'index'])->name('price-analysis');
-});
-
-/*
-|--------------------------------------------------------------------------
-| DIET TRACKER - Admin Panel & Monitoring
-|--------------------------------------------------------------------------
-*/
-Route::prefix('diet')->name('diet.')->group(function () {
-    Route::get('/', [DietDashboard::class, 'index'])->name('dashboard');
-    Route::post('webhook/setup', [DietDashboard::class, 'setupWebhook'])->name('webhook.setup');
-    Route::get('webhook/info', [DietDashboard::class, 'webhookInfo'])->name('webhook.info');
-    Route::get('ai-logs', [AiLogController::class, 'index'])->name('ai-logs');
-
-    // Users
-    Route::get('users', [\App\Http\Controllers\DietTracker\UserController::class, 'index'])->name('users.index');
-    Route::get('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'show'])->name('users.show');
-    Route::put('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'update'])->name('users.update');
-    Route::post('users/{profile}/recalculate', [\App\Http\Controllers\DietTracker\UserController::class, 'recalculate'])->name('users.recalculate');
-    Route::post('users/{profile}/send-message', [\App\Http\Controllers\DietTracker\UserController::class, 'sendMessage'])->name('users.send-message');
-    Route::post('users/{profile}/reset-data', [\App\Http\Controllers\DietTracker\UserController::class, 'resetData'])->name('users.reset-data');
-    Route::delete('users/{profile}', [\App\Http\Controllers\DietTracker\UserController::class, 'destroy'])->name('users.destroy');
-    Route::post('users-broadcast', [\App\Http\Controllers\DietTracker\UserController::class, 'broadcast'])->name('users.broadcast');
-
-    // Statistik
-    Route::get('stats', [\App\Http\Controllers\DietTracker\StatsController::class, 'index'])->name('stats');
-
-    // Food Database CRUD
-    Route::get('food-db', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'index'])->name('food-db');
-    Route::post('food-db', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'store'])->name('food-db.store');
-    Route::put('food-db/{food}', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'update'])->name('food-db.update');
-    Route::delete('food-db/{food}', [\App\Http\Controllers\DietTracker\FoodDbController::class, 'destroy'])->name('food-db.destroy');
-
-    // API
-    Route::get('api/foods', function (\Illuminate\Http\Request $request) {
-        $q = $request->get('q', '');
-        return \App\Models\DietTracker\FoodDatabase::where('nama', 'like', "%{$q}%")
-            ->orderBy('nama')->limit(10)
-            ->get(['id', 'nama', 'kategori', 'kalori', 'protein', 'karbohidrat', 'lemak', 'satuan_porsi']);
-    })->name('api.foods');
 });
 
 // Settings

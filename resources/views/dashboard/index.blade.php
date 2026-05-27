@@ -55,7 +55,7 @@
     </div>
 
     {{-- ============ Module Cards ============ --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4">
 
         {{-- Blox Fruit --}}
         <a href="{{ route('bloxfruit.dashboard') }}" class="card p-5 hover-lift accent-glow card-hairline group block">
@@ -89,46 +89,6 @@
                     <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Joki</p>
                 </div>
             </div>
-        </a>
-
-        {{-- Diet Tracker --}}
-        <a href="{{ route('diet.dashboard') }}" class="card p-5 hover-lift accent-glow accent-glow-success card-hairline group block">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-2.5">
-                    <span class="icon-ring icon-ring-success">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                    </span>
-                    <div>
-                        <h3 class="text-base font-semibold text-[var(--text)]">Diet Tracker</h3>
-                        <p class="text-xs text-[var(--text-muted)]">Monitoring diet &amp; kesehatan</p>
-                    </div>
-                </div>
-                <svg class="h-4 w-4 text-[var(--text-subtle)] group-hover:text-[var(--success)] group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </div>
-            @if($dtStats)
-            <div class="grid grid-cols-4 gap-3 pt-3 border-t border-[var(--border)]">
-                <div>
-                    <p class="text-lg font-bold num">{{ format_angka($dtStats['kalori_masuk']) }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Kalori</p>
-                </div>
-                <div>
-                    <p class="text-lg font-bold num">{{ format_angka($dtStats['total_minum']) }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">ml Air</p>
-                </div>
-                <div>
-                    <p class="text-lg font-bold num">{{ $dtStats['berat_sekarang'] ?? '-' }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Kg</p>
-                </div>
-                <div>
-                    <p class="text-lg font-bold num">{{ $dtStats['bmi'] ?? '-' }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">BMI</p>
-                </div>
-            </div>
-            @else
-            <div class="pt-3 border-t border-[var(--border)]">
-                <p class="text-sm text-[var(--text-muted)]">Belum ada program diet. Klik untuk mulai.</p>
-            </div>
-            @endif
         </a>
     </div>
 
@@ -197,61 +157,28 @@
         </div>
     </div>
 
-    {{-- ============ Akun Jual + Diet Hari Ini ============ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="card p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-                    <span class="dot dot-accent"></span> Akun Jual
-                </h3>
-                <a href="{{ route('bloxfruit.accounts.index') }}" class="text-xs link-soft">Lihat semua</a>
+    {{-- ============ Akun Jual ============ --}}
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-[var(--text)] flex items-center gap-2">
+                <span class="dot dot-accent"></span> Akun Jual
+            </h3>
+            <a href="{{ route('bloxfruit.accounts.index') }}" class="text-xs link-soft">Lihat semua</a>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+            <div class="text-center py-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
+                <p class="text-2xl font-bold num text-[var(--text)]">{{ $akunJual['total'] }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Total</p>
             </div>
-            <div class="grid grid-cols-3 gap-3">
-                <div class="text-center py-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
-                    <p class="text-2xl font-bold num text-[var(--text)]">{{ $akunJual['total'] }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Total</p>
-                </div>
-                <div class="text-center py-3 rounded-lg bg-[var(--success-soft)]">
-                    <p class="text-2xl font-bold num text-[var(--success)]">{{ $akunJual['tersedia'] }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Tersedia</p>
-                </div>
-                <div class="text-center py-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
-                    <p class="text-2xl font-bold num text-[var(--text-subtle)]">{{ $akunJual['terjual'] }}</p>
-                    <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Terjual</p>
-                </div>
+            <div class="text-center py-3 rounded-lg bg-[var(--success-soft)]">
+                <p class="text-2xl font-bold num text-[var(--success)]">{{ $akunJual['tersedia'] }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Tersedia</p>
+            </div>
+            <div class="text-center py-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
+                <p class="text-2xl font-bold num text-[var(--text-subtle)]">{{ $akunJual['terjual'] }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] mt-0.5">Terjual</p>
             </div>
         </div>
-
-        @if($dtStats)
-        <div class="card p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-                    <span class="dot dot-success"></span> Diet Hari Ini
-                </h3>
-                <a href="{{ route('diet.dashboard') }}" class="text-xs link-soft">Detail</a>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                @php
-                    $kPct = min(100, round(($dtStats['kalori_masuk'] / max(1, $dtStats['target_kalori'])) * 100));
-                    $aPct = min(100, round(($dtStats['total_minum'] / max(1, $dtStats['target_air'])) * 100));
-                @endphp
-                <div>
-                    <p class="text-[11px] uppercase tracking-wider text-[var(--text-subtle)] mb-1">Kalori</p>
-                    <p class="text-base font-semibold num">{{ format_angka($dtStats['kalori_masuk']) }} <span class="text-xs font-normal text-[var(--text-subtle)]">/ {{ format_angka($dtStats['target_kalori']) }}</span></p>
-                    <div class="progress mt-2">
-                        <div class="progress-bar progress-bar-warning" style="width: {{ $kPct }}%"></div>
-                    </div>
-                </div>
-                <div>
-                    <p class="text-[11px] uppercase tracking-wider text-[var(--text-subtle)] mb-1">Air Minum</p>
-                    <p class="text-base font-semibold num">{{ format_angka($dtStats['total_minum']) }}<span class="text-xs font-normal text-[var(--text-subtle)]">ml / {{ format_angka($dtStats['target_air']) }}</span></p>
-                    <div class="progress mt-2">
-                        <div class="progress-bar progress-bar-info" style="width: {{ $aPct }}%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
 
     {{-- ============ Aksi Cepat ============ --}}
@@ -259,13 +186,12 @@
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-semibold text-[var(--text)] section-bar">Aksi Cepat</h3>
         </div>
-        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
             @php
                 $quickActions = [
                     ['url' => route('bloxfruit.joki.create'), 'label' => 'Joki Baru', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
                     ['url' => route('bloxfruit.profit.create'), 'label' => 'Transaksi', 'icon' => 'M12 6v6m0 0v6m0-6h6m-6 0H6'],
                     ['url' => route('bloxfruit.search'), 'label' => 'Cari Stok', 'icon' => 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'],
-                    ['url' => route('diet.dashboard'), 'label' => 'Diet', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2'],
                     ['url' => route('bloxfruit.accounts.index'), 'label' => 'Akun Jual', 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
                     ['url' => route('bloxfruit.rekap'), 'label' => 'Rekap', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
                 ];

@@ -9,25 +9,20 @@ use App\Models\BloxFruit\JokiOrder;
 use App\Models\BloxFruit\ProfitRecord;
 use App\Models\BloxFruit\StorageAccount;
 use App\Models\BloxFruit\WalletBalance;
-use App\Models\DietTracker\FoodLog;
-use App\Models\DietTracker\UserProfile;
-use App\Models\DietTracker\WaterLog;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     /**
-     * Halaman beranda — gabungan stats BloxFruit + DietTracker.
+     * Halaman beranda — stats BloxFruit (LDC Store).
      *
      * Menggantikan closure di routes/web.php yang sebelumnya menjalankan 8+ query
      * mentah setiap render. Sekarang di-cache 60 detik untuk stats yang relatif statis.
      */
     public function index()
     {
-        $today = now()->toDateString();
-
         // === Stats yang aman di-cache (refresh tiap 60 detik) ===
-        $cached = Cache::remember('home:stats:v1', 60, function () use ($today) {
+        $cached = Cache::remember('home:stats:v1', 60, function () {
             $bulanIni = [now()->startOfMonth(), now()->endOfMonth()];
 
             // BloxFruit counts — single optimized aggregation
@@ -95,33 +90,9 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // === Diet Tracker (single profile assumption — pakai first profile) ===
-        $profile = UserProfile::first();
-        $dtStats = null;
-
-        if ($profile && $profile->kalori_target) {
-            $kaloriMasuk = FoodLog::where('profile_id', $profile->id)
-                ->whereDate('tanggal', $today)
-                ->sum('kalori');
-
-            $totalMinum = WaterLog::where('profile_id', $profile->id)
-                ->whereDate('tanggal', $today)
-                ->sum('jumlah_ml');
-
-            $dtStats = [
-                'profile' => $profile,
-                'kalori_masuk' => $kaloriMasuk,
-                'target_kalori' => $profile->kalori_target,
-                'total_minum' => $totalMinum,
-                'target_air' => $profile->air_target_ml ?? 2500,
-                'berat_sekarang' => $profile->berat_kg,
-                'berat_target' => $profile->berat_target,
-                'bmi' => $profile->bmi,
-            ];
-        }
-
         return view('dashboard.index', compact(
-            'bfStats', 'keuangan', 'akunJual', 'jokiAktif', 'transaksiTerakhir', 'dtStats'
+            'bfStats', 'keuangan', 'akunJual', 'jokiAktif', 'transaksiTerakhir'
         ));
     }
 }
+
