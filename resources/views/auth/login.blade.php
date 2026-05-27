@@ -7,6 +7,7 @@
     <title>Login - MyApp</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full antialiased flex items-center justify-center p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);">
@@ -24,6 +25,16 @@
         @if(session('error'))
         <div class="mb-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
             {{ session('error') }}
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="mb-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+            <ul class="list-disc pl-4 space-y-1">
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
         </div>
         @endif
 
@@ -54,6 +65,17 @@
                     <span class="text-sm text-gray-400">Ingat saya</span>
                 </label>
             </div>
+
+            {{-- Cloudflare Turnstile CAPTCHA --}}
+            @if(config('services.turnstile.site_key'))
+            <div class="flex justify-center">
+                <div class="cf-turnstile"
+                     data-sitekey="{{ config('services.turnstile.site_key') }}"
+                     data-theme="dark"
+                     data-language="id"></div>
+            </div>
+            @endif
+
             <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 text-sm font-bold text-white hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 transition-all">
                 Masuk
             </button>

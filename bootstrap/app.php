@@ -19,10 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
         );
 
-        // Exclude Telegram webhook from CSRF
-        $middleware->validateCsrfTokens(except: [
-            'webhook/telegram-diet',
-        ]);
+        // Defense-in-depth security headers (HSTS, CSP, etc.)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Services\TurnstileVerifier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -18,30 +22,75 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request, TurnstileVerifier $turnstile)
     {
-        $key = 'login:' . $request->ip();
+        $username = (string) $request->input('username', '');
+        $ipKey = 'login-ip:' . sha1((string) $request->ip());
+        $userKey = 'login-user:' . sha1(mb_strtolower($username));
 
-        // Brute force protection: max 5 attempts per 5 minutes
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
-            return back()->with('error', 'Terlalu banyak percobaan login. Coba lagi dalam ' . ceil($seconds / 60) . ' menit.');
+        // Per-IP throttle: 5 attempts / 5 minutes
+        if (RateLimiter::tooManyAttempts($ipKey, 5)) {
+            $seconds = RateLimiter::availableIn($ipKey);
+            return back()
+                ->with('error', 'Terlalu banyak percobaan login. Coba lagi dalam ' . max(1, ceil($seconds / 60)) . ' menit.')
+                ->withInput($request->only('username'));
         }
 
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        // Per-username throttle: 10 attempts / 15 minutes (mitigates credential stuffing
+        // against a single account from rotating IPs)
+        if (RateLimiter::tooManyAttempts($userKey, 10)) {
+            $seconds = RateLimiter::availableIn($userKey);
+            return back()
+                ->with('error', 'Akun ini sementara dikunci. Coba lagi dalam ' . max(1, ceil($seconds / 60)) . ' menit.')
+                ->withInput($request->only('username'));
+        }
 
-        if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->boolean('remember'))) {
-            RateLimiter::clear($key);
+        // Verify Turnstile CAPTCHA before any auth lookup
+        $captchaOk = $turnstile->verify(
+            $request->input('cf-turnstile-response'),
+            $request->ip()
+        );
+
+        if (!$captchaOk) {
+            RateLimiter::hit($ipKey, 300);
+            Log::warning('Login captcha failed', [
+                'username' => $username,
+                'ip' => $request->ip(),
+                'ua' => substr((string) $request->userAgent(), 0, 200),
+            ]);
+            return back()
+                ->with('error', 'Verifikasi keamanan gagal. Silakan coba lagi.')
+                ->withInput($request->only('username'));
+        }
+
+        $credentials = [
+            'username' => $username,
+            'password' => (string) $request->input('password', ''),
+        ];
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::clear($ipKey);
+            RateLimiter::clear($userKey);
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'));
         }
 
-        RateLimiter::hit($key, 300); // 5 menit lockout
+        // Failed credentials path
+        RateLimiter::hit($ipKey, 300);     // 5 minutes
+        RateLimiter::hit($userKey, 900);   // 15 minutes
 
-        return back()->with('error', 'Username atau password salah.')->withInput($request->only('username'));
+        // Small jitter to mitigate timing-based user enumeration
+        usleep(random_int(100_000, 400_000));
+
+        Log::warning('Login failed', [
+            'username' => $username,
+            'ip' => $request->ip(),
+            'ua' => substr((string) $request->userAgent(), 0, 200),
+        ]);
+
+        return back()
+            ->with('error', 'Kredensial tidak valid.')
+            ->withInput($request->only('username'));
     }
 
     public function logout(Request $request)
@@ -60,8 +109,12 @@ class AuthController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|string|min:6|confirmed',
+            'current_password' => ['required', 'string'],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->mixedCase()->numbers(),
+            ],
         ]);
 
         $user = Auth::user();
@@ -92,11 +145,11 @@ class AuthController extends Controller
         try {
             Artisan::call('backup:database');
             $output = Artisan::output();
-            
+
             if (str_contains($output, 'berhasil')) {
                 return back()->with('sukses', 'Backup berhasil dikirim ke Telegram!');
             }
-            
+
             return back()->with('error', 'Gagal mengirim backup. Periksa konfigurasi Telegram.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error: ' . $e->getMessage());
