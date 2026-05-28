@@ -145,9 +145,8 @@
                 <div class="flex items-center gap-4">
                     {{-- Icon container (flat emerald, sama style dengan 'Kenapa Pilih Kami?') --}}
                     <div class="h-11 w-11 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 11l18-5v12L3 14v-3z"/>
-                            <path d="M11.6 16.8a3 3 0 11-5.8-1.6"/>
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
                     </div>
 
@@ -415,7 +414,7 @@
                 @endif
                 @if($waChannelUrl)
                 <a href="{{ $waChannelUrl }}" target="_blank" rel="noopener noreferrer" class="text-slate-600 hover:text-emerald-400 transition-colors" title="Saluran WhatsApp">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/></svg>
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 </a>
                 @endif
                 <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener noreferrer" class="text-slate-600 hover:text-emerald-400 transition-colors">
