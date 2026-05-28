@@ -1,30 +1,61 @@
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 <head>
+    @php
+        $brand = setting('store.brand_name', 'LDC Store');
+        $brandColor = setting('store.brand_color', '#020617');
+        $branding = app(\App\Services\BrandingService::class);
+        $ogImageUrl = $branding->getOgImageUrl();
+        $titleFull = $brand . ' - Blox Fruit Joki & Akun Murah';
+        $descShort = "Jasa joki Blox Fruit terpercaya, permanent fruit & gamepass murah. {$stats['joki_selesai']}+ joki selesai. Proses cepat & aman.";
+        $descLong  = "Jasa joki terpercaya, permanent fruit & gamepass dengan harga terjangkau. {$stats['joki_selesai']}+ joki selesai, {$stats['akun_terjual']}+ akun terjual, {$stats['item_terjual']}+ item terjual. Proses cepat & aman!";
+    @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#020617">
-    <meta name="description" content="LDC Store - Jasa joki Blox Fruit terpercaya, permanent fruit & gamepass murah. {{ $stats['joki_selesai'] }}+ joki selesai. Proses cepat & aman.">
+    <meta name="theme-color" content="{{ $brandColor }}">
+    <meta name="description" content="{{ $descShort }}">
+
+    {{-- Favicons (dynamic from BrandingService with fallback to defaults) --}}
+    <link rel="icon" type="image/svg+xml" href="{{ $branding->getFaviconUrl('svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $branding->getFaviconUrl('png32') }}">
+    <link rel="shortcut icon" href="{{ $branding->getFaviconUrl('ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $branding->getFaviconUrl('apple') }}">
+    <link rel="manifest" href="{{ url('/site.webmanifest') }}">
+
+    {{-- SEO basics --}}
+    <link rel="canonical" href="{{ url('/') }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="{{ $brand }}">
+    <meta name="keywords" content="blox fruit, joki blox fruit, jual akun blox fruit, permanent fruit, gamepass blox fruit, skin blox fruit, joki murah, {{ strtolower($brand) }}">
+    <meta name="format-detection" content="telephone=no">
+
+    {{-- iOS PWA / Mobile App --}}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ $brand }}">
+    <meta name="application-name" content="{{ $brand }}">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
-    <meta property="og:title" content="LDC Store - Blox Fruit Joki & Akun Murah">
-    <meta property="og:description" content="Jasa joki terpercaya, permanent fruit & gamepass dengan harga terjangkau. {{ $stats['joki_selesai'] }}+ joki selesai, {{ $stats['akun_terjual'] }}+ akun terjual, {{ $stats['item_terjual'] }}+ item terjual. Proses cepat & aman!">
-    <meta property="og:image" content="{{ url('/og-image.svg') }}">
-    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:title" content="{{ $titleFull }}">
+    <meta property="og:description" content="{{ $descLong }}">
+    <meta property="og:image" content="{{ $ogImageUrl }}">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="LDC Store">
+    <meta property="og:image:alt" content="{{ $titleFull }}">
+    <meta property="og:site_name" content="{{ $brand }}">
     <meta property="og:locale" content="id_ID">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="LDC Store - Blox Fruit Joki & Akun Murah">
-    <meta name="twitter:description" content="Jasa joki terpercaya, permanent fruit & gamepass murah. {{ $stats['joki_selesai'] }}+ joki selesai. Proses cepat & aman!">
-    <meta name="twitter:image" content="{{ url('/og-image.svg') }}">
+    <meta name="twitter:title" content="{{ $titleFull }}">
+    <meta name="twitter:description" content="{{ $descShort }}">
+    <meta name="twitter:image" content="{{ $ogImageUrl }}">
+    <meta name="twitter:image:alt" content="{{ $titleFull }}">
 
-    <title>LDC Store - Blox Fruit Joki & Akun Murah</title>
+    <title>{{ $titleFull }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -34,6 +65,30 @@
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
         [x-cloak] { display: none !important; }
     </style>
+
+    {{-- Schema.org JSON-LD untuk Google rich snippet --}}
+    @php
+        // Build sameAs array (filter empty social URLs at render time)
+        $sameAs = array_values(array_filter([
+            setting('store.tiktok_url') ?: null,
+            setting('store.instagram_url') ?: null,
+            setting('store.wa_channel_url') ?: null,
+        ]));
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Store',
+            'name' => $brand,
+            'description' => 'Jasa joki Blox Fruit terpercaya, permanent fruit & gamepass dengan harga terjangkau',
+            'url' => url('/'),
+            'image' => $ogImageUrl,
+            'telephone' => '+' . preg_replace('/\D/', '', setting('store.wa_number', '6282353085502')),
+            'priceRange' => 'Rp 1.000 - Rp 380.000',
+        ];
+        if (!empty($sameAs)) {
+            $jsonLd['sameAs'] = $sameAs;
+        }
+    @endphp
+    <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 </head>
 @php
     // Sanitize WhatsApp number defensively at render time so even legacy/invalid
@@ -52,7 +107,7 @@
         <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
             <a href="#" class="flex items-center gap-2.5">
                 <div class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <x-brand-logo size="h-4 w-4" extraClass="text-white"/>
                 </div>
                 <span class="font-bold text-sm text-white">{{ setting('store.brand_name', 'LDC Store') }}</span>
             </a>

@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /login
+Disallow: /dashboard
+Disallow: /bloxfruit/
+Disallow: /settings/
+Disallow: /backup/
+
+Sitemap: https://ldctesting.my.id/sitemap.xml

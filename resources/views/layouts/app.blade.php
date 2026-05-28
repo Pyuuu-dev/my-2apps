@@ -46,7 +46,7 @@
             <div class="flex h-14 items-center justify-between px-4 border-b border-[var(--border)] shrink-0">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5" @click="closeSidebar()">
                     <div class="h-8 w-8 rounded-lg bg-[var(--accent)] flex items-center justify-center">
-                        <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <x-brand-logo size="h-4 w-4" extraClass="text-white"/>
                     </div>
                     <div>
                         <span class="text-sm font-bold text-[var(--text)] tracking-tight">{{ setting('store.app_name', 'MyApp') }}</span>

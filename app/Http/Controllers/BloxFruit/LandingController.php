@@ -11,6 +11,8 @@ use App\Models\BloxFruit\FruitSkin;
 use App\Models\BloxFruit\Gamepass;
 use App\Models\BloxFruit\PermanentFruitPrice;
 use App\Models\BloxFruit\ProfitRecord;
+use App\Services\BrandingService;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class LandingController extends Controller
 {
@@ -76,5 +78,37 @@ class LandingController extends Controller
         return view('bloxfruit.landing', compact(
             'servicesByKategori', 'kategoriLabels', 'fruitsByRarity', 'skins', 'gamepasses', 'permanents', 'stats'
         ));
+    }
+
+    /**
+     * Dynamic PWA manifest. Reads brand_name & icons from settings each request
+     * but is cheap (helper-cached). Throttled at route level.
+     */
+    public function manifest(BrandingService $branding): SymfonyResponse
+    {
+        return response()
+            ->json($branding->buildManifest(), 200, [
+                'Content-Type' => 'application/manifest+json; charset=utf-8',
+                'Cache-Control' => 'public, max-age=300',
+            ]);
+    }
+
+    /**
+     * Inline SVG endpoint for the customizable logo. Returns sanitized SVG
+     * from settings, or 404 if no custom logo set (browser falls back to
+     * other <link rel="icon"> declarations).
+     */
+    public function logoSvg(BrandingService $branding): SymfonyResponse
+    {
+        $svg = $branding->getLogoSvg();
+        if ($svg === null) {
+            abort(404);
+        }
+
+        return response($svg, 200, [
+            'Content-Type' => 'image/svg+xml; charset=utf-8',
+            'Cache-Control' => 'public, max-age=300',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }
