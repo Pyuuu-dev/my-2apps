@@ -1,9 +1,15 @@
 @props(['size' => 'h-4 w-4', 'extraClass' => 'text-white'])
 @php
+    $logoUrl = setting('store.logo_url');
     $logoSvg = setting('store.logo_svg');
 @endphp
-@if(!empty($logoSvg))
-    {{-- Inline custom SVG (already sanitized at save time). Wrap in span with size classes --}}
+@if(!empty($logoUrl))
+    {{-- External image URL (PNG/JPG/SVG via http) --}}
+    <img src="{{ $logoUrl }}" alt="Logo"
+         {{ $attributes->class([$size, 'object-contain']) }}
+         loading="lazy" decoding="async">
+@elseif(!empty($logoSvg))
+    {{-- Inline custom SVG (already sanitized at save time) --}}
     <span {{ $attributes->class([$size, $extraClass]) }} aria-hidden="true">
         {!! $logoSvg !!}
     </span>

@@ -16,7 +16,8 @@ class SettingsSeeder extends Seeder
             ['key' => 'store.tagline', 'value' => 'Management Tools', 'group' => 'store', 'label' => 'Tagline', 'type' => 'text'],
 
             // Branding (logo, favicon, theme)
-            ['key' => 'store.logo_svg', 'value' => '', 'group' => 'branding', 'label' => 'Logo SVG (paste markup <svg>...</svg>)', 'type' => 'svg'],
+            ['key' => 'store.logo_url', 'value' => '', 'group' => 'branding', 'label' => 'Logo URL (link gambar PNG/JPG/SVG eksternal)', 'type' => 'url'],
+            ['key' => 'store.logo_svg', 'value' => '', 'group' => 'branding', 'label' => 'Logo SVG Inline (paste markup <svg>...</svg>, opsional)', 'type' => 'svg'],
             ['key' => 'store.favicon_path', 'value' => '', 'group' => 'branding', 'label' => 'Favicon Source (PNG/JPG square min 512x512)', 'type' => 'image'],
             ['key' => 'store.og_image_path', 'value' => '', 'group' => 'branding', 'label' => 'OG Image (PNG 1200x630, untuk preview share link)', 'type' => 'image'],
             ['key' => 'store.brand_color', 'value' => '#020617', 'group' => 'branding', 'label' => 'Warna Theme Browser (hex)', 'type' => 'color'],
