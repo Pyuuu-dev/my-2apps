@@ -141,36 +141,39 @@
     <section id="saluran" class="px-4 pb-6">
         <div class="max-w-3xl mx-auto">
             <a href="{{ $waChannelUrl }}" target="_blank" rel="noopener noreferrer"
-               class="block group rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 border border-emerald-500/40 p-6 sm:p-7 hover:from-emerald-500 hover:via-emerald-600 hover:to-emerald-700 transition-all relative overflow-hidden">
-                {{-- Decorative blur accents --}}
-                <div class="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-emerald-400/10 blur-2xl"></div>
-                <div class="absolute -left-6 -bottom-10 h-32 w-32 rounded-full bg-emerald-300/10 blur-2xl"></div>
-
-                <div class="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {{-- Icon megaphone/channel --}}
-                    <div class="shrink-0 h-14 w-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
-                        <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               class="block group rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-600/50 p-5 sm:p-6 card-hover transition-colors">
+                <div class="flex items-center gap-4">
+                    {{-- Icon container (flat emerald, sama style dengan 'Kenapa Pilih Kami?') --}}
+                    <div class="h-11 w-11 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
+                        <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 11l18-5v12L3 14v-3z"/>
                             <path d="M11.6 16.8a3 3 0 11-5.8-1.6"/>
                         </svg>
                     </div>
 
+                    {{-- Text content --}}
                     <div class="flex-1 min-w-0">
-                        <div class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 mb-2">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-200 animate-pulse"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-white">Live Update</span>
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Live Update</span>
                         </div>
-                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1 tracking-tight">Update Stok Real-Time</h3>
-                        <p class="text-emerald-50/90 text-xs sm:text-sm leading-relaxed">
-                            Ikuti saluran WhatsApp kami untuk lihat stok terbaru dan restock fruit langka.
-                        </p>
+                        <p class="text-sm font-bold text-white">Update Stok Real-Time di Saluran WhatsApp</p>
+                        <p class="text-xs text-slate-400 mt-0.5 hidden sm:block">Ikuti untuk stok terbaru &amp; restock fruit langka</p>
                     </div>
 
-                    <div class="shrink-0">
-                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-emerald-700 group-hover:bg-emerald-50 transition-colors">
-                            Ikuti Saluran
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                        </span>
+                    {{-- CTA arrow (desktop) --}}
+                    <div class="shrink-0 hidden sm:flex items-center gap-1.5 text-xs font-semibold text-emerald-400 group-hover:text-emerald-300 transition-colors">
+                        Ikuti
+                        <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </div>
+
+                    {{-- Mobile chevron only --}}
+                    <div class="shrink-0 sm:hidden text-emerald-400">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </div>
                 </div>
             </a>
