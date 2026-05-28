@@ -84,6 +84,8 @@ Detail design tokens & komponen di `docs/plans/2026-05-14-redesign-refined-minim
 
 Brand name, kontak (WA, IG, TikTok, Discord), template marketing copy, dan konfigurasi app dapat di-edit lewat halaman `/settings/store` tanpa perlu deploy ulang. Nilai disimpan di tabel `settings` dengan caching otomatis.
 
+> Logo, favicon, dan warna theme browser bersifat fixed default (di-commit ke `public/`). Untuk ganti branding visual, replace file di `public/` lalu redeploy.
+
 ## Performance
 
 - Cache stats home (TTL 60s)
