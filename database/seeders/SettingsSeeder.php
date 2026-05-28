@@ -15,11 +15,6 @@ class SettingsSeeder extends Seeder
             ['key' => 'store.app_name', 'value' => 'MyApp', 'group' => 'store', 'label' => 'Nama Aplikasi Internal', 'type' => 'text'],
             ['key' => 'store.tagline', 'value' => 'Management Tools', 'group' => 'store', 'label' => 'Tagline', 'type' => 'text'],
 
-            // Branding (logo, favicon, theme)
-            ['key' => 'store.logo_url', 'value' => '', 'group' => 'branding', 'label' => 'Logo URL (link gambar PNG/JPG/SVG eksternal)', 'type' => 'url'],
-            ['key' => 'store.logo_svg', 'value' => '', 'group' => 'branding', 'label' => 'Logo SVG Inline (paste markup <svg>...</svg>, opsional)', 'type' => 'svg'],
-            ['key' => 'store.brand_color', 'value' => '#020617', 'group' => 'branding', 'label' => 'Warna Theme Browser (hex)', 'type' => 'color'],
-
             // Kontak
             ['key' => 'store.wa_number', 'value' => '6282353085502', 'group' => 'kontak', 'label' => 'Nomor WhatsApp (62...)', 'type' => 'tel'],
             ['key' => 'store.wa_channel_url', 'value' => '', 'group' => 'kontak', 'label' => 'URL Saluran WhatsApp', 'type' => 'url'],

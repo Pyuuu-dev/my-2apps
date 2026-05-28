@@ -92,23 +92,4 @@ class LandingController extends Controller
                 'Cache-Control' => 'public, max-age=300',
             ]);
     }
-
-    /**
-     * Inline SVG endpoint for the customizable logo. Returns sanitized SVG
-     * from settings, or 404 if no custom logo set (browser falls back to
-     * other <link rel="icon"> declarations).
-     */
-    public function logoSvg(BrandingService $branding): SymfonyResponse
-    {
-        $svg = $branding->getLogoSvg();
-        if ($svg === null) {
-            abort(404);
-        }
-
-        return response($svg, 200, [
-            'Content-Type' => 'image/svg+xml; charset=utf-8',
-            'Cache-Control' => 'public, max-age=300',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
-    }
 }

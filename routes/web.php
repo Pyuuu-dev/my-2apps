@@ -45,10 +45,6 @@ Route::get('/site.webmanifest', [\App\Http\Controllers\BloxFruit\LandingControll
     ->middleware('throttle:60,1')
     ->name('branding.manifest');
 
-Route::get('/branding/logo.svg', [\App\Http\Controllers\BloxFruit\LandingController::class, 'logoSvg'])
-    ->middleware('throttle:60,1')
-    ->name('branding.logo.svg');
-
 // Backward compat: /store -> / (permanent redirect)
 Route::redirect('/store', '/', 301);
 

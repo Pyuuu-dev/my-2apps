@@ -3,7 +3,7 @@
 <head>
     @php
         $brand = setting('store.brand_name', 'LDC Store');
-        $brandColor = setting('store.brand_color', '#020617');
+        $brandColor = \App\Services\BrandingService::THEME_COLOR;
         $branding = app(\App\Services\BrandingService::class);
         $ogImageUrl = $branding->getOgImageUrl();
         $titleFull = $brand . ' - Blox Fruit Joki & Akun Murah';
