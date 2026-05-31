@@ -169,4 +169,15 @@ Route::post('/settings/backup', [AuthController::class, 'manualBackup'])->name('
 Route::get('/settings/store', [\App\Http\Controllers\StoreSettingsController::class, 'edit'])->name('settings.store.edit');
 Route::post('/settings/store', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->name('settings.store.update');
 
+// Theme Settings (warna, layout, font)
+Route::get('/settings/theme', [\App\Http\Controllers\ThemeSettingsController::class, 'edit'])->name('settings.theme.edit');
+Route::post('/settings/theme', [\App\Http\Controllers\ThemeSettingsController::class, 'update'])->name('settings.theme.update');
+Route::post('/settings/theme/reset', [\App\Http\Controllers\ThemeSettingsController::class, 'reset'])->name('settings.theme.reset');
+Route::post('/settings/theme/quick', [\App\Http\Controllers\ThemeSettingsController::class, 'quickApply'])->name('settings.theme.quick');
+Route::get('/settings/theme/export', [\App\Http\Controllers\ThemeSettingsController::class, 'export'])->name('settings.theme.export');
+Route::post('/settings/theme/import', [\App\Http\Controllers\ThemeSettingsController::class, 'import'])->name('settings.theme.import');
+Route::post('/settings/theme/preset/save', [\App\Http\Controllers\ThemeSettingsController::class, 'savePreset'])->name('settings.theme.preset.save');
+Route::post('/settings/theme/preset/delete', [\App\Http\Controllers\ThemeSettingsController::class, 'deletePreset'])->name('settings.theme.preset.delete');
+Route::post('/settings/theme/preset/apply', [\App\Http\Controllers\ThemeSettingsController::class, 'applyUserPreset'])->name('settings.theme.preset.apply');
+
 }); // End auth middleware

@@ -41,6 +41,7 @@ php artisan serve
 - `/dashboard` — admin dashboard (butuh auth)
 - `/bloxfruit/*` — modul BloxFruit (butuh auth)
 - `/settings/store` — pengaturan brand, kontak, marketing copy
+- `/settings/theme` — customizer tema (warna, font, layout, density)
 
 ## Struktur Project
 
@@ -71,12 +72,14 @@ docs/
 
 Aplikasi pakai design system **refined minimal**:
 
-- Single accent color (indigo) + semantic colors (success/warning/danger/info)
-- CSS variables untuk theming light/dark mode
+- Single accent color (indigo default, dapat diganti via `/settings/theme`) + semantic colors (success/warning/danger/info)
+- CSS variables untuk theming light/dark mode dengan injector dinamis dari database
+- Auto-derived `accent-hover` (8% darken di light, 10% lighten di dark)
 - 11 reusable Blade components dengan API konsisten
-- Font Inter (weight 400/500/600/700)
+- Font family configurable (Inter default, Manrope, Plus Jakarta, DM Sans, System)
 - Border-only flat card, no heavy shadow
-- Sidebar context-aware (light di light mode, dark di dark mode)
+- Sidebar context-aware (light di light mode, dark di dark mode) dengan 3 varian (subtle/solid/accent-tint)
+- Sidebar sticky dengan auto-scroll-to-active
 
 Detail design tokens & komponen di `docs/plans/2026-05-14-redesign-refined-minimal.md`.
 
@@ -85,6 +88,24 @@ Detail design tokens & komponen di `docs/plans/2026-05-14-redesign-refined-minim
 Brand name, kontak (WA, IG, TikTok, Discord), template marketing copy, dan konfigurasi app dapat di-edit lewat halaman `/settings/store` tanpa perlu deploy ulang. Nilai disimpan di tabel `settings` dengan caching otomatis.
 
 > Logo, favicon, dan warna theme browser bersifat fixed default (di-commit ke `public/`). Untuk ganti branding visual, replace file di `public/` lalu redeploy.
+
+## Theme & UI Customizer
+
+Halaman `/settings/theme` menyediakan customizer untuk:
+
+- **6 preset warna** siap pakai: Indigo (default), Emerald, Rose, Amber, Slate, Ocean
+- **Custom override** per token warna (accent, bg, surface, text, semantic) untuk light & dark mode
+- **Mode default**: Light / Dark / Ikut Sistem
+- **Layout**: border-radius (sm/md/lg), density (compact/normal/longgar), sidebar variant (subtle/solid/accent-tint)
+- **Font family**: Inter, Manrope, Plus Jakarta, DM Sans, atau System
+- **Reduce motion** toggle untuk matikan animasi
+- **Live preview** dengan kontras checker WCAG AA, toggle mobile/desktop, dan render token yang sama dengan dashboard sungguhan
+- **Save preset custom** (max 10), apply dari dropdown topbar
+- **Export / Import** tema sebagai JSON file untuk backup atau share antar instance
+
+Quick-toggle preset juga tersedia di topbar (ikon palette di samping toggle dark mode).
+
+Token disimpan di tabel `settings` group `theme*` dengan auto-cache. Browser tab `theme-color` ikut menyesuaikan warna background per mode (light/dark) untuk integrasi PWA.
 
 ## Performance
 

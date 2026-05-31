@@ -263,6 +263,8 @@
         scrollbar-width: thin;
         scrollbar-color: var(--border) transparent;
         -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable;
+        scroll-behavior: smooth;
     }
     .sidebar-scroll::-webkit-scrollbar { width: 4px; }
     .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -692,5 +694,47 @@
     .dark nav[role="navigation"] span[aria-current] {
         background-color: var(--accent) !important;
         color: white !important;
+    }
+
+    /* ============================================
+       Density Variants — diaktifkan via class body
+       (compact / normal / comfortable)
+       ============================================ */
+    body.density-compact .card,
+    body.density-compact .card-elevated,
+    body.density-compact .glass-card { border-radius: var(--r-md); }
+    body.density-compact .stat-card { padding: 0.75rem; }
+    body.density-compact .sidebar-link { padding: 0.3125rem 0.625rem; font-size: 0.75rem; }
+    body.density-compact main { padding: 0.75rem; }
+    body.density-compact th, body.density-compact td { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+    body.density-compact .topbar { height: 2.5rem; }
+
+    body.density-comfortable .stat-card { padding: 1.5rem; }
+    body.density-comfortable .sidebar-link { padding: 0.625rem 1rem; font-size: 0.875rem; }
+    body.density-comfortable main { padding: 1.5rem 2rem; }
+    body.density-comfortable th, body.density-comfortable td { padding: 1rem 1.25rem; }
+
+    /* ============================================
+       Sidebar Variants
+       (subtle = default; solid = surface; accent-tint = tint accent)
+       ============================================ */
+    body.sidebar-variant-solid .sidebar-bg {
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+    }
+    .dark body.sidebar-variant-solid .sidebar-bg,
+    body.sidebar-variant-solid.dark .sidebar-bg {
+        background: var(--surface);
+    }
+
+    body.sidebar-variant-accent-tint .sidebar-bg {
+        background: var(--accent-soft);
+        border-right: 1px solid var(--border);
+    }
+    body.sidebar-variant-accent-tint .sidebar-link:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+    .dark body.sidebar-variant-accent-tint .sidebar-link:hover {
+        background: rgba(255, 255, 255, 0.06);
     }
 }

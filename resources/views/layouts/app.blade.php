@@ -3,21 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#fafaf9">
+    @php
+        $themeBgLight = setting('theme.light.bg', '') ?: '#fafaf9';
+        $themeBgDark  = setting('theme.dark.bg', '')  ?: '#0a0a0a';
+        $hexLight = preg_match('/^#[0-9a-fA-F]{6}$/', $themeBgLight) ? $themeBgLight : '#fafaf9';
+        $hexDark  = preg_match('/^#[0-9a-fA-F]{6}$/', $themeBgDark)  ? $themeBgDark  : '#0a0a0a';
+    @endphp
+    <meta name="theme-color" content="{{ $hexLight }}" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="{{ $hexDark }}" media="(prefers-color-scheme: dark)">
     <title>@yield('title', 'Dashboard') - {{ setting('store.app_name', 'MyApp') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    @php
+        $fontKey = setting('theme.layout.font_family', 'inter');
+        $fontInfo = \App\Http\Controllers\ThemeSettingsController::FONTS[$fontKey] ?? \App\Http\Controllers\ThemeSettingsController::FONTS['inter'];
+    @endphp
+    @if(!empty($fontInfo['google']))
+    <link href="https://fonts.googleapis.com/css2?family={{ $fontInfo['google'] }}&display=swap" rel="stylesheet">
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-injector />
+    <style>
+        :root { --app-font: {!! $fontInfo['stack'] !!}; }
+        body { font-family: var(--app-font); }
+    </style>
 </head>
-<body class="h-full antialiased"
+<body class="h-full antialiased density-{{ setting('theme.layout.density', 'normal') }} sidebar-variant-{{ setting('theme.layout.sidebar_variant', 'subtle') }}"
     x-data="{
         sidebarOpen: false,
-        darkMode: localStorage.getItem('darkMode') === 'true',
+        themeBgLight: @js($hexLight),
+        themeBgDark: @js($hexDark),
+        darkMode: (() => {
+            const stored = localStorage.getItem('darkMode');
+            if (stored !== null) return stored === 'true';
+            const def = @js(setting('theme.mode_default', 'light'));
+            if (def === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches;
+            return def === 'dark';
+        })(),
         toggleDark() {
             this.darkMode = !this.darkMode;
             localStorage.setItem('darkMode', this.darkMode);
             document.documentElement.classList.toggle('dark', this.darkMode);
-            document.querySelector('meta[name=theme-color]')?.setAttribute('content', this.darkMode ? '#0a0a0a' : '#fafaf9');
+            this.syncThemeColor();
+        },
+        syncThemeColor() {
+            const c = this.darkMode ? this.themeBgDark : this.themeBgLight;
+            document.querySelectorAll('meta[name=theme-color]').forEach(m => m.setAttribute('content', c));
         },
         openSidebar() {
             this.sidebarOpen = true;
@@ -28,7 +59,7 @@
             document.body.style.overflow = '';
         }
     }"
-    x-init="if(darkMode) { document.documentElement.classList.add('dark'); document.querySelector('meta[name=theme-color]')?.setAttribute('content', '#0a0a0a') }"
+    x-init="if(darkMode) { document.documentElement.classList.add('dark') } syncThemeColor()"
     x-cloak>
     <div class="min-h-full md:flex">
         {{-- Mobile backdrop --}}
@@ -40,7 +71,7 @@
 
         {{-- ============ SIDEBAR ============ --}}
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-200 ease-out md:translate-x-0 md:static md:shrink-0 md:w-60 sidebar-bg flex flex-col">
+            class="fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-200 ease-out md:translate-x-0 md:sticky md:top-0 md:h-screen md:shrink-0 md:w-60 sidebar-bg flex flex-col">
 
             {{-- Logo --}}
             <div class="flex h-14 items-center justify-between px-4 border-b border-[var(--border)] shrink-0">
@@ -135,6 +166,10 @@
                 <a href="{{ route('settings.store.edit') }}" @click="closeSidebar()" class="sidebar-link {{ request()->routeIs('settings.store.*') ? 'sidebar-link-active' : '' }}">
                     <span class="sidebar-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></span>
                     Store &amp; Marketing
+                </a>
+                <a href="{{ route('settings.theme.edit') }}" @click="closeSidebar()" class="sidebar-link {{ request()->routeIs('settings.theme.*') ? 'sidebar-link-active' : '' }}">
+                    <span class="sidebar-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></span>
+                    Tampilan &amp; Tema
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}" class="mt-1">
@@ -231,6 +266,47 @@
                         </div>
                     </div>
 
+                    {{-- Theme Quick-Toggle --}}
+                    <div x-data="{ openTheme: false }" class="relative">
+                        <button @click="openTheme = !openTheme" class="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] hidden md:block transition-colors" title="Ganti tema cepat">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                        </button>
+                        <div x-show="openTheme" @click.away="openTheme = false" x-transition x-cloak
+                            class="absolute right-0 mt-1.5 w-64 rounded-lg shadow-[var(--elev-2)] z-50 bg-[var(--surface)] border border-[var(--border)]">
+                            <div class="p-2">
+                                <p class="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">Preset Cepat</p>
+                                <div class="grid grid-cols-3 gap-1.5 px-2 py-1">
+                                    @php
+                                        $currentPreset = setting('theme.preset', 'indigo');
+                                        $presets = \App\Http\Controllers\ThemeSettingsController::PRESETS;
+                                    @endphp
+                                    @foreach($presets as $key => $p)
+                                    <form method="POST" action="{{ route('settings.theme.quick') }}" class="contents">
+                                        @csrf
+                                        <input type="hidden" name="preset" value="{{ $key }}">
+                                        <button type="submit"
+                                            class="flex flex-col items-center gap-1 p-1.5 rounded-md border transition-colors {{ $currentPreset === $key ? 'border-[var(--accent)] bg-[var(--accent-soft)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]' }}"
+                                            title="{{ $p['label'] }}">
+                                            <div class="flex gap-0.5">
+                                                <span class="h-3 w-3 rounded shrink-0" style="background: {{ $p['light']['accent'] }}"></span>
+                                                <span class="h-3 w-3 rounded shrink-0" style="background: {{ $p['dark']['accent'] }}"></span>
+                                            </div>
+                                            <span class="text-[9px] font-semibold {{ $currentPreset === $key ? 'text-[var(--text)]' : 'text-[var(--text-muted)]' }}">{{ $p['label'] }}</span>
+                                        </button>
+                                    </form>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div class="border-t border-[var(--border)] p-2">
+                                <a href="{{ route('settings.theme.edit') }}"
+                                    class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] transition-colors">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    Customize Lengkap
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Dark Mode Toggle --}}
                     <button @click="toggleDark()" class="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] hidden md:block transition-colors" title="Toggle dark mode">
                         <svg x-show="!darkMode" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
@@ -277,6 +353,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Auto-scroll item aktif sidebar ke tengah viewport nav
+            const activeLink = document.querySelector('.sidebar-scroll .sidebar-link-active, .sidebar-scroll .sidebar-link-active-green');
+            if (activeLink) {
+                try {
+                    activeLink.scrollIntoView({ block: 'center', behavior: 'instant' });
+                } catch (e) {
+                    // Fallback for browsers without 'instant'
+                    activeLink.scrollIntoView({ block: 'center' });
+                }
+            }
+
             const prefetched = new Set();
             document.querySelectorAll('a[href]').forEach(link => {
                 link.addEventListener('mouseenter', () => {
