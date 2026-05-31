@@ -33,7 +33,32 @@ class JokiServiceController extends Controller
             'lainnya' => ['label' => 'Lainnya', 'icon' => '📝'],
         ];
 
-        return view('bloxfruit.joki-services.index', compact('services', 'kategoriLabels'));
+        // Build data untuk fitur Copy Teks Promo (Alpine.js)
+        // Hanya kategori yang punya item yang dimasukkan, urut sesuai $kategoriLabels
+        $jokiForCopy = [];
+        foreach ($kategoriLabels as $katKey => $kat) {
+            if (!isset($services[$katKey])) {
+                continue;
+            }
+            $items = $services[$katKey]->map(fn($s) => [
+                'nama' => $s->nama,
+                'harga' => (int) $s->harga,
+                'keterangan' => $s->keterangan,
+            ])->values()->all();
+
+            if (empty($items)) {
+                continue;
+            }
+
+            $jokiForCopy[] = [
+                'kategori' => $katKey,
+                'label' => $kat['label'],
+                'icon' => $kat['icon'],
+                'items' => $items,
+            ];
+        }
+
+        return view('bloxfruit.joki-services.index', compact('services', 'kategoriLabels', 'jokiForCopy'));
     }
 
     public function create()
