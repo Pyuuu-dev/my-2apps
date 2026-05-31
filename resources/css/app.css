@@ -738,3 +738,42 @@
         background: rgba(255, 255, 255, 0.06);
     }
 }
+
+/* ============================================
+   Auth (login) Templates — Shared Utilities
+   Dipakai oleh semua template di resources/views/auth/templates/.
+   ============================================ */
+.auth-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+    -webkit-tap-highlight-color: transparent; /* Android Chrome tap flash */
+}
+.auth-submit-btn {
+    min-height: 44px; /* iOS HIG touch target */
+}
+@media (pointer: coarse) {
+    /* Android phones/tablets prefer 48px touch target (Material Design) */
+    .auth-submit-btn { min-height: 48px; }
+}
+
+/* Autofill consistency: prevent Chrome/Android yellow override.
+   Pakai class auth-input-dark di template gelap, auth-input-light di terang. */
+.auth-input-dark:-webkit-autofill,
+.auth-input-dark:-webkit-autofill:hover,
+.auth-input-dark:-webkit-autofill:focus,
+.auth-input-dark:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.05) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: #ffffff;
+}
+.auth-input-light:-webkit-autofill,
+.auth-input-light:-webkit-autofill:hover,
+.auth-input-light:-webkit-autofill:focus,
+.auth-input-light:-webkit-autofill:active {
+    -webkit-text-fill-color: #1f2937 !important;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: #1f2937;
+}

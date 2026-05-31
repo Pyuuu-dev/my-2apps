@@ -11,7 +11,22 @@
     @endphp
     <meta name="theme-color" content="{{ $hexLight }}" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="{{ $hexDark }}" media="(prefers-color-scheme: dark)">
-    <title>@yield('title', 'Dashboard') - {{ setting('store.app_name', 'MyApp') }}</title>
+
+    {{-- Favicons --}}
+    @php $branding = app(\App\Services\BrandingService::class); @endphp
+    <link rel="icon" type="image/svg+xml" href="{{ $branding->getFaviconUrl('svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $branding->getFaviconUrl('png32') }}">
+    <link rel="shortcut icon" href="{{ $branding->getFaviconUrl('ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $branding->getFaviconUrl('apple') }}">
+    <link rel="manifest" href="{{ url('/site.webmanifest') }}">
+
+    {{-- iOS PWA / Mobile App --}}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ setting('store.brand_name', 'LDC Store') }}">
+    <meta name="application-name" content="{{ setting('store.brand_name', 'LDC Store') }}">
+
+    <title>@yield('title', 'Dashboard') - {{ setting('store.brand_name', 'LDC Store') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @php
@@ -80,7 +95,7 @@
                         <x-brand-logo size="h-4 w-4" extraClass="text-white"/>
                     </div>
                     <div>
-                        <span class="text-sm font-bold text-[var(--text)] tracking-tight">{{ setting('store.app_name', 'MyApp') }}</span>
+                        <span class="text-sm font-bold text-[var(--text)] tracking-tight">{{ setting('store.brand_name', 'LDC Store') }}</span>
                         <p class="text-[10px] text-[var(--text-subtle)] -mt-0.5">{{ setting('store.tagline', 'Management Tools') }}</p>
                     </div>
                 </a>

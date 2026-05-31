@@ -5,6 +5,8 @@
     use App\Http\Controllers\ThemeSettingsController as TC;
 
     $tokens = TC::COLOR_TOKENS;
+    $loginTemplates = $loginTemplates ?? TC::LOGIN_TEMPLATES;
+    $loginGroups = $loginGroups ?? TC::LOGIN_TEMPLATE_GROUPS;
 
     // Default fallback warna kalau setting kosong (cocok dgn app.css)
     $defaultLight = [
@@ -31,6 +33,7 @@
     $fontFamily = $values['theme.layout.font_family'] ?? 'inter';
     $sidebarVariant = $values['theme.layout.sidebar_variant'] ?? 'subtle';
     $reduceMotion = ($values['theme.layout.reduce_motion'] ?? '0') === '1';
+    $loginTemplate = $values['theme.login_template'] ?? 'modern';
     $userPresets = $userPresets ?? [];
 @endphp
 
@@ -49,6 +52,7 @@
         fontFamily: @js($fontFamily),
         sidebarVariant: @js($sidebarVariant),
         reduceMotion: @js($reduceMotion),
+        loginTemplate: @js($loginTemplate),
      })">
 
     <x-page-header eyebrow="Pengaturan" title="Tampilan & Tema" subtitle="Atur warna, tipografi, dan layout dashboard. Live preview di samping membantu kamu mencoba sebelum menyimpan.">
@@ -281,6 +285,157 @@
                     </div>
                 </div>
 
+                {{-- Halaman Login Template --}}
+                <div class="card overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-[var(--border)] flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-semibold text-[var(--text)] section-bar">Halaman Login</h3>
+                            <p class="text-xs text-[var(--text-muted)] mt-1">Pilih design halaman login yang akan dilihat user. Klik "Preview" pada setiap card untuk membuka di tab baru tanpa harus simpan dulu.</p>
+                        </div>
+                    </div>
+                    @php
+                        // Group templates by group key untuk render header per kategori.
+                        $tplByGroup = [];
+                        foreach ($loginTemplates as $k => $t) {
+                            $g = $t['group'] ?? 'other';
+                            $tplByGroup[$g][$k] = $t;
+                        }
+                    @endphp
+                    <div class="p-5 space-y-5">
+                    @foreach($loginGroups as $groupKey => $groupLabel)
+                        @if(!empty($tplByGroup[$groupKey]))
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--text-subtle)] mb-2 px-1">{{ $groupLabel }}</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                @foreach($tplByGroup[$groupKey] as $key => $tpl)
+                        <label class="cursor-pointer">
+                            <input type="radio" name="settings[theme.login_template]" value="{{ $key }}" x-model="loginTemplate" class="sr-only peer">
+                            <div :class="loginTemplate === '{{ $key }}' ? 'border-[var(--accent)] ring-2 ring-[var(--accent-soft)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'"
+                                class="relative rounded-lg border bg-[var(--surface)] overflow-hidden transition-all">
+                                {{-- Mini preview thumbnail --}}
+                                <div class="h-20 relative overflow-hidden flex items-center justify-center"
+                                    @if($key === 'modern')
+                                        style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);"
+                                    @elseif($key === 'split')
+                                        style="background: linear-gradient(90deg, #4f46e5 50%, #ffffff 50%);"
+                                    @elseif($key === 'minimal')
+                                        style="background: #fafafa;"
+                                    @elseif($key === 'image')
+                                        style="background: radial-gradient(ellipse at top left, rgba(220, 38, 38, 0.5) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(250, 204, 21, 0.4) 0%, transparent 50%), #1e293b;"
+                                    @elseif($key === 'glass')
+                                        style="background: radial-gradient(circle at 20% 30%, #7c3aed 0%, transparent 40%), radial-gradient(circle at 80% 70%, #06b6d4 0%, transparent 40%), #0a0a14;"
+                                    @elseif($key === 'brutalist')
+                                        style="background: #facc15; background-image: linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px); background-size: 8px 8px;"
+                                    @elseif($key === 'neumorphism')
+                                        style="background: #e0e5ec;"
+                                    @elseif($key === 'cyberpunk')
+                                        style="background: radial-gradient(circle at 25% 30%, rgba(255,0,110,0.4) 0%, transparent 45%), radial-gradient(circle at 75% 70%, rgba(0,255,255,0.3) 0%, transparent 45%), #0a0014;"
+                                    @elseif($key === 'terminal')
+                                        style="background: radial-gradient(ellipse at center, #0a1a0a 0%, #000000 100%);"
+                                    @elseif($key === 'editorial')
+                                        style="background: linear-gradient(90deg, #fef3c7 50%, #ffffff 50%);"
+                                    @elseif($key === 'nature')
+                                        style="background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 35%, #fda4af 75%, #c4b5fd 100%);"
+                                    @elseif($key === 'layered')
+                                        style="background: radial-gradient(circle at 0% 0%, rgba(99,102,241,0.18) 0%, transparent 45%), radial-gradient(circle at 100% 100%, rgba(236,72,153,0.18) 0%, transparent 45%), #fafafa;"
+                                    @elseif($key === 'manga')
+                                        style="background: #ffffff; background-image: radial-gradient(#000 1px, transparent 1.5px); background-size: 8px 8px;"
+                                    @elseif($key === 'glasslight')
+                                        style="background: linear-gradient(135deg, #fce7f3 0%, #dbeafe 50%, #fef3c7 100%);"
+                                    @elseif($key === 'paper')
+                                        style="background: #fefae0; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 7px, rgba(40,54,24,0.1) 7px, rgba(40,54,24,0.1) 8px);"
+                                    @elseif($key === 'gradient')
+                                        style="background: radial-gradient(at 5% 10%, hsla(335, 100%, 50%, 0.85) 0px, transparent 50%), radial-gradient(at 95% 20%, hsla(20, 100%, 55%, 0.85) 0px, transparent 50%), radial-gradient(at 90% 90%, hsla(214, 100%, 60%, 0.85) 0px, transparent 50%), #2d1b69;"
+                                    @elseif($key === 'corporate')
+                                        style="background: linear-gradient(135deg, #0c1e3e 0%, #16345e 100%);"
+                                    @elseif($key === 'arcade')
+                                        style="background: linear-gradient(180deg, #1a0b2e 0%, #2d1b4e 50%, #391952 100%);"
+                                    @elseif($key === 'sketch')
+                                        style="background: #fffdf7; background-image: radial-gradient(rgba(31,41,55,0.06) 1px, transparent 1px); background-size: 8px 8px;"
+                                    @elseif($key === 'holographic')
+                                        style="background: conic-gradient(from 0deg at 50% 50%, #fce7f3 0deg, #ddd6fe 60deg, #a5f3fc 120deg, #d1fae5 180deg, #fef9c3 240deg, #fed7aa 300deg, #fce7f3 360deg);"
+                                    @endif
+                                >
+                                    {{-- Mock card --}}
+                                    @if($key === 'modern')
+                                        <div class="h-10 w-12 rounded-md bg-white/5 border border-white/10 backdrop-blur-sm"></div>
+                                    @elseif($key === 'split')
+                                        <div class="absolute right-2 top-3 bottom-3 left-1/2 ml-1 rounded-md bg-white border border-slate-200"></div>
+                                    @elseif($key === 'minimal')
+                                        <div class="h-10 w-12 rounded-md bg-white border border-neutral-200 shadow-sm"></div>
+                                    @elseif($key === 'image')
+                                        <div class="h-10 w-12 rounded-md border border-white/10" style="background: rgba(15,23,42,0.7); backdrop-filter: blur(8px);"></div>
+                                    @elseif($key === 'glass')
+                                        <div class="h-10 w-12 rounded-md border border-white/15" style="background: rgba(255,255,255,0.06); backdrop-filter: blur(8px);"></div>
+                                    @elseif($key === 'brutalist')
+                                        <div class="h-10 w-12 bg-white border-[3px] border-black" style="box-shadow: 3px 3px 0 0 #000;"></div>
+                                    @elseif($key === 'neumorphism')
+                                        <div class="h-10 w-12 rounded-xl" style="background: #e0e5ec; box-shadow: 4px 4px 8px rgba(163,177,198,0.6), -4px -4px 8px rgba(255,255,255,0.9);"></div>
+                                    @elseif($key === 'cyberpunk')
+                                        <div class="h-10 w-12 rounded-sm border" style="background: rgba(10,0,20,0.85); border-color: #ff006e; box-shadow: 0 0 8px rgba(255,0,110,0.6);"></div>
+                                    @elseif($key === 'terminal')
+                                        <div class="h-10 w-14 border" style="background: transparent; border-color: #33ff33; box-shadow: 0 0 6px rgba(51,255,51,0.4);">
+                                            <div class="text-[6px] text-green-400 px-1 leading-tight font-mono" style="text-shadow: 0 0 3px rgba(51,255,51,0.7)">&gt; LOGIN_<br>&gt; ▮</div>
+                                        </div>
+                                    @elseif($key === 'editorial')
+                                        <div class="absolute left-2 top-2 text-2xl font-black italic text-red-600 leading-none" style="font-family: Georgia, serif;">01</div>
+                                        <div class="absolute right-2 top-3 bottom-3 w-12 bg-white border border-neutral-300"></div>
+                                    @elseif($key === 'nature')
+                                        <div class="h-10 w-12 rounded-2xl border border-white/50" style="background: rgba(255,251,245,0.7); backdrop-filter: blur(4px);"></div>
+                                    @elseif($key === 'layered')
+                                        <div class="relative h-12 w-14">
+                                            <div class="absolute inset-0 rounded-lg" style="transform: rotate(-6deg) translate(-3px,3px); background: linear-gradient(135deg,#ec4899,#f472b6); opacity: 0.5;"></div>
+                                            <div class="absolute inset-0 rounded-lg" style="transform: rotate(3deg) translate(2px,2px); background: linear-gradient(135deg,#6366f1,#818cf8); opacity: 0.6;"></div>
+                                            <div class="absolute inset-0 rounded-lg bg-white shadow"></div>
+                                        </div>
+                                    @elseif($key === 'manga')
+                                        <div class="h-10 w-12 bg-white border-[3px] border-black" style="box-shadow: 3px 3px 0 0 #000;">
+                                            <div class="h-full w-full" style="background: repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(255,64,129,0.3) 3px, rgba(255,64,129,0.3) 4px);"></div>
+                                        </div>
+                                    @elseif($key === 'glasslight')
+                                        <div class="h-10 w-12 rounded-xl border border-white/70" style="background: rgba(255,255,255,0.6); backdrop-filter: blur(8px);"></div>
+                                    @elseif($key === 'paper')
+                                        <div class="h-10 w-12 bg-amber-50 border border-stone-700" style="border-radius: 4px 6px 5px 4px; box-shadow: 2px 2px 0 0 rgba(188,108,37,0.5);"></div>
+                                    @elseif($key === 'gradient')
+                                        <div class="h-10 w-12 rounded-xl border border-white/30" style="background: rgba(15,10,40,0.7); backdrop-filter: blur(8px);"></div>
+                                    @elseif($key === 'corporate')
+                                        <div class="h-10 w-12 border border-amber-500/40" style="background: rgba(8,14,30,0.85);">
+                                            <div class="h-px w-8 mx-auto mt-4" style="background: linear-gradient(90deg, transparent, #d4af37, transparent);"></div>
+                                        </div>
+                                    @elseif($key === 'arcade')
+                                        <div class="relative h-10 w-12 rounded border-2" style="background: rgba(26,11,46,0.85); border-color: #ff006e; box-shadow: 0 0 8px rgba(255,0,110,0.6);">
+                                            <div class="absolute top-1 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full" style="background: linear-gradient(180deg, #fbbf24, #ff006e);"></div>
+                                        </div>
+                                    @elseif($key === 'sketch')
+                                        <div class="h-10 w-12 bg-white border-2 border-stone-800" style="border-radius: 6px 10px 8px 12px / 10px 6px 12px 8px; box-shadow: 2px 2px 0 0 #f59e0b;"></div>
+                                    @elseif($key === 'holographic')
+                                        <div class="h-10 w-12 rounded-xl border border-white/80" style="background: rgba(255,255,255,0.55); backdrop-filter: blur(10px);"></div>
+                                    @endif
+                                </div>
+                                <div class="px-3 py-2.5">
+                                    <div class="flex items-center gap-1.5 mb-0.5">
+                                        <p class="text-xs font-semibold text-[var(--text)] truncate">{{ $tpl['label'] }}</p>
+                                        <span x-show="loginTemplate === '{{ $key }}'" class="ml-auto shrink-0 h-3.5 w-3.5 rounded-full bg-[var(--accent)] flex items-center justify-center">
+                                            <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-[var(--text-muted)] line-clamp-2 leading-tight">{{ $tpl['description'] }}</p>
+                                    <a href="{{ route('login', ['_preview' => $key]) }}" target="_blank" rel="noopener"
+                                        @click.stop
+                                        class="inline-block mt-1.5 text-[10px] font-semibold text-[var(--accent)] hover:underline">
+                                        Preview di tab baru &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        </label>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                    @endforeach
+                    </div>
+                </div>
+
                 <div class="flex flex-wrap items-center gap-2 sticky bottom-4 bg-[var(--bg)] py-2 -mx-1 px-1 z-10">
                     <x-btn type="submit" variant="primary" size="lg" icon="M5 13l4 4L19 7">Simpan Tema</x-btn>
                     <x-btn :href="route('dashboard')" variant="secondary" size="lg">Batal</x-btn>
@@ -504,6 +659,7 @@ function themeCustomizer(initial) {
         fontFamily: initial.fontFamily || 'inter',
         sidebarVariant: initial.sidebarVariant || 'subtle',
         reduceMotion: !!initial.reduceMotion,
+        loginTemplate: initial.loginTemplate || 'modern',
         previewMode: initial.mode === 'dark' ? 'dark' : 'light',
         previewSize: 'desktop',
         openSave: false,

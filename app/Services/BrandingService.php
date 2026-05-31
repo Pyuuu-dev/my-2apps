@@ -49,9 +49,14 @@ class BrandingService
         $brand = setting('store.brand_name', 'LDC Store');
 
         return [
+            'id' => '/',
             'name' => $brand . ' - Blox Fruit Joki & Akun Murah',
             'short_name' => $brand,
             'description' => 'Jasa joki Blox Fruit terpercaya, permanent fruit & gamepass murah',
+            'lang' => 'id',
+            'dir' => 'ltr',
+            'orientation' => 'any',
+            'categories' => ['business', 'shopping'],
             'icons' => [
                 ['src' => $this->getFaviconUrl('png192'), 'sizes' => '192x192', 'type' => 'image/png'],
                 ['src' => $this->getFaviconUrl('png512'), 'sizes' => '512x512', 'type' => 'image/png'],

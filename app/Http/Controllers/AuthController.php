@@ -14,11 +14,21 @@ use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        // Allow authenticated admin to preview login templates without redirect
+        // by passing ?_preview=<template_key>. Only valid template keys (per
+        // ThemeSettingsController::ENUMS) bypass the dashboard redirect.
+        $preview = $request->query('_preview');
+        $allowed = \App\Http\Controllers\ThemeSettingsController::ENUMS['theme.login_template'] ?? [];
+
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            if (!$preview || !in_array($preview, $allowed, true)) {
+                return redirect()->route('dashboard');
+            }
+            // Render preview without auto-redirect.
         }
+
         return view('auth.login');
     }
 

@@ -65,12 +65,151 @@ class ThemeSettingsController extends Controller
         'theme.layout.density'         => ['compact', 'normal', 'comfortable'],
         'theme.layout.sidebar_variant' => ['subtle', 'solid', 'accent-tint'],
         'theme.layout.reduce_motion'   => ['0', '1'],
+        'theme.login_template'         => ['modern', 'split', 'minimal', 'image', 'glass', 'brutalist', 'neumorphism', 'cyberpunk', 'terminal', 'editorial', 'nature', 'layered', 'manga', 'glasslight', 'paper', 'gradient', 'corporate', 'arcade', 'sketch', 'holographic'],
     ];
 
     /**
      * Token color yang dikelola.
      */
     public const COLOR_TOKENS = ['accent', 'bg', 'surface', 'text', 'success', 'warning', 'danger', 'info'];
+
+    /**
+     * Daftar template halaman login yang tersedia. Digunakan untuk picker
+     * di /settings/theme dan validasi di update().
+     */
+    public const LOGIN_TEMPLATES = [
+        'modern' => [
+            'label' => 'Modern Gradient',
+            'description' => 'Gradient gelap full-screen dengan glassmorphism card. Vibe SaaS premium.',
+            'palette' => ['#0f172a', '#1e1b4b', '#6366f1'],
+            'group' => 'professional',
+        ],
+        'split' => [
+            'label' => 'Split Screen',
+            'description' => 'Dua kolom: brand showcase di kiri, form di kanan. Vibe corporate professional.',
+            'palette' => ['#4f46e5', '#ffffff', '#0f172a'],
+            'group' => 'professional',
+        ],
+        'minimal' => [
+            'label' => 'Minimal Clean',
+            'description' => 'Background terang, card kecil, monochrome. Vibe Apple-style.',
+            'palette' => ['#fafafa', '#ffffff', '#171717'],
+            'group' => 'professional',
+        ],
+        'image' => [
+            'label' => 'Card on Image',
+            'description' => 'Background full-image gaming dengan overlay card semi-transparent.',
+            'palette' => ['#1e293b', '#dc2626', '#facc15'],
+            'group' => 'atmospheric',
+        ],
+        'glass' => [
+            'label' => 'Floating Glass',
+            'description' => 'Animated gradient + glassmorphism card. Vibe futuristic gaming-tech.',
+            'palette' => ['#0f172a', '#7c3aed', '#06b6d4'],
+            'group' => 'atmospheric',
+        ],
+        'brutalist' => [
+            'label' => 'Brutalist Bold',
+            'description' => 'Color block solid, border tebal, font chunky. Statement-making.',
+            'palette' => ['#facc15', '#000000', '#ec4899'],
+            'group' => 'playful',
+        ],
+        'neumorphism' => [
+            'label' => 'Neumorphism Soft',
+            'description' => 'Soft UI dengan shadow inset/outset. Friendly dan tactile.',
+            'palette' => ['#e0e5ec', '#ffffff', '#a3b1c6'],
+            'group' => 'tactile',
+        ],
+        'cyberpunk' => [
+            'label' => 'Cyberpunk Neon',
+            'description' => 'Black bg + neon pink/cyan glow + scanlines. Futuristic gaming edgy.',
+            'palette' => ['#0a0014', '#ff006e', '#00ffff'],
+            'group' => 'themed',
+        ],
+        'terminal' => [
+            'label' => 'Vintage Terminal',
+            'description' => 'CRT terminal hijau monospace + blinking cursor. Hacker nostalgia.',
+            'palette' => ['#000000', '#33ff33', '#0a0a0a'],
+            'group' => 'themed',
+        ],
+        'editorial' => [
+            'label' => 'Magazine Editorial',
+            'description' => 'Layout asimetris typography-heavy, big serif. High-end editorial.',
+            'palette' => ['#fef3c7', '#171717', '#dc2626'],
+            'group' => 'professional',
+        ],
+        'nature' => [
+            'label' => 'Nature Organic',
+            'description' => 'Gradient warm sunset, sage/terracotta/cream. Calm wellness.',
+            'palette' => ['#fef3c7', '#84cc16', '#c2410c'],
+            'group' => 'themed',
+        ],
+        'layered' => [
+            'label' => '3D Layered',
+            'description' => 'Stacked cards dengan transforms, hover lift. Playful dimensional.',
+            'palette' => ['#fafafa', '#6366f1', '#ec4899'],
+            'group' => 'playful',
+        ],
+        'manga' => [
+            'label' => 'Anime Manga',
+            'description' => 'Screentone bg + border komik-style + speed lines. Kawaii gaming-anime.',
+            'palette' => ['#ffffff', '#000000', '#ff4081'],
+            'group' => 'playful',
+        ],
+        'glasslight' => [
+            'label' => 'Glassmorphism Light',
+            'description' => 'Pastel gradient terang + frosted glass putih. Airy soft modern.',
+            'palette' => ['#fce7f3', '#dbeafe', '#ffffff'],
+            'group' => 'atmospheric',
+        ],
+        'paper' => [
+            'label' => 'Paper / Stationery',
+            'description' => 'Tekstur kertas vintage notebook, garis tepi sketsa, warm cream.',
+            'palette' => ['#fefae0', '#283618', '#bc6c25'],
+            'group' => 'themed',
+        ],
+        'gradient' => [
+            'label' => 'Bold Mesh Gradient',
+            'description' => 'Mesh gradient multi-warna psychedelic, playful dan modern.',
+            'palette' => ['#ff006e', '#fb5607', '#3a86ff'],
+            'group' => 'atmospheric',
+        ],
+        'corporate' => [
+            'label' => 'Corporate Premium',
+            'description' => 'Dark navy + gold accent, formal banking/fintech vibe.',
+            'palette' => ['#0c1e3e', '#d4af37', '#ffffff'],
+            'group' => 'professional',
+        ],
+        'arcade' => [
+            'label' => 'Retro Arcade 80s',
+            'description' => 'Synthwave grid horizon + neon sun. Retro 80s gaming.',
+            'palette' => ['#2d1b4e', '#ff006e', '#fbbf24'],
+            'group' => 'themed',
+        ],
+        'sketch' => [
+            'label' => 'Hand-drawn Sketch',
+            'description' => 'Wobbly border, marker font, lucu kasar. Casual handcrafted.',
+            'palette' => ['#fffdf7', '#1f2937', '#f59e0b'],
+            'group' => 'playful',
+        ],
+        'holographic' => [
+            'label' => 'Holographic Foil',
+            'description' => 'Iridescent rainbow gradient yang shift. Futuristik foil.',
+            'palette' => ['#fce7f3', '#a5f3fc', '#ddd6fe'],
+            'group' => 'atmospheric',
+        ],
+    ];
+
+    /**
+     * Group label & order untuk UI picker.
+     */
+    public const LOGIN_TEMPLATE_GROUPS = [
+        'professional' => 'Professional',
+        'playful' => 'Playful & Bold',
+        'themed' => 'Themed / Vibes',
+        'atmospheric' => 'Atmospheric',
+        'tactile' => 'Soft & Tactile',
+    ];
 
     public function edit()
     {
@@ -83,9 +222,11 @@ class ThemeSettingsController extends Controller
 
         $presets = self::PRESETS;
         $fonts = self::FONTS;
+        $loginTemplates = self::LOGIN_TEMPLATES;
+        $loginGroups = self::LOGIN_TEMPLATE_GROUPS;
         $userPresets = $this->loadUserPresets();
 
-        return view('settings.theme', compact('values', 'presets', 'fonts', 'userPresets'));
+        return view('settings.theme', compact('values', 'presets', 'fonts', 'loginTemplates', 'loginGroups', 'userPresets'));
     }
 
     public function update(Request $request)
@@ -147,6 +288,7 @@ class ThemeSettingsController extends Controller
             'theme.layout.font_family' => 'inter',
             'theme.layout.sidebar_variant' => 'subtle',
             'theme.layout.reduce_motion' => '0',
+            'theme.login_template' => 'modern',
         ];
 
         foreach ($resetKeys as $key => $val) {
@@ -339,7 +481,7 @@ class ThemeSettingsController extends Controller
     protected function ensureSeeded(): void
     {
         $existing = Setting::where('key', 'like', 'theme.%')->pluck('key')->toArray();
-        if (count($existing) >= 24) {
+        if (count($existing) >= 25) {
             return;
         }
         (new \Database\Seeders\ThemeSettingsSeeder())->run();

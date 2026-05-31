@@ -21,6 +21,7 @@ Laravel admin panel untuk **LDC Store** — manajemen toko jasa joki & jualan ak
 - Cari stok & cari slot kosong (multi-tipe: fruit/skin/gamepass/permanent)
 - Public landing page (`/`) dengan search realtime
 - Stock alert banner untuk item perlu restock
+- 20 design template halaman login dengan preview live admin-only
 
 ## Setup Development
 
@@ -102,10 +103,36 @@ Halaman `/settings/theme` menyediakan customizer untuk:
 - **Live preview** dengan kontras checker WCAG AA, toggle mobile/desktop, dan render token yang sama dengan dashboard sungguhan
 - **Save preset custom** (max 10), apply dari dropdown topbar
 - **Export / Import** tema sebagai JSON file untuk backup atau share antar instance
+- **20 template halaman login** dengan preview live admin-only (lihat `docs/login-templates.md`)
 
 Quick-toggle preset juga tersedia di topbar (ikon palette di samping toggle dark mode).
 
 Token disimpan di tabel `settings` group `theme*` dengan auto-cache. Browser tab `theme-color` ikut menyesuaikan warna background per mode (light/dark) untuk integrasi PWA.
+
+## Login Templates
+
+20 design template untuk halaman `/login`, terbagi dalam 5 vibe group:
+
+| Group | Templates |
+|---|---|
+| Professional | modern, split, minimal, corporate, editorial |
+| Playful & Bold | brutalist, manga, layered, sketch |
+| Themed / Vibes | cyberpunk, terminal, arcade, nature, paper |
+| Atmospheric | image, glass, glasslight, holographic, gradient |
+| Soft & Tactile | neumorphism |
+
+Pilih dari `/settings/theme` (section "Halaman Login"). Admin authenticated bisa preview tab baru via tombol "Preview" pada setiap card tanpa perlu simpan dulu.
+
+Best practices yang sudah diterapkan:
+- Responsive: `min-h-dvh`, `safe-area-inset-bottom`, breakpoint progressive
+- Touch target: 44px iOS HIG, 48px Android Material via `@media (pointer: coarse)`
+- Android: `-webkit-tap-highlight-color: transparent`, `:hover` wrapped di `@media (hover: hover) and (pointer: fine)` untuk cegah hover stuck
+- Browser fallback: `@supports` untuk `backdrop-filter` & `conic-gradient`
+- Performance: `will-change` di animated elements, blob hide di low-end Android (≤414px)
+- A11y: `id`/`for`/`aria-label`/`autocomplete`/`aria-hidden`, kontras WCAG AA
+- Autofill consistency: `auth-input-dark`/`auth-input-light` utility cegah Chrome yellow override
+
+Cara nambah template baru, troubleshooting, dan checklist verification ada di `docs/login-templates.md`.
 
 ## Performance
 

@@ -12,7 +12,6 @@ class SettingsSeeder extends Seeder
         $defaults = [
             // Store / Brand
             ['key' => 'store.brand_name', 'value' => 'LDC Store', 'group' => 'store', 'label' => 'Nama Brand Store', 'type' => 'text'],
-            ['key' => 'store.app_name', 'value' => 'MyApp', 'group' => 'store', 'label' => 'Nama Aplikasi Internal', 'type' => 'text'],
             ['key' => 'store.tagline', 'value' => 'Management Tools', 'group' => 'store', 'label' => 'Tagline', 'type' => 'text'],
 
             // Kontak

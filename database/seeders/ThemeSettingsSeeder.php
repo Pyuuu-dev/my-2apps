@@ -41,6 +41,9 @@ class ThemeSettingsSeeder extends Seeder
             ['key' => 'theme.layout.sidebar_variant',  'value' => 'subtle', 'group' => 'theme_layout', 'label' => 'Sidebar Variant',                   'type' => 'text'],
             ['key' => 'theme.layout.reduce_motion',    'value' => '0',      'group' => 'theme_layout', 'label' => 'Reduce Motion (0/1)',               'type' => 'text'],
 
+            // === Halaman Login Template ===
+            ['key' => 'theme.login_template',          'value' => 'modern', 'group' => 'theme_login',  'label' => 'Template Halaman Login',            'type' => 'text'],
+
             // === User Presets (custom presets disimpan user) — JSON array ===
             ['key' => 'theme.user_presets',            'value' => '[]',     'group' => 'theme_presets', 'label' => 'User Presets (JSON)',              'type' => 'textarea'],
         ];
