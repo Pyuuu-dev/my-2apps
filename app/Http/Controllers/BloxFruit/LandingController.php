@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BloxFruit\JokiCategory;
 use App\Models\BloxFruit\JokiService;
 use App\Models\BloxFruit\JokiOrder;
 use App\Models\BloxFruit\AccountStock;
@@ -21,21 +22,7 @@ class LandingController extends Controller
         // Joki services grouped by kategori
         $servicesByKategori = JokiService::where('aktif', true)->orderBy('harga')->get()->groupBy('kategori');
 
-        $kategoriLabels = [
-            'level' => ['label' => 'Joki Level', 'icon' => '⚔️'],
-            'belly_fragment' => ['label' => 'Belly & Fragment', 'icon' => '💰'],
-            'mastery' => ['label' => 'Mastery', 'icon' => '🔥'],
-            'fighting_style' => ['label' => 'Fighting Style V2', 'icon' => '🥋'],
-            'sword' => ['label' => 'Get Sword', 'icon' => '🗡️'],
-            'gun' => ['label' => 'Get Gun', 'icon' => '🔫'],
-            'race' => ['label' => 'Up & Get Race', 'icon' => '🧬'],
-            'boss_raid' => ['label' => 'Boss Raid', 'icon' => '👹'],
-            'haki' => ['label' => 'Haki Legendary', 'icon' => '✨'],
-            'instinct' => ['label' => 'Instinct', 'icon' => '👁️'],
-            'awaken' => ['label' => 'Awaken Fruit', 'icon' => '🍎'],
-            'material' => ['label' => 'Material', 'icon' => '📦'],
-            'lainnya' => ['label' => 'Lainnya', 'icon' => '📝'],
-        ];
+        $kategoriLabels = JokiCategory::labels(true);
 
         // Fruits grouped by rarity
         $fruitsByRarity = BloxFruit::where('aktif', true)

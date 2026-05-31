@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BloxFruit\JokiCategory;
 use App\Models\BloxFruit\JokiOrder;
 use App\Models\BloxFruit\JokiService;
 use App\Models\BloxFruit\ProfitRecord;
@@ -197,20 +198,27 @@ class JokiOrderController extends Controller
 
     private function getKategoriLabels(): array
     {
-        return [
-            'level' => ['label' => 'Joki Level', 'icon' => '⚔️', 'color' => 'indigo'],
-            'belly_fragment' => ['label' => 'Belly & Fragment', 'icon' => '💰', 'color' => 'amber'],
-            'mastery' => ['label' => 'Mastery', 'icon' => '🔥', 'color' => 'red'],
-            'fighting_style' => ['label' => 'Fighting Style V2', 'icon' => '🥋', 'color' => 'purple'],
-            'sword' => ['label' => 'Get Sword', 'icon' => '🗡️', 'color' => 'blue'],
-            'gun' => ['label' => 'Get Gun', 'icon' => '🔫', 'color' => 'gray'],
-            'race' => ['label' => 'Up & Get Race', 'icon' => '🧬', 'color' => 'teal'],
-            'boss_raid' => ['label' => 'Boss Raid', 'icon' => '👹', 'color' => 'orange'],
-            'haki' => ['label' => 'Haki Legendary', 'icon' => '✨', 'color' => 'yellow'],
-            'instinct' => ['label' => 'Instinct', 'icon' => '👁️', 'color' => 'cyan'],
-            'awaken' => ['label' => 'Awaken Fruit', 'icon' => '🍎', 'color' => 'pink'],
-            'material' => ['label' => 'Material', 'icon' => '📦', 'color' => 'emerald'],
-            'lainnya' => ['label' => 'Lainnya', 'icon' => '📝', 'color' => 'gray'],
+        // Default colors per key. Untuk kategori baru yang belum ada di map ini
+        // dipakai 'gray' supaya tetap valid. Color tidak disimpan di DB karena
+        // dipilih untuk tetap minimal di tahap ini (sesuai requirement).
+        $colorMap = [
+            'level' => 'indigo', 'belly_fragment' => 'amber', 'mastery' => 'red',
+            'fighting_style' => 'purple', 'sword' => 'blue', 'gun' => 'gray',
+            'race' => 'teal', 'boss_raid' => 'orange', 'haki' => 'yellow',
+            'instinct' => 'cyan', 'awaken' => 'pink', 'material' => 'emerald',
+            'lainnya' => 'gray',
         ];
+
+        return JokiCategory::query()
+            ->orderBy('urutan')->orderBy('id')
+            ->get()
+            ->mapWithKeys(fn($c) => [
+                $c->key => [
+                    'label' => $c->label,
+                    'icon'  => $c->icon ?: '📝',
+                    'color' => $colorMap[$c->key] ?? 'gray',
+                ],
+            ])
+            ->toArray();
     }
 }

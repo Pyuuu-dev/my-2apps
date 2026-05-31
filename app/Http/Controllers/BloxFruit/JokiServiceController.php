@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BloxFruit\JokiCategory;
 use App\Models\BloxFruit\JokiService;
 use Illuminate\Http\Request;
 
@@ -10,39 +11,31 @@ class JokiServiceController extends Controller
 {
     public function index()
     {
-        $services = JokiService::orderByRaw("CASE kategori
-            WHEN 'level' THEN 1 WHEN 'belly_fragment' THEN 2 WHEN 'mastery' THEN 3
-            WHEN 'fighting_style' THEN 4 WHEN 'sword' THEN 5 WHEN 'gun' THEN 6
-            WHEN 'race' THEN 7 WHEN 'boss_raid' THEN 8 WHEN 'haki' THEN 9
-            WHEN 'instinct' THEN 10 WHEN 'awaken' THEN 11 WHEN 'material' THEN 12
-            ELSE 99 END")->orderBy('harga')->get()->groupBy('kategori');
+        // Ambil kategori (semua, aktif maupun nonaktif) untuk referensi label & urutan.
+        $categories = JokiCategory::orderBy('urutan')->orderBy('id')->get();
 
-        $kategoriLabels = [
-            'level' => ['label' => 'Joki Level', 'icon' => '⚔️'],
-            'belly_fragment' => ['label' => 'Belly & Fragment', 'icon' => '💰'],
-            'mastery' => ['label' => 'Mastery', 'icon' => '🔥'],
-            'fighting_style' => ['label' => 'Fighting Style V2', 'icon' => '🥋'],
-            'sword' => ['label' => 'Get Sword', 'icon' => '🗡️'],
-            'gun' => ['label' => 'Get Gun', 'icon' => '🔫'],
-            'race' => ['label' => 'Up & Get Race', 'icon' => '🧬'],
-            'boss_raid' => ['label' => 'Boss Raid', 'icon' => '👹'],
-            'haki' => ['label' => 'Haki Legendary', 'icon' => '✨'],
-            'instinct' => ['label' => 'Instinct', 'icon' => '👁️'],
-            'awaken' => ['label' => 'Awaken Fruit', 'icon' => '🍎'],
-            'material' => ['label' => 'Material', 'icon' => '📦'],
-            'lainnya' => ['label' => 'Lainnya', 'icon' => '📝'],
-        ];
+        $kategoriLabels = $categories->mapWithKeys(fn($c) => [
+            $c->key => ['label' => $c->label, 'icon' => $c->icon ?: '📝'],
+        ])->toArray();
+
+        // Map key -> urutan untuk sorting di sisi PHP (lebih portable lintas DB
+        // daripada orderByRaw CASE).
+        $urutanMap = $categories->mapWithKeys(fn($c) => [$c->key => $c->urutan])->toArray();
+
+        $services = JokiService::orderBy('harga')->get()
+            ->sortBy(fn($s) => $urutanMap[$s->kategori] ?? 9999)
+            ->groupBy('kategori');
 
         // Build data untuk fitur Copy Teks Promo (Alpine.js)
-        // Hanya kategori yang punya item yang dimasukkan, urut sesuai $kategoriLabels
+        // Hanya kategori yang punya item yang dimasukkan, urut sesuai $kategoriLabels.
         $jokiForCopy = [];
         foreach ($kategoriLabels as $katKey => $kat) {
             if (!isset($services[$katKey])) {
                 continue;
             }
             $items = $services[$katKey]->map(fn($s) => [
-                'nama' => $s->nama,
-                'harga' => (int) $s->harga,
+                'nama'       => $s->nama,
+                'harga'      => (int) $s->harga,
                 'keterangan' => $s->keterangan,
             ])->values()->all();
 
@@ -52,9 +45,9 @@ class JokiServiceController extends Controller
 
             $jokiForCopy[] = [
                 'kategori' => $katKey,
-                'label' => $kat['label'],
-                'icon' => $kat['icon'],
-                'items' => $items,
+                'label'    => $kat['label'],
+                'icon'     => $kat['icon'],
+                'items'    => $items,
             ];
         }
 
@@ -63,22 +56,16 @@ class JokiServiceController extends Controller
 
     public function create()
     {
-        $kategoriOptions = [
-            'level' => 'Joki Level', 'belly_fragment' => 'Belly & Fragment', 'mastery' => 'Mastery',
-            'fighting_style' => 'Fighting Style V2', 'sword' => 'Get Sword', 'gun' => 'Get Gun',
-            'race' => 'Up & Get Race', 'boss_raid' => 'Boss Raid', 'haki' => 'Haki Legendary',
-            'instinct' => 'Instinct', 'awaken' => 'Awaken Fruit',             'material' => 'Material',
-            'lainnya' => 'Lainnya',
-        ];
+        $kategoriOptions = JokiCategory::selectOptions(true);
         return view('bloxfruit.joki-services.form', compact('kategoriOptions'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kategori' => 'required|string|max:50',
-            'nama' => 'required|string|max:255',
-            'harga' => 'required|integer|min:0',
+            'kategori'   => 'required|string|max:50|exists:joki_categories,key',
+            'nama'       => 'required|string|max:255',
+            'harga'      => 'required|integer|min:0',
             'keterangan' => 'nullable|string|max:255',
         ]);
 
@@ -88,13 +75,9 @@ class JokiServiceController extends Controller
 
     public function edit(JokiService $joki_service)
     {
-        $kategoriOptions = [
-            'level' => 'Joki Level', 'belly_fragment' => 'Belly & Fragment', 'mastery' => 'Mastery',
-            'fighting_style' => 'Fighting Style V2', 'sword' => 'Get Sword', 'gun' => 'Get Gun',
-            'race' => 'Up & Get Race', 'boss_raid' => 'Boss Raid', 'haki' => 'Haki Legendary',
-            'instinct' => 'Instinct', 'awaken' => 'Awaken Fruit',             'material' => 'Material',
-            'lainnya' => 'Lainnya',
-        ];
+        // Untuk edit, sertakan semua kategori (termasuk nonaktif) supaya kategori
+        // existing yang kebetulan dinonaktifkan tetap kelihatan di dropdown.
+        $kategoriOptions = JokiCategory::selectOptions(false);
         $service = $joki_service;
         return view('bloxfruit.joki-services.form', compact('service', 'kategoriOptions'));
     }
@@ -102,9 +85,9 @@ class JokiServiceController extends Controller
     public function update(Request $request, JokiService $joki_service)
     {
         $validated = $request->validate([
-            'kategori' => 'required|string|max:50',
-            'nama' => 'required|string|max:255',
-            'harga' => 'required|integer|min:0',
+            'kategori'   => 'required|string|max:50|exists:joki_categories,key',
+            'nama'       => 'required|string|max:255',
+            'harga'      => 'required|integer|min:0',
             'keterangan' => 'nullable|string|max:255',
         ]);
 

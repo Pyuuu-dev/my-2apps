@@ -16,6 +16,7 @@ use App\Http\Controllers\BloxFruit\JokiOrderController;
 use App\Http\Controllers\BloxFruit\PermanentFruitPriceController;
 use App\Http\Controllers\BloxFruit\ProfitController;
 use App\Http\Controllers\BloxFruit\JokiServiceController;
+use App\Http\Controllers\BloxFruit\JokiCategoryController;
 use App\Http\Controllers\BloxFruit\QuickSellController;
 
 /*
@@ -108,6 +109,14 @@ Route::prefix('bloxfruit')->name('bloxfruit.')->group(function () {
     Route::get('joki-services/{joki_service}/edit', [JokiServiceController::class, 'edit'])->name('joki-services.edit');
     Route::put('joki-services/{joki_service}', [JokiServiceController::class, 'update'])->name('joki-services.update');
     Route::delete('joki-services/{joki_service}', [JokiServiceController::class, 'destroy'])->name('joki-services.destroy');
+
+    // Master Kategori Joki
+    Route::get('joki-categories', [JokiCategoryController::class, 'index'])->name('joki-categories.index');
+    Route::get('joki-categories/create', [JokiCategoryController::class, 'create'])->name('joki-categories.create');
+    Route::post('joki-categories', [JokiCategoryController::class, 'store'])->name('joki-categories.store');
+    Route::get('joki-categories/{joki_category}/edit', [JokiCategoryController::class, 'edit'])->name('joki-categories.edit');
+    Route::put('joki-categories/{joki_category}', [JokiCategoryController::class, 'update'])->name('joki-categories.update');
+    Route::delete('joki-categories/{joki_category}', [JokiCategoryController::class, 'destroy'])->name('joki-categories.destroy');
 
     // Akun Storage (penyimpanan stok)
     Route::get('storage', [StorageAccountController::class, 'index'])->name('storage.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BloxFruit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BloxFruit\JokiCategory;
 use App\Models\BloxFruit\JokiOrder;
 use App\Models\BloxFruit\AccountStock;
 use App\Models\BloxFruit\ProfitRecord;
@@ -95,21 +96,7 @@ class RekapController extends Controller
         $marginPrev = $prevRevenue > 0 ? round(($prevProfit / $prevRevenue) * 100, 1) : 0;
         $marginDelta = round($margin - $marginPrev, 1);
 
-        $kategoriLabels = [
-            'level' => 'Joki Level',
-            'belly_fragment' => 'Belly & Fragment',
-            'mastery' => 'Mastery',
-            'fighting_style' => 'Fighting Style',
-            'sword' => 'Get Sword',
-            'gun' => 'Get Gun',
-            'race' => 'Race',
-            'boss_raid' => 'Boss Raid',
-            'haki' => 'Haki',
-            'instinct' => 'Instinct',
-            'awaken' => 'Awaken',
-            'material' => 'Material',
-            'lainnya' => 'Lainnya',
-        ];
+        $kategoriLabels = JokiCategory::flatLabels(false);
 
         $bulanList = ProfitRecord::selectRaw("strftime('%Y-%m', tanggal) as bulan")
             ->groupBy('bulan')->orderByDesc('bulan')->pluck('bulan')->toArray();

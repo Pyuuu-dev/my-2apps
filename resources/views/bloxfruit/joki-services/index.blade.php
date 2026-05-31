@@ -11,6 +11,9 @@
                 Copy Teks Promo
             </button>
             @endif
+            <x-btn :href="route('bloxfruit.joki-categories.index')" variant="secondary" icon="M4 6h16M4 12h16M4 18h16">
+                Kelola Kategori
+            </x-btn>
             <x-btn :href="route('bloxfruit.joki-services.create')" variant="primary" icon="M12 4v16m8-8H4">
                 Tambah Jenis
             </x-btn>
